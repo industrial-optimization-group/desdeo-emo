@@ -4,6 +4,8 @@ import numpy as np
 from deap import tools
 from scipy.special import comb
 from itertools import combinations
+from math import sqrt
+from random import random
 
 
 class Problem():
@@ -20,9 +22,14 @@ class Problem():
         self.upper_limits = upper_limits
         self.num_of_constraints = num_of_constraints
 
-    def objectives(self, decision_variables):
+    def objectives(self, decision_variables) ->list:
         """Use this method to calculate objective functions."""
-        pass
+        if self.name == 'ZDT1':
+            obj1 = decision_variables[0]
+            g = 1 + (9/29)*sum(decision_variables[1:])
+            obj2 = g*(1 - sqrt(obj1/g))
+            return([obj1, obj2])
+        return([0])
 
     def Constraints():
         """Calculate constraint violation."""
@@ -97,8 +104,8 @@ class Individual():
         parameter: varuableValues contains the values of the variables.
         """
         self.variables = np.zeros(problem.num_of_variables)
-        self.objectives = np.zeros(problem.num_of_objectives)
-        self.constraint_violation = 0
+        self.objectives = [0]*problem.num_of_objectives
+        self.constraint_violation = [0]
 
         if assign_type == 'RandomAssign':
             self.random_assign(problem)
@@ -111,7 +118,8 @@ class Individual():
 
     def random_assign(self, problem):
         """Assign random values to individual."""
-        pass
+        for i in range(len(self.variables)):
+            self.variables[i] = random()
 
     def LHS_assign(self, population, problem):
         """LHS design of experiment for individuals."""
@@ -129,8 +137,8 @@ class Individual():
         self.objectives = problem.objectives(self.variables)
         if problem.num_of_constraints:
             self.constraint_violation = problem.Constraints(self.variables)
-        #return((self.objectives, self.constraint_violation))
-    
+        return(self.objectives + self.constraint_violation)
+
     def mate(self, other, problem, parameters):
         """Perform Crossover and mutation on parents and return 2 children."""
         crossover_parameters = parameters.crossover_parameters
@@ -163,7 +171,7 @@ class Individual():
 class ReferenceVectors():
     """Class object for reference vectors."""
 
-    def __init__(self, lattice_resolution, number_of_objectives):
+    def __init__(self, lattice_resolution: int, number_of_objectives):
         """Create a simplex lattice."""
         number_of_vectors = comb(
             lattice_resolution + number_of_objectives - 1,
@@ -178,9 +186,11 @@ class ReferenceVectors():
             weight[:, i] = temp[:, i] - temp[:, i-1]
         weight[:, -1] = lattice_resolution - temp[:, -1]
         self.values = weight/lattice_resolution
+        self.initial_values = self.values
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
+        self.normalize()
 
     def normalize(self):
         """Normalize the reference vectors."""
@@ -189,7 +199,7 @@ class ReferenceVectors():
             self.number_of_vectors, self.number_of_objectives)
         self.values = np.divide(self.values, norm)
 
-    def neighbouring_angles(self):
+    def neighbouring_angles(self) -> np.ndarray:
         """Calculate neighbouring angles for normalization."""
         cosvv = np.dot(self.values, self.values.transpose())
         cosvv.sort(axis=1)
@@ -197,6 +207,11 @@ class ReferenceVectors():
         acosvv = np.arccos(cosvv[:, 1])
         return(acosvv)
 
-    def adapt(max_val, min_val):
+    def adapt(self, max_val, min_val):
         """Adapt reference vectors."""
+        shape_of_thingy = self.initial_values.shape[0]
+        self.values = np.multiply(self.initial_values,
+                                  np.tile(np.substract(max_val, min_val),
+                                          (shape_of_thingy, 1)))
+        self.normalize()
         pass
