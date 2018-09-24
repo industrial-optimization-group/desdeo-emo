@@ -31,7 +31,7 @@ class Problem():
             return([obj1, obj2])
         return([0])
 
-    def Constraints():
+    def Constraints(self):
         """Calculate constraint violation."""
         pass
 
@@ -48,7 +48,7 @@ class Parameters():
         self.generations = generations
         self.Alpha = Alpha
         self.refV_adapt_frequency = 0.1
-        self.mutation = self.MutationParametersInit(mut_type)  # Place Holder
+        self.mutation = self.MutationParameters(mut_type)  # Place Holder
         self.crossover = self.CrossoverParameters(xover_type)  # Place Holder
 
     class MutationParameters():
@@ -137,34 +137,33 @@ class Individual():
         self.objectives = problem.objectives(self.variables)
         if problem.num_of_constraints:
             self.constraint_violation = problem.Constraints(self.variables)
-        return(self.objectives + self.constraint_violation)
+        return([self.objectives + self.constraint_violation])
 
     def mate(self, other, problem, parameters):
         """Perform Crossover and mutation on parents and return 2 children."""
-        crossover_parameters = parameters.crossover_parameters
-        mutation_parameters = parameters.mutation_parameters
+        crossover_parameters = parameters.crossover
+        mutation_parameters = parameters.mutation
         # Crossover
         parent1 = self.variables
         parent2 = other.variables
-        child1, child2 = np.asarray(
-            tools.cxSimulatedBinaryBounded(
+        child1, child2 = tools.cxSimulatedBinaryBounded(
                 parent1, parent2,
                 crossover_parameters.crowding_degree_of_crossover,
-                problem.lower_limits, problem.upper_limits))
+                problem.lower_limits, problem.upper_limits)
         # Mutation
         if mutation_parameters.mutType == 'PolyMut':
-            child1 = np.asarray(tools.mutPolynomialBounded(
-                child1, mutation_parameters.degreeOfMutation,
+            child1 = tools.mutPolynomialBounded(
+                child1, mutation_parameters.crowding_degree_of_mutation,
                 problem.lower_limits, problem.upper_limits,
-                mutation_parameters.independent_probability_of_mutation))
+                mutation_parameters.independent_probability_of_mutation)[0]
             child1 = Individual(
-                Problem, assign_type='CustomAssign', variable_values=child1)
-            child2 = np.asarray(tools.mutPolynomialBounded(
-                child2, mutation_parameters.degreeOfMutation,
+                problem, assign_type='CustomAssign', variable_values=child1)
+            child2 = tools.mutPolynomialBounded(
+                child2, mutation_parameters.crowding_degree_of_mutation,
                 problem.lower_limits, problem.upper_limits,
-                mutation_parameters.independent_probability_of_mutation))
+                mutation_parameters.independent_probability_of_mutation)[0]
             child2 = Individual(
-                Problem, assign_type='CustomAssign', variable_values=child2)
+                problem, assign_type='CustomAssign', variable_values=child2)
             return child1, child2
 
 
@@ -209,9 +208,9 @@ class ReferenceVectors():
 
     def adapt(self, max_val, min_val):
         """Adapt reference vectors."""
-        shape_of_thingy = self.initial_values.shape[0]
-        self.values = np.multiply(self.initial_values,
-                                  np.tile(np.substract(max_val, min_val),
-                                          (shape_of_thingy, 1)))
-        self.normalize()
+        # shape_of_thingy = self.initial_values.shape[0]
+        # self.values = np.multiply(self.initial_values,
+        #                           np.tile(np.subtract(max_val, min_val),
+        #                                   (shape_of_thingy, 1)))
+        # self.normalize()
         pass

@@ -1,17 +1,20 @@
-# from initializations import Parameters, Problem
+from initializations import Parameters, Problem
+from RVEA import rvea
 
-# name = 'ZDT1'
-# numvar = 30
-# uplim = 1
-# lowlim = 0
-# numobj = 2
-# numconst = 0
 
-# problem = Problem(name, numvar, uplim, lowlim, numobj, numconst)
+name = 'ZDT1'
+numvar = 30
+uplim = 1
+lowlim = 0
+numobj = 2
+numconst = 0
 
-a = list(range(10))
+problem = Problem(name, numvar, uplim, lowlim, numobj, numconst)
 
-for values in a:
-    values = 5
+population_size = 100
+lattice_resolution = 10
+generations = 1000
 
-print(a)
+parameters = Parameters(population_size, lattice_resolution, generations)
+
+rvea(problem, parameters)
