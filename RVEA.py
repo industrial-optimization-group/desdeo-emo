@@ -19,7 +19,8 @@ from math import ceil
 import matplotlib.pyplot as plt
 import numpy as np
 from random import shuffle, randint
-
+from pareto import eps_sort
+import pyhv
 
 def rvea(problem, parameters):
     """Run RVEA."""
@@ -39,8 +40,8 @@ def rvea(problem, parameters):
         population_fitness = population_fitness + population[i].evaluate(problem)
     print('Initiating RVEA generations')
     for gen_count in range(parameters.generations):
-        if gen_count % 10 == 0:
-            print('Processing generation number %d\n', gen_count)
+        # if gen_count % 10 == 0:
+        #     print('Processing generation number %d\n', gen_count)
         # Random mating and evaluation
         offspring = create_offspring(population, problem, parameters)
         offspring_fitness = []
@@ -61,14 +62,20 @@ def rvea(problem, parameters):
         # Reference Vector Adaptation
         if ((gen_count) % ceil(parameters.generations *
                                parameters.refV_adapt_frequency)) == 0:
-            zmax = max(population_fitness)
-            zmin = min(population_fitness)
+            zmax = np.amax(np.asarray(population_fitness), axis=0)[0:-1]
+            zmin = np.amin(np.asarray(population_fitness), axis=0)[0:-1]
+            print('Processing generation number', gen_count, '\n')
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
-            plt.scatter(list(x[0] for x in population_fitness),
-                        list(x[1] for x in population_fitness))
-            plt.show()
-
+    
+    #plt.scatter(list(x[0] for x in population_fitness),
+    #            list(x[1] for x in population_fitness))
+    #plt.show()
+    population_fitness = np.asarray(population_fitness)
+    population_fitness = population_fitness[:, 0:-1]
+    #nondf = eps_sort(population_fitness)
+    #refpoint = np.asarray([1.5]*problem.num_of_objectives)
+    #print(pyhv.hypervolume(nondf, refpoint))
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
                penalty_factor: float, refV: np.ndarray):

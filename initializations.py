@@ -1,11 +1,12 @@
 """Testing code."""
 
 import numpy as np
-from deap import tools
+from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
 from scipy.special import comb
 from itertools import combinations
 from math import sqrt
 from random import random
+from optproblems import zdt, dtlz
 
 
 class Problem():
@@ -18,17 +19,70 @@ class Problem():
         self.name = name
         self.num_of_variables = num_of_variables
         self.num_of_objectives = num_of_objectives
-        self.lower_limits = lower_limits
-        self.upper_limits = upper_limits
         self.num_of_constraints = num_of_constraints
+        if name == 'ZDT1':
+            self.obj_func = zdt.ZDT1()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'ZDT2':
+            self.obj_func = zdt.ZDT2()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'ZDT3':
+            self.obj_func = zdt.ZDT3()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'ZDT4':
+            self.obj_func = zdt.ZDT4()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'ZDT5':
+            self.obj_func = zdt.ZDT5()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'ZDT6':
+            self.obj_func = zdt.ZDT6()
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ1':
+            self.obj_func = dtlz.DTLZ1(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ2':
+            self.obj_func = dtlz.DTLZ2(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ3':
+            self.obj_func = dtlz.DTLZ3(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ4':
+            self.obj_func = dtlz.DTLZ4(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ5':
+            self.obj_func = dtlz.DTLZ5(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ6':
+            self.obj_func = dtlz.DTLZ6(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        if name == 'DTLZ7':
+            self.obj_func = dtlz.DTLZ7(num_of_objectives, num_of_variables)
+            self.lower_limits = self.obj_func.min_bounds
+            self.upper_limits = self.obj_func.max_bounds
+        
+        
 
     def objectives(self, decision_variables) ->list:
         """Use this method to calculate objective functions."""
-        if self.name == 'ZDT1':
-            obj1 = decision_variables[0]
-            g = 1 + (9/29)*sum(decision_variables[1:])
-            obj2 = g*(1 - sqrt(obj1/g))
-            return([obj1, obj2])
+        #if self.name == 'ZDT1':
+        #    obj1 = decision_variables[0]
+        #    g = 1 + (9/29)*sum(decision_variables[1:])
+        #    obj2 = g*(1 - sqrt(obj1/g))
+        #    return([obj1, obj2])
+        return(self.obj_func(decision_variables))
         return([0])
 
     def Constraints(self):
@@ -88,7 +142,7 @@ class Parameters():
             """Define crossover type and parameters."""
             if xover_type == 'SBX':
                 self.xover_type = 'SBX'
-                self.crowding_degree_of_crossover = 30
+                self.crowding_degree_of_crossover = 0.3
             else:
                 print('Error: Crossover type not defined')
 
@@ -144,21 +198,21 @@ class Individual():
         crossover_parameters = parameters.crossover
         mutation_parameters = parameters.mutation
         # Crossover
-        parent1 = self.variables
-        parent2 = other.variables
-        child1, child2 = tools.cxSimulatedBinaryBounded(
+        parent1 = np.copy(self.variables)
+        parent2 = np.copy(other.variables)
+        child1, child2 = cxSimulatedBinaryBounded(
                 parent1, parent2,
                 crossover_parameters.crowding_degree_of_crossover,
                 problem.lower_limits, problem.upper_limits)
         # Mutation
         if mutation_parameters.mutType == 'PolyMut':
-            child1 = tools.mutPolynomialBounded(
+            child1 = mutPolynomialBounded(
                 child1, mutation_parameters.crowding_degree_of_mutation,
                 problem.lower_limits, problem.upper_limits,
                 mutation_parameters.independent_probability_of_mutation)[0]
             child1 = Individual(
                 problem, assign_type='CustomAssign', variable_values=child1)
-            child2 = tools.mutPolynomialBounded(
+            child2 = mutPolynomialBounded(
                 child2, mutation_parameters.crowding_degree_of_mutation,
                 problem.lower_limits, problem.upper_limits,
                 mutation_parameters.independent_probability_of_mutation)[0]
@@ -208,9 +262,8 @@ class ReferenceVectors():
 
     def adapt(self, max_val, min_val):
         """Adapt reference vectors."""
-        # shape_of_thingy = self.initial_values.shape[0]
-        # self.values = np.multiply(self.initial_values,
-        #                           np.tile(np.subtract(max_val, min_val),
-        #                                   (shape_of_thingy, 1)))
-        # self.normalize()
+        self.values = np.multiply(self.initial_values,
+                                  np.tile(np.subtract(max_val, min_val),
+                                          (self.number_of_vectors, 1)))
+        self.normalize()
         pass
