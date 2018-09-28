@@ -1,12 +1,13 @@
 """Testing code."""
 
+from itertools import combinations
+# from math import sqrt
+from random import random
+
 import numpy as np
 from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
+from optproblems import dtlz, zdt
 from scipy.special import comb
-from itertools import combinations
-from math import sqrt
-from random import random
-from optproblems import zdt, dtlz
 
 
 class Problem():
@@ -72,12 +73,10 @@ class Problem():
             self.obj_func = dtlz.DTLZ7(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        
-        
 
     def objectives(self, decision_variables) ->list:
         """Use this method to calculate objective functions."""
-        #if self.name == 'ZDT1':
+        # if self.name == 'ZDT1':
         #    obj1 = decision_variables[0]
         #    g = 1 + (9/29)*sum(decision_variables[1:])
         #    obj2 = g*(1 - sqrt(obj1/g))
@@ -201,9 +200,9 @@ class Individual():
         parent1 = np.copy(self.variables)
         parent2 = np.copy(other.variables)
         child1, child2 = cxSimulatedBinaryBounded(
-                parent1, parent2,
-                crossover_parameters.crowding_degree_of_crossover,
-                problem.lower_limits, problem.upper_limits)
+            parent1, parent2,
+            crossover_parameters.crowding_degree_of_crossover,
+            problem.lower_limits, problem.upper_limits)
         # Mutation
         if mutation_parameters.mutType == 'PolyMut':
             child1 = mutPolynomialBounded(
@@ -266,4 +265,3 @@ class ReferenceVectors():
                                   np.tile(np.subtract(max_val, min_val),
                                           (self.number_of_vectors, 1)))
         self.normalize()
-        pass

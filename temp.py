@@ -1,7 +1,6 @@
 from initializations import Parameters, Problem
 from RVEA import rvea
 
-
 name = 'DTLZ6'
 
 uplim = 1
@@ -20,4 +19,3 @@ generations = 500
 parameters = Parameters(population_size, lattice_resolution, generations)
 
 rvea(problem, parameters)
-

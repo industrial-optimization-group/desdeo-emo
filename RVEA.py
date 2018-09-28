@@ -21,24 +21,29 @@ import numpy as np
 from random import shuffle, randint
 from pareto import eps_sort
 import pyhv
+import sys
+from progress.bar import IncrementalBar as Bar
+
 
 def rvea(problem, parameters):
     """Run RVEA."""
     # Initializing Reference Vectors
     reference_vectors = ReferenceVectors(
-        parameters.lattice_resolution, problem.num_of_objectives
-        )
+        parameters.lattice_resolution, problem.num_of_objectives)
     refV = reference_vectors.neighbouring_angles()
 
     # Initializing Population
     population = [
-        Individual(problem) for i in range(parameters.population_size)
-        ]
-
+        Individual(problem) for i in range(parameters.population_size)]
     population_fitness = []
     for i in range(parameters.population_size):
         population_fitness = population_fitness + population[i].evaluate(problem)
-    print('Initiating RVEA generations')
+
+    print('Running RVEA generations\n')
+
+    # setup toolbar
+    bar = Bar('Processing', max=parameters.generations)
+
     for gen_count in range(parameters.generations):
         # if gen_count % 10 == 0:
         #     print('Processing generation number %d\n', gen_count)
@@ -46,8 +51,8 @@ def rvea(problem, parameters):
         offspring = create_offspring(population, problem, parameters)
         offspring_fitness = []
         for i in range(len(offspring)):
-            offspring_fitness = (offspring_fitness
-                                 + offspring[i].evaluate(problem))
+            offspring_fitness = (offspring_fitness +
+                                 offspring[i].evaluate(problem))
         population = population + offspring
         population_fitness = population_fitness + offspring_fitness
         # APD Based selection
@@ -64,18 +69,20 @@ def rvea(problem, parameters):
                                parameters.refV_adapt_frequency)) == 0:
             zmax = np.amax(np.asarray(population_fitness), axis=0)[0:-1]
             zmin = np.amin(np.asarray(population_fitness), axis=0)[0:-1]
-            print('Processing generation number', gen_count, '\n')
+            # print('Processing generation number', gen_count, '\n')
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
-    
-    #plt.scatter(list(x[0] for x in population_fitness),
+        bar.next()
+    # plt.scatter(list(x[0] for x in population_fitness),
     #            list(x[1] for x in population_fitness))
-    #plt.show()
+    # plt.show()
+    bar.finish()
     population_fitness = np.asarray(population_fitness)
     population_fitness = population_fitness[:, 0:-1]
-    #nondf = eps_sort(population_fitness)
-    #refpoint = np.asarray([1.5]*problem.num_of_objectives)
-    #print(pyhv.hypervolume(nondf, refpoint))
+    # nondf = eps_sort(population_fitness)
+    # refpoint = np.asarray([1.5]*problem.num_of_objectives)
+    # print(pyhv.hypervolume(nondf, refpoint))
+
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
                penalty_factor: float, refV: np.ndarray):
