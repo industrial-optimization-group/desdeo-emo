@@ -1,0 +1,5 @@
+results/
+Backup_results/
+*.python
+__pycache__/
+.vscode/

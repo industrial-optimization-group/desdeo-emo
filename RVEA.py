@@ -21,12 +21,14 @@ import numpy as np
 from random import shuffle, randint
 from pareto import eps_sort
 import pyhv
-import sys
 from progress.bar import IncrementalBar as Bar
+from time import time
+from warnings import warn
 
 
 def rvea(problem, parameters):
     """Run RVEA."""
+    start_time = time()
     # Initializing Reference Vectors
     reference_vectors = ReferenceVectors(
         parameters.lattice_resolution, problem.num_of_objectives)
@@ -38,7 +40,8 @@ def rvea(problem, parameters):
     population_fitness = []
     for i in range(parameters.population_size):
         population_fitness = population_fitness + population[i].evaluate(problem)
-
+    fitness_archive_per_generation = []
+    fitness_archive_non_dom = []
     print('Running RVEA generations\n')
 
     # setup toolbar
@@ -64,6 +67,9 @@ def rvea(problem, parameters):
         population = population_new
         population_fitness_new = list(population_fitness[i[0]] for i in select)
         population_fitness = population_fitness_new
+        temp = eps_sort(population_fitness_new)
+        fitness_archive_per_generation = fitness_archive_per_generation + [temp]
+        fitness_archive_non_dom = fitness_archive_non_dom + temp
         # Reference Vector Adaptation
         if ((gen_count) % ceil(parameters.generations *
                                parameters.refV_adapt_frequency)) == 0:
@@ -73,15 +79,10 @@ def rvea(problem, parameters):
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
         bar.next()
-    # plt.scatter(list(x[0] for x in population_fitness),
-    #            list(x[1] for x in population_fitness))
-    # plt.show()
     bar.finish()
-    population_fitness = np.asarray(population_fitness)
-    population_fitness = population_fitness[:, 0:-1]
-    # nondf = eps_sort(population_fitness)
-    # refpoint = np.asarray([1.5]*problem.num_of_objectives)
-    # print(pyhv.hypervolume(nondf, refpoint))
+    fitness_archive_non_dom = eps_sort(fitness_archive_non_dom)
+    time_elapsed = time() - start_time
+    return(fitness_archive_non_dom, fitness_archive_per_generation, time_elapsed)
 
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
@@ -101,6 +102,14 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
             len(fitness), len(fitness[0, :]))
     normalized_fitness = np.divide(fitness, fitness_norm)
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
+    if cosine[np.where(cosine > 1)].size:
+        warn('RVEA.py line 103 cosine larger than 1 decreased to 1:',
+             cosine[np.where(cosine > 1)])
+        cosine[np.where(cosine > 1)] = 1
+    if cosine[np.where(cosine < 0)].size:
+        warn('RVEA.py line 103 cosine smaller than 0 decreased to 0:',
+             cosine[np.where(cosine < 0)])
+        cosine[np.where(cosine < 0)] = 0
     theta = np.array([])
     # Calculation of angles between reference vectors and solutions
     for i in range(0, len(cosine)):

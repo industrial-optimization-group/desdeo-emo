@@ -205,6 +205,8 @@ class Individual():
             problem.lower_limits, problem.upper_limits)
         # Mutation
         if mutation_parameters.mutType == 'PolyMut':
+            # test
+            mutation_parameters.independent_probability_of_mutation = 1/len(child1)
             child1 = mutPolynomialBounded(
                 child1, mutation_parameters.crowding_degree_of_mutation,
                 problem.lower_limits, problem.upper_limits,
