@@ -212,6 +212,7 @@ class Individual():
                 problem.lower_limits, problem.upper_limits,
                 mutation_parameters.independent_probability_of_mutation)[0]
             child1 = Individual(
+
                 problem, assign_type='CustomAssign', variable_values=child1)
             child2 = mutPolynomialBounded(
                 child2, mutation_parameters.crowding_degree_of_mutation,

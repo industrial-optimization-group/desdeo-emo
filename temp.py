@@ -35,5 +35,6 @@ for name, K in zip(names, k):
                         f.write("%s\n" % smallitem)
         except Exception as err:
             with open("Errorlog.txt", 'a') as f:
-                f.write("Error in " + name + " with " + str(numobj) + "objectives\n")
+                f.write("Error in " + name + " with " + str(numobj) +
+                        "objectives\n")
                 f.write("{} \n".format(err))
