@@ -3,7 +3,7 @@
 from itertools import combinations
 # from math import sqrt
 from random import random
-
+from deap import benchmarks
 import numpy as np
 from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
 from optproblems import dtlz, zdt
@@ -54,9 +54,9 @@ class Problem():
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
         if name == 'DTLZ3':
-            self.obj_func = dtlz.DTLZ3(num_of_objectives, num_of_variables)
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+            self.obj_func = benchmarks.dtlz3
+            self.lower_limits = 0
+            self.upper_limits = 1
         if name == 'DTLZ4':
             self.obj_func = dtlz.DTLZ4(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
@@ -81,8 +81,9 @@ class Problem():
         #    g = 1 + (9/29)*sum(decision_variables[1:])
         #    obj2 = g*(1 - sqrt(obj1/g))
         #    return([obj1, obj2])
+        if self.name == 'DTLZ3':
+            return(self.obj_func(decision_variables, self.num_of_objectives))
         return(self.obj_func(decision_variables))
-        return([0])
 
     def Constraints(self):
         """Calculate constraint violation."""

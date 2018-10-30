@@ -17,10 +17,10 @@ Project researcher at University of Jyväskylä.
 from initializations import Individual, ReferenceVectors
 from math import ceil
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from random import shuffle, randint
 from pareto import eps_sort
-import pyhv
 from progress.bar import IncrementalBar as Bar
 from time import time
 from warnings import warn
@@ -40,12 +40,22 @@ def rvea(problem, parameters):
     population_fitness = []
     for i in range(parameters.population_size):
         population_fitness = population_fitness + population[i].evaluate(problem)
-    fitness_archive_per_generation = []
+    # fitness_archive_per_generation = []
     fitness_archive_non_dom = []
     print('Running RVEA generations\n')
 
     # setup toolbar
     bar = Bar('Processing', max=parameters.generations)
+
+    # setup plots
+    ploton = 0
+    if ploton:
+        plt.ion()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlim3d(0,3)
+        ax.set_ylim3d(0,3)
+        ax.set_zlim3d(0,3)
 
     for gen_count in range(parameters.generations):
         # if gen_count % 10 == 0:
@@ -67,9 +77,8 @@ def rvea(problem, parameters):
         population = population_new
         population_fitness_new = list(population_fitness[i[0]] for i in select)
         population_fitness = population_fitness_new
-        temp = eps_sort(population_fitness_new)
-        fitness_archive_per_generation = fitness_archive_per_generation + [temp]
-        fitness_archive_non_dom = fitness_archive_non_dom + temp
+        # fitness_archive_per_generation = fitness_archive_per_generation + [temp]
+        fitness_archive_non_dom = eps_sort(fitness_archive_non_dom + population_fitness)
         # Reference Vector Adaptation
         if ((gen_count) % ceil(parameters.generations *
                                parameters.refV_adapt_frequency)) == 0:
@@ -78,11 +87,39 @@ def rvea(problem, parameters):
             # print('Processing generation number', gen_count, '\n')
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
+            #plotting
+            if problem.num_of_objectives == 2 & ploton:
+                pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:2]
+                pareto_x = pareto_vals[:, 0]
+                pareto_y = pareto_vals[:, 1]
+                ax.scatter(pareto_x, pareto_y)
+                fig.canvas.draw()
+            if problem.num_of_objectives == 3 & ploton:
+                pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:3]
+                pareto_x = pareto_vals[:, 0]
+                pareto_y = pareto_vals[:, 1]
+                pareto_z = pareto_vals[:, 2]
+                ax.scatter(pareto_x, pareto_y, pareto_z)
+                fig.canvas.draw()
         bar.next()
     bar.finish()
-    fitness_archive_non_dom = eps_sort(fitness_archive_non_dom)
     time_elapsed = time() - start_time
-    return(fitness_archive_non_dom, fitness_archive_per_generation, time_elapsed)
+    # plotting
+    if problem.num_of_objectives == 2 & ploton:
+        pareto_vals = np.asarray(fitness_archive_non_dom)[:,0:2]
+        pareto_x = pareto_vals[:,0]
+        pareto_y = pareto_vals[:,1]
+        ax.scatter(pareto_x, pareto_y)
+        fig.canvas.draw()
+    if problem.num_of_objectives == 3 & ploton:
+        pareto_vals = np.asarray(fitness_archive_non_dom)[:,0:3]
+        pareto_x = pareto_vals[:,0]
+        pareto_y = pareto_vals[:,1]
+        pareto_z = pareto_vals[:,2]
+        ax.scatter(pareto_x, pareto_y, pareto_z)
+        fig.canvas.draw()
+    plt.show(block=True)
+    return(fitness_archive_non_dom, time_elapsed)
 
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
