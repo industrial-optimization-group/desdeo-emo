@@ -1,5 +1,7 @@
 results/
 Backup_results/
+Temptests/
 *.python
 __pycache__/
 .vscode/
+*.p

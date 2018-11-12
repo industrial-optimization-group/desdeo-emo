@@ -78,7 +78,7 @@ def rvea(problem, parameters):
         population_fitness_new = list(population_fitness[i[0]] for i in select)
         population_fitness = population_fitness_new
         # fitness_archive_per_generation = fitness_archive_per_generation + [temp]
-        fitness_archive_non_dom = eps_sort(fitness_archive_non_dom + population_fitness)
+        # fitness_archive_non_dom = eps_sort(fitness_archive_non_dom + population_fitness)
         # Reference Vector Adaptation
         if ((gen_count) % ceil(parameters.generations *
                                parameters.refV_adapt_frequency)) == 0:
@@ -119,7 +119,7 @@ def rvea(problem, parameters):
         ax.scatter(pareto_x, pareto_y, pareto_z)
         fig.canvas.draw()
     plt.show(block=True)
-    return(fitness_archive_non_dom, time_elapsed)
+    return(population_fitness, time_elapsed)
 
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
