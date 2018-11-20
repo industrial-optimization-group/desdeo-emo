@@ -53,9 +53,9 @@ def rvea(problem, parameters):
         plt.ion()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        ax.set_xlim3d(0,3)
-        ax.set_ylim3d(0,3)
-        ax.set_zlim3d(0,3)
+        ax.set_xlim3d(0, 3)
+        ax.set_ylim3d(0, 3)
+        ax.set_zlim3d(0, 3)
 
     for gen_count in range(parameters.generations):
         # if gen_count % 10 == 0:
@@ -87,7 +87,7 @@ def rvea(problem, parameters):
             # print('Processing generation number', gen_count, '\n')
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
-            #plotting
+            # plotting
             if problem.num_of_objectives == 2 & ploton:
                 pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:2]
                 pareto_x = pareto_vals[:, 0]
@@ -106,16 +106,16 @@ def rvea(problem, parameters):
     time_elapsed = time() - start_time
     # plotting
     if problem.num_of_objectives == 2 & ploton:
-        pareto_vals = np.asarray(fitness_archive_non_dom)[:,0:2]
-        pareto_x = pareto_vals[:,0]
-        pareto_y = pareto_vals[:,1]
+        pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:2]
+        pareto_x = pareto_vals[:, 0]
+        pareto_y = pareto_vals[:, 1]
         ax.scatter(pareto_x, pareto_y)
         fig.canvas.draw()
     if problem.num_of_objectives == 3 & ploton:
-        pareto_vals = np.asarray(fitness_archive_non_dom)[:,0:3]
-        pareto_x = pareto_vals[:,0]
-        pareto_y = pareto_vals[:,1]
-        pareto_z = pareto_vals[:,2]
+        pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:3]
+        pareto_x = pareto_vals[:, 0]
+        pareto_y = pareto_vals[:, 1]
+        pareto_z = pareto_vals[:, 2]
         ax.scatter(pareto_x, pareto_y, pareto_z)
         fig.canvas.draw()
     plt.show(block=True)

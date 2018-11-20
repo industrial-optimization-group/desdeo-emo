@@ -8,6 +8,7 @@ import numpy as np
 from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
 from optproblems import dtlz, zdt
 from scipy.special import comb
+from pyDOE import lhs
 
 
 class Problem():
@@ -223,6 +224,41 @@ class Individual():
                 problem, assign_type='CustomAssign', variable_values=child2)
             return child1, child2
 
+
+class Population():
+    """Define the population."""
+
+    def __init__(self,
+                 problem: Problem,
+                 parameters: Parameters,
+                 assign_type: str='RandomAssign',
+                 *args):
+        """ Initialize the population.
+        
+        Parameters:
+        ------------
+            problem: An object of the class Problem
+
+            parameters: An object of the class Parameters
+
+            assign_type: Define the method of creation of population.
+                If 'assign_type' is 'RandomAssign' the population is generated
+                randomly.
+                If assign_type is 'LHSDesign', the population is generated via
+                Latin Hypercube Sampling.
+                If assign_type is 'empty', create blank population.
+        """
+        pop_size = parameters.population_size
+        num_var = problem.num_of_variables
+        if assign_type == 'RandomAssign':
+            self.individuals = np.random.random((pop_size, num_var))
+        elif assign_type == 'LHSDesign':
+            self.individuals = lhs(num_var, samples=pop_size)
+        self.objectives = self.evaluate(Problem)
+        self.constraint_violation = self.eval_constraints(Problem)
+        self.fitness = self.eval_fitness()
+
+            
 
 class ReferenceVectors():
     """Class object for reference vectors."""
