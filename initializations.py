@@ -9,6 +9,7 @@ from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
 from optproblems import dtlz, zdt
 from scipy.special import comb
 from pyDOE import lhs
+from RVEA import rvea
 
 
 class Problem():
@@ -86,25 +87,35 @@ class Problem():
             return(self.obj_func(decision_variables, self.num_of_objectives))
         return(self.obj_func(decision_variables))
 
-    def Constraints(self):
+    def constraints(self, decision_variables, objective_variables):
         """Calculate constraint violation."""
-        pass
+        print('Error: Constraints not supported yet.')
 
 
 class Parameters():
-    """This object contains the parameters necessary for RVEA."""
+    """This object contains the parameters necessary for evolution."""
 
     def __init__(
-            self, population_size, lattice_resolution, generations=100,
-            Alpha=2, mut_type='PolyMut', xover_type='SBX'):
-        """Initialize the population."""
-        self.population_size = population_size
-        self.lattice_resolution = lattice_resolution
-        self.generations = generations
-        self.Alpha = Alpha
-        self.refV_adapt_frequency = 0.1
-        self.mutation = self.MutationParameters(mut_type)  # Place Holder
-        self.crossover = self.CrossoverParameters(xover_type)  # Place Holder
+            self,
+            population_size,
+            lattice_resolution,
+            algorithm_name='RVEA',
+            *args):
+        """Initialize the parameters class."""
+        self = {}
+        if algorithm_name == 'RVEA':
+            self['RVEA'].population_size = population_size
+            self['RVEA'].lattice_resolution = lattice_resolution
+            self['RVEA'].algorithm = rvea
+            self['RVEA'].generations = 100
+            self['RVEA'].Alpha = 2
+            self['RVEA'].refV_adapt_frequency = 0.1
+            self['RVEA'].mut_type = 'PolyMut'
+            self['RVEA'].xover_type = 'SBX'
+            self['RVEA'].mutation = \
+                Parameters.MutationParameters(self['RVEA'].mut_type)
+            self['RVEA'].crossover = \
+                Parameters.CrossoverParameters(self['RVEA'].xover_type)
 
     class MutationParameters():
         """This object contains the parameters necessary for mutation.
@@ -124,7 +135,7 @@ class Parameters():
         def __init__(self, mutation_type, eta=20, indpb=0.3):
             """Define mutation type and parameters."""
             if mutation_type == "PolyMut":
-                self.mutType = 'PolyMut'
+                self.mut_type = 'PolyMut'
                 self.crowding_degree_of_mutation = eta
                 self.independent_probability_of_mutation = indpb
             elif mutation_type == "SelfAdapt":
@@ -206,7 +217,7 @@ class Individual():
             crossover_parameters.crowding_degree_of_crossover,
             problem.lower_limits, problem.upper_limits)
         # Mutation
-        if mutation_parameters.mutType == 'PolyMut':
+        if mutation_parameters.mut_type == 'PolyMut':
             # test
             mutation_parameters.independent_probability_of_mutation = 1/len(child1)
             child1 = mutPolynomialBounded(
@@ -233,8 +244,8 @@ class Population():
                  parameters: Parameters,
                  assign_type: str='RandomAssign',
                  *args):
-        """ Initialize the population.
-        
+        """Initialize the population.
+
         Parameters:
         ------------
             problem: An object of the class Problem
@@ -244,9 +255,12 @@ class Population():
             assign_type: Define the method of creation of population.
                 If 'assign_type' is 'RandomAssign' the population is generated
                 randomly.
-                If assign_type is 'LHSDesign', the population is generated via
-                Latin Hypercube Sampling.
+                If 'assign_type' is 'LHSDesign', the population is generated
+                via Latin Hypercube Sampling.
+                If 'assign_type' is 'custom', the population is imported from
+                file.
                 If assign_type is 'empty', create blank population.
+
         """
         pop_size = parameters.population_size
         num_var = problem.num_of_variables
@@ -254,11 +268,84 @@ class Population():
             self.individuals = np.random.random((pop_size, num_var))
         elif assign_type == 'LHSDesign':
             self.individuals = lhs(num_var, samples=pop_size)
-        self.objectives = self.evaluate(Problem)
-        self.constraint_violation = self.eval_constraints(Problem)
-        self.fitness = self.eval_fitness()
+        elif assign_type == 'custom':
+            print('Error: Custom assign type not supported yet.')
+        elif assign_type == 'empty':
+            self.individuals = []
+            self.objectives = []
+            self.fitness = []
+            self.constraint_violation = []
+        if not self.individuals:
+            pop_eval = self.evaluate(Problem)
+            self.objectives = pop_eval['objectives']
+            self.constraint_violation = pop_eval['cons']
+            self.fitness = pop_eval['fitness']
 
-            
+    def evaluate(self, problem: Problem):
+        """Evaluate and return objective values."""
+        pop = self.individuals
+        objs = None
+        cons = None
+        for ind in pop:
+            if objs is None:
+                objs = np.asarray(problem.objectives(ind))
+            else:
+                objs = np.vstack(obj, problem.objectives(ind))
+        if problem.num_of_constraints:
+            for ind, obj in zip(pop, obj):
+                if cons is None:
+                    cons = problem.constraints(ind, obj)
+                else:
+                    cons = np.vstack(cons, problem.constraints(ind, obj))
+            fitness = self.eval_fitness(pop, objs)
+        else:
+            cons = np.zeros(pop.shape[0], 1)
+            fitness = objs
+        return({"objectives": objs,
+                "constraint violation": cons,
+                "fitness": fitness})
+
+    def eval_fitness(self, pop, objs):
+        """Return fitness values. Maybe add maximization support here."""
+        pass
+
+    def append(self, new_pop: np.ndarray, problem: Problem):
+        """Evaluate and add individuals to the population."""
+        if new_pop.ndim == 1:
+            self.append_individual(self, new_pop, problem)
+        elif new_pop.ndim == 2:
+            for ind in new_pop:
+                self.append_individual(self, ind, problem)
+        else:
+            print('Error while adding new individuals. Check dimensions.')
+
+    def append_individual(self, ind: np.ndarray, problem: Problem):
+        """Evaluate and add individual to the population."""
+        self.individuals = np.vstack(self.individuals, ind)
+        obj, CV, fitness = self.evaluate_individual(ind)
+        self.objectives = np.vstack(self.objectives, obj)
+        self.constraint_violation = np.vstack(self.constraint_violation, CV)
+        self.fitness = np.vstack(self.fitness, fitness)
+
+    def evaluate_individual(self, ind: np.ndarray, problem: Problem):
+        """
+        Evaluate individual.
+
+        Returns objective values, constraint violation, and fitness.
+        """
+        obj = problem.objectives(ind)
+        CV = 0
+        fitness = obj
+        if problem.constraints:
+            CV = problem.constraints(ind, obj)
+            fitness = self.eval_fitness(ind, obj)
+        return(obj, CV, fitness)
+
+    def evolve(self, problem: Problem, parameters: Parameters):
+        """Evolve and return the population."""
+        evolved_population = parameters.algorithm(self, problem, parameters)
+        return(evolved_population)
+
 
 class ReferenceVectors():
     """Class object for reference vectors."""
