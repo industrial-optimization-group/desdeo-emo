@@ -96,7 +96,7 @@ class Parameters():
     def __init__(
             self, population_size, lattice_resolution, generations=100,
             Alpha=2, mut_type='PolyMut', xover_type='SBX'):
-        """Initialize the population."""
+        """Initialize the parameters."""
         self.population_size = population_size
         self.lattice_resolution = lattice_resolution
         self.generations = generations
