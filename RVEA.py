@@ -14,10 +14,8 @@ Bhupinder Saini: bhupinder.s.saini@jyu.fi
 Project researcher at University of Jyväskylä.
 """
 
-from initializations import Individual, ReferenceVectors
+from initializations import ReferenceVectors, Population
 from math import ceil
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from random import shuffle, randint
 from pareto import eps_sort
@@ -26,100 +24,48 @@ from time import time
 from warnings import warn
 
 
-def rvea(problem, parameters):
+def rvea(population: Population, problem, parameters):
     """Run RVEA."""
     start_time = time()
     # Initializing Reference Vectors
     reference_vectors = ReferenceVectors(
         parameters.lattice_resolution, problem.num_of_objectives)
     refV = reference_vectors.neighbouring_angles()
-
-    # Initializing Population
-    population = [
-        Individual(problem) for i in range(parameters.population_size)]
-    population_fitness = []
-    for i in range(parameters.population_size):
-        population_fitness = population_fitness + population[i].evaluate(problem)
-    # fitness_archive_per_generation = []
-    fitness_archive_non_dom = []
+    parameters = parameters['RVEA']
     print('Running RVEA generations\n')
-
     # setup toolbar
     bar = Bar('Processing', max=parameters.generations)
-
     # setup plots
     ploton = 0
-    if ploton:
-        plt.ion()
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.set_xlim3d(0, 3)
-        ax.set_ylim3d(0, 3)
-        ax.set_zlim3d(0, 3)
 
     for gen_count in range(parameters.generations):
-        # if gen_count % 10 == 0:
-        #     print('Processing generation number %d\n', gen_count)
         # Random mating and evaluation
-        offspring = create_offspring(population, problem, parameters)
-        offspring_fitness = []
-        for i in range(len(offspring)):
-            offspring_fitness = (offspring_fitness +
-                                 offspring[i].evaluate(problem))
-        population = population + offspring
-        population_fitness = population_fitness + offspring_fitness
+        offspring = population.mate()
+        population.add(offspring)
         # APD Based selection
         penalty_factor = ((gen_count/parameters.generations) **
                           parameters.Alpha)*problem.num_of_objectives
-        select = APD_select(population_fitness, reference_vectors,
+        select = APD_select(population.fitness, reference_vectors,
                             penalty_factor, refV)
-        population_new = list(population[i[0]] for i in select)
-        population = population_new
-        population_fitness_new = list(population_fitness[i[0]] for i in select)
-        population_fitness = population_fitness_new
-        # fitness_archive_per_generation = fitness_archive_per_generation + [temp]
-        # fitness_archive_non_dom = eps_sort(fitness_archive_non_dom + population_fitness)
+        population.keep(select)
         # Reference Vector Adaptation
         if ((gen_count) % ceil(parameters.generations *
                                parameters.refV_adapt_frequency)) == 0:
-            zmax = np.amax(np.asarray(population_fitness), axis=0)[0:-1]
-            zmin = np.amin(np.asarray(population_fitness), axis=0)[0:-1]
+            zmax = np.amax(np.asarray(population.fitness), axis=0)
+            zmin = np.amin(np.asarray(population.fitness), axis=0)
             # print('Processing generation number', gen_count, '\n')
             reference_vectors.adapt(zmax, zmin)
             refV = reference_vectors.neighbouring_angles()
             # plotting
-            if problem.num_of_objectives == 2 & ploton:
-                pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:2]
-                pareto_x = pareto_vals[:, 0]
-                pareto_y = pareto_vals[:, 1]
-                ax.scatter(pareto_x, pareto_y)
-                fig.canvas.draw()
-            if problem.num_of_objectives == 3 & ploton:
-                pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:3]
-                pareto_x = pareto_vals[:, 0]
-                pareto_y = pareto_vals[:, 1]
-                pareto_z = pareto_vals[:, 2]
-                ax.scatter(pareto_x, pareto_y, pareto_z)
-                fig.canvas.draw()
+            if ploton:
+                population.plot_objectives()
         bar.next()
     bar.finish()
     time_elapsed = time() - start_time
     # plotting
-    if problem.num_of_objectives == 2 & ploton:
-        pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:2]
-        pareto_x = pareto_vals[:, 0]
-        pareto_y = pareto_vals[:, 1]
-        ax.scatter(pareto_x, pareto_y)
-        fig.canvas.draw()
-    if problem.num_of_objectives == 3 & ploton:
-        pareto_vals = np.asarray(fitness_archive_non_dom)[:, 0:3]
-        pareto_x = pareto_vals[:, 0]
-        pareto_y = pareto_vals[:, 1]
-        pareto_z = pareto_vals[:, 2]
-        ax.scatter(pareto_x, pareto_y, pareto_z)
-        fig.canvas.draw()
-    plt.show(block=True)
-    return(population_fitness, time_elapsed)
+    if ploton:
+        population.plot_objectives()
+    return(population, time_elapsed)
 
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
@@ -184,26 +130,3 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
             else:
                 selection = np.vstack((selection, np.transpose(selx[0])))
     return(selection)
-
-
-def create_offspring(population: list, problem, parameters) -> list:
-    """Conduct crossover and mutation over the population.
-
-    Return offspring population
-    """
-    population_size = len(population)
-    if population_size % 2 == 1:
-        mating_pop = population + [population[randint(0, population_size-1)]]
-        population_size = population_size + 1
-    else:
-        mating_pop = population
-    shuffled_ids = list(range(population_size))
-    shuffle(shuffled_ids)
-    offspring = []
-    for i in range(0, population_size, 2):
-        individual1 = mating_pop[shuffled_ids[i]]
-        individual2 = mating_pop[shuffled_ids[i+1]]
-        child1, child2 = Individual.mate(individual1, individual2,
-                                         problem, parameters)
-        offspring = offspring + [child1] + [child2]
-    return offspring
