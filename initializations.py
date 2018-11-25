@@ -10,7 +10,11 @@ from optproblems import dtlz, zdt
 from scipy.special import comb
 from pyDOE import lhs
 from RVEA import rvea
-
+from pygmo import hypervolume as hv
+from pygmo import fast_non_dominated_sorting as nds
+from pygmo import non_dominated_front_2d as nd2
+from matplotlib import pyplot as plt
+from collections import defaultdict
 
 class Problem():
     """Defines the problem."""
@@ -102,91 +106,15 @@ class Parameters():
             algorithm_name='RVEA',
             *args):
         """Initialize the parameters class."""
-        self = {}
+        self.algorithm_name = algorithm_name
         if algorithm_name == 'RVEA':
-            self['RVEA'].population_size = population_size
-            self['RVEA'].lattice_resolution = lattice_resolution
-            self['RVEA'].algorithm = rvea
-            self['RVEA'].generations = 1000
-            self['RVEA'].Alpha = 2
-            self['RVEA'].refV_adapt_frequency = 0.1
-
-
-class Individual():
-    """Defines an individual."""
-
-    def __init__(self, problem, assign_type='RandomAssign', variable_values=0):
-        """Initialize an individual with zeros.
-
-        parameter: problem is a Problem object.
-        parameter: assignType defines how the individual is created.
-        parameter: varuableValues contains the values of the variables.
-        """
-        self.variables = np.zeros(problem.num_of_variables)
-        self.objectives = [0]*problem.num_of_objectives
-        self.constraint_violation = [0]
-
-        if assign_type == 'RandomAssign':
-            self.random_assign(problem)
-        elif assign_type == 'LHSDesign':
-            pass
-        elif assign_type == 'CustomAssign':
-            self.custom_assign(problem, variable_values)
-        else:
-            print('Error: assignType not defined')
-
-    def random_assign(self, problem):
-        """Assign random values to individual."""
-        for i in range(len(self.variables)):
-            self.variables[i] = random()
-
-    def LHS_assign(self, population, problem):
-        """LHS design of experiment for individuals."""
-        pass
-
-    def custom_assign(self, problem, variable_values):
-        """Use to create custom individuals, such as after mating."""
-        self.variables = variable_values
-
-    def evaluate(self, problem):
-        """Evaluate the individual.
-
-        Updates self.objectives and self.constraint_violation variables.
-        """
-        self.objectives = problem.objectives(self.variables)
-        if problem.num_of_constraints:
-            self.constraint_violation = problem.Constraints(self.variables)
-        return([self.objectives + self.constraint_violation])
-
-    def mate(self, other, problem, parameters):
-        """Perform Crossover and mutation on parents and return 2 children."""
-        crossover_parameters = parameters.crossover
-        mutation_parameters = parameters.mutation
-        # Crossover
-        parent1 = np.copy(self.variables)
-        parent2 = np.copy(other.variables)
-        child1, child2 = cxSimulatedBinaryBounded(
-            parent1, parent2,
-            crossover_parameters.crowding_degree_of_crossover,
-            problem.lower_limits, problem.upper_limits)
-        # Mutation
-        if mutation_parameters.mut_type == 'PolyMut':
-            # test
-            mutation_parameters.independent_probability_of_mutation = 1/len(child1)
-            child1 = mutPolynomialBounded(
-                child1, mutation_parameters.crowding_degree_of_mutation,
-                problem.lower_limits, problem.upper_limits,
-                mutation_parameters.independent_probability_of_mutation)[0]
-            child1 = Individual(
-
-                problem, assign_type='CustomAssign', variable_values=child1)
-            child2 = mutPolynomialBounded(
-                child2, mutation_parameters.crowding_degree_of_mutation,
-                problem.lower_limits, problem.upper_limits,
-                mutation_parameters.independent_probability_of_mutation)[0]
-            child2 = Individual(
-                problem, assign_type='CustomAssign', variable_values=child2)
-            return child1, child2
+            rveaparams = {'population_size': population_size,
+                          'lattice_resolution': lattice_resolution,
+                          'algorithm': rvea,
+                          'generations': 1000,
+                          'Alpha': 2,
+                          'refV_adapt_frequency': 0.1}
+        self.params = rveaparams
 
 
 class Population():
@@ -215,10 +143,12 @@ class Population():
                 If assign_type is 'empty', create blank population.
 
         """
-        pop_size = parameters.population_size
+        pop_size = parameters.params['population_size']
         num_var = problem.num_of_variables
         self.lower_limits = np.asarray(problem.lower_limits)
         self.upper_limits = np.asarray(problem.upper_limits)
+        self.hyp = 0
+        self.non_dom = 0
         if assign_type == 'RandomAssign':
             self.individuals = np.random.random((pop_size, num_var))
             # Scaling
@@ -238,11 +168,10 @@ class Population():
             self.objectives = np.asarray([])
             self.fitness = np.asarray([])
             self.constraint_violation = np.asarray([])
-        if not self.individuals:
-            pop_eval = self.evaluate(Problem)
-            self.objectives = pop_eval['objectives']
-            self.constraint_violation = pop_eval['cons']
-            self.fitness = pop_eval['fitness']
+        pop_eval = self.evaluate(problem)
+        self.objectives = pop_eval['objectives']
+        self.constraint_violation = pop_eval['constraint violation']
+        self.fitness = pop_eval['fitness']
 
     def evaluate(self, problem: Problem):
         """Evaluate and return objective values."""
@@ -253,46 +182,54 @@ class Population():
             if objs is None:
                 objs = np.asarray(problem.objectives(ind))
             else:
-                objs = np.vstack(obj, problem.objectives(ind))
+                objs = np.vstack((objs, problem.objectives(ind)))
         if problem.num_of_constraints:
             for ind, obj in zip(pop, obj):
                 if cons is None:
                     cons = problem.constraints(ind, obj)
                 else:
-                    cons = np.vstack(cons, problem.constraints(ind, obj))
-            fitness = self.eval_fitness(pop, objs)
+                    cons = np.vstack((cons, problem.constraints(ind, obj)))
+            fitness = self.eval_fitness(pop, objs, problem)
         else:
-            cons = np.zeros(pop.shape[0], 1)
+            cons = np.zeros((pop.shape[0], 1))
             fitness = objs
         return({"objectives": objs,
                 "constraint violation": cons,
                 "fitness": fitness})
 
-    def eval_fitness(self, pop, objs):
+    def eval_fitness(self, pop, objs, problem):
         """Return fitness values. Maybe add maximization support here."""
-        pass
+        fitness = objs
+        return(fitness)
 
     def add(self, new_pop: np.ndarray, problem: Problem):
         """Evaluate and add individuals to the population."""
         if new_pop.ndim == 1:
-            self.append_individual(self, new_pop, problem)
+            self.append_individual(new_pop, problem)
         elif new_pop.ndim == 2:
             for ind in new_pop:
-                self.append_individual(self, ind, problem)
+                self.append_individual(ind, problem)
         else:
             print('Error while adding new individuals. Check dimensions.')
 
     def keep(self, indices: list):
         """Remove individuals from population which are not in "indices"."""
-        pass
+        new_pop = self.individuals[indices, :]
+        new_obj = self.objectives[indices, :]
+        new_fitness = self.fitness[indices, :]
+        new_CV = self.constraint_violation[indices, :]
+        self.individuals = new_pop
+        self.objectives = new_obj
+        self.fitness = new_fitness
+        self.constraint_violation = new_CV
 
     def append_individual(self, ind: np.ndarray, problem: Problem):
         """Evaluate and add individual to the population."""
-        self.individuals = np.vstack(self.individuals, ind)
-        obj, CV, fitness = self.evaluate_individual(ind)
-        self.objectives = np.vstack(self.objectives, obj)
-        self.constraint_violation = np.vstack(self.constraint_violation, CV)
-        self.fitness = np.vstack(self.fitness, fitness)
+        self.individuals = np.vstack((self.individuals, ind))
+        obj, CV, fitness = self.evaluate_individual(ind, problem)
+        self.objectives = np.vstack((self.objectives, obj))
+        self.constraint_violation = np.vstack((self.constraint_violation, CV))
+        self.fitness = np.vstack((self.fitness, fitness))
 
     def evaluate_individual(self, ind: np.ndarray, problem: Problem):
         """
@@ -305,14 +242,21 @@ class Population():
         fitness = obj
         if problem.constraints:
             CV = problem.constraints(ind, obj)
-            fitness = self.eval_fitness(ind, obj)
+            fitness = self.eval_fitness(ind, obj, problem)
         return(obj, CV, fitness)
 
-    def evolve(self, problem: Problem, parameters: Parameters):
+    def evolve(self, problem: Problem, parameters: Parameters)-> 'Population':
         """Evolve and return the population."""
-        evolved_population = parameters.algorithm(self, problem, parameters)
+        param = parameters.params
+        evolved_population = param['algorithm'](self, problem, param)
         return(evolved_population)
 
+    def ievolve(self, problem: Problem, parameters: Parameters)-> 'Population':
+        """Evolve and return the population with interruptions."""
+        param = parameters.params['RVEA']
+        evolved_population = param.algorithm(self, problem, param)
+        return(evolved_population)
+    
     def mate(self):
         """
         Conduct crossover and mutation over the population.
@@ -359,7 +303,7 @@ class Population():
         temp = np.logical_and((k <= ProM), (miu >= 0.5))
         offspring[temp] = (offspring[temp] + (max_val[temp]-min_val[temp]) *
                            (1 - (2 * (1 - miu[temp]) + 2 * (miu[temp] - 0.5) *
-                                 offspring_scaled ** (Dism + 1)) **
+                                 offspring_scaled ** (DisM + 1)) **
                             (1 / (DisM + 1))))
         offspring[offspring > max_val] = max_val[offspring > max_val]
         offspring[offspring < min_val] = min_val[offspring < min_val]
@@ -367,50 +311,35 @@ class Population():
 
     def plot_objectives(self):
         """Plot the objective values of non_dominated individuals."""
-        pass
+        print('Plotting not supported yet.')
+        obj = self.objectives
+        num_obj = obj.shape[1]  # Check
+        if num_obj == 2:
+            plt.scatter(obj[:, 0], obj[:, 1])
+        elif num_obj == 3:
+            plt.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
+        else:
+            print('Plotting more than 3 objectives not supported yet.')
 
-class ReferenceVectors():
-    """Class object for reference vectors."""
+    def hypervolume(self, ref_point):
+        """Calculate hypervolume. Uses package pygmo."""
+        non_dom = self.non_dom
+        if len(ref_point) == 1:
+            num_obj = non_dom.shape[1]
+            ref_point = [ref_point] * num_obj
+        hyp = hv(non_dom)
+        self.hyp = hyp.compute(ref_point)
+        return(self.hyp)
 
-    def __init__(self, lattice_resolution: int, number_of_objectives):
-        """Create a simplex lattice."""
-        number_of_vectors = comb(
-            lattice_resolution + number_of_objectives - 1,
-            number_of_objectives - 1, exact=True)
-        temp1 = range(1, number_of_objectives + lattice_resolution)
-        temp1 = np.array(list(combinations(temp1, number_of_objectives-1)))
-        temp2 = np.array([range(number_of_objectives-1)]*number_of_vectors)
-        temp = temp1 - temp2 - 1
-        weight = np.zeros((number_of_vectors, number_of_objectives), dtype=int)
-        weight[:, 0] = temp[:, 0]
-        for i in range(1, number_of_objectives-1):
-            weight[:, i] = temp[:, i] - temp[:, i-1]
-        weight[:, -1] = lattice_resolution - temp[:, -1]
-        self.values = weight/lattice_resolution
-        self.initial_values = self.values
-        self.number_of_objectives = number_of_objectives
-        self.lattice_resolution = lattice_resolution
-        self.number_of_vectors = number_of_vectors
-        self.normalize()
+    def non_dominated(self):
+        """Return the pareto front of a given population."""
+        obj = self.objectives
+        num_obj = obj.shape[1]
+        if num_obj == 2:
+            non_dom_front = nd2(obj)
+        else:
+            non_dom_front = nds(obj)
+        self.non_dom = non_dom_front
+        return(self.non_dom)
 
-    def normalize(self):
-        """Normalize the reference vectors."""
-        norm = np.linalg.norm(self.values, axis=1)
-        norm = np.repeat(norm, self.number_of_objectives).reshape(
-            self.number_of_vectors, self.number_of_objectives)
-        self.values = np.divide(self.values, norm)
 
-    def neighbouring_angles(self) -> np.ndarray:
-        """Calculate neighbouring angles for normalization."""
-        cosvv = np.dot(self.values, self.values.transpose())
-        cosvv.sort(axis=1)
-        cosvv = np.flip(cosvv, 1)
-        acosvv = np.arccos(cosvv[:, 1])
-        return(acosvv)
-
-    def adapt(self, max_val, min_val):
-        """Adapt reference vectors."""
-        self.values = np.multiply(self.initial_values,
-                                  np.tile(np.subtract(max_val, min_val),
-                                          (self.number_of_vectors, 1)))
-        self.normalize()

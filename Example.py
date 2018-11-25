@@ -18,4 +18,5 @@ parameters = Parameters(population_size, lattice_resolution)
 
 pop = Population(problem, parameters)
 # %%
-pop.e
+newpop = pop.evolve(problem, parameters)
+newpop.non_dom()

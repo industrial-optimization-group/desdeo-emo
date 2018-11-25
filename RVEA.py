@@ -14,7 +14,6 @@ Bhupinder Saini: bhupinder.s.saini@jyu.fi
 Project researcher at University of Jyväskylä.
 """
 
-from initializations import ReferenceVectors, Population
 from math import ceil
 import numpy as np
 from random import shuffle, randint
@@ -23,15 +22,60 @@ from progress.bar import IncrementalBar as Bar
 from time import time
 from warnings import warn
 
+class ReferenceVectors():
+    """Class object for reference vectors."""
 
-def rvea(population: Population, problem, parameters):
+    def __init__(self, lattice_resolution: int, number_of_objectives):
+        """Create a simplex lattice."""
+        number_of_vectors = comb(
+            lattice_resolution + number_of_objectives - 1,
+            number_of_objectives - 1, exact=True)
+        temp1 = range(1, number_of_objectives + lattice_resolution)
+        temp1 = np.array(list(combinations(temp1, number_of_objectives-1)))
+        temp2 = np.array([range(number_of_objectives-1)]*number_of_vectors)
+        temp = temp1 - temp2 - 1
+        weight = np.zeros((number_of_vectors, number_of_objectives), dtype=int)
+        weight[:, 0] = temp[:, 0]
+        for i in range(1, number_of_objectives-1):
+            weight[:, i] = temp[:, i] - temp[:, i-1]
+        weight[:, -1] = lattice_resolution - temp[:, -1]
+        self.values = weight/lattice_resolution
+        self.initial_values = self.values
+        self.number_of_objectives = number_of_objectives
+        self.lattice_resolution = lattice_resolution
+        self.number_of_vectors = number_of_vectors
+        self.normalize()
+
+    def normalize(self):
+        """Normalize the reference vectors."""
+        norm = np.linalg.norm(self.values, axis=1)
+        norm = np.repeat(norm, self.number_of_objectives).reshape(
+            self.number_of_vectors, self.number_of_objectives)
+        self.values = np.divide(self.values, norm)
+
+    def neighbouring_angles(self) -> np.ndarray:
+        """Calculate neighbouring angles for normalization."""
+        cosvv = np.dot(self.values, self.values.transpose())
+        cosvv.sort(axis=1)
+        cosvv = np.flip(cosvv, 1)
+        acosvv = np.arccos(cosvv[:, 1])
+        return(acosvv)
+
+    def adapt(self, max_val, min_val):
+        """Adapt reference vectors."""
+        self.values = np.multiply(self.initial_values,
+                                  np.tile(np.subtract(max_val, min_val),
+                                          (self.number_of_vectors, 1)))
+        self.normalize()
+
+
+def rvea(population, problem, parameters):
     """Run RVEA."""
     start_time = time()
     # Initializing Reference Vectors
     reference_vectors = ReferenceVectors(
-        parameters.lattice_resolution, problem.num_of_objectives)
+        parameters['lattice_resolution'], problem.num_of_objectives)
     refV = reference_vectors.neighbouring_angles()
-    parameters = parameters['RVEA']
     print('Running RVEA generations\n')
     # setup toolbar
     bar = Bar('Processing', max=parameters.generations)
@@ -130,3 +174,5 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
             else:
                 selection = np.vstack((selection, np.transpose(selx[0])))
     return(selection)
+
+
