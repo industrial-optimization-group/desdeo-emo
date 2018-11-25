@@ -19,4 +19,4 @@ parameters = Parameters(population_size, lattice_resolution)
 pop = Population(problem, parameters)
 # %%
 newpop = pop.evolve(problem, parameters)
-newpop.non_dom()
+newpop.non_dominated()

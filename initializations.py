@@ -1,13 +1,12 @@
 """Testing code."""
 
-from itertools import combinations
 # from math import sqrt
 from random import shuffle
 from deap import benchmarks
 import numpy as np
 from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
 from optproblems import dtlz, zdt
-from scipy.special import comb
+
 from pyDOE import lhs
 from RVEA import rvea
 from pygmo import hypervolume as hv
@@ -15,6 +14,8 @@ from pygmo import fast_non_dominated_sorting as nds
 from pygmo import non_dominated_front_2d as nd2
 from matplotlib import pyplot as plt
 from collections import defaultdict
+from mpl_toolkits.mplot3d import Axes3D
+
 
 class Problem():
     """Defines the problem."""
@@ -113,7 +114,8 @@ class Parameters():
                           'algorithm': rvea,
                           'generations': 1000,
                           'Alpha': 2,
-                          'refV_adapt_frequency': 0.1}
+                          'refV_adapt_frequency': 0.1,
+                          'ploton': 1}
         self.params = rveaparams
 
 
@@ -240,7 +242,7 @@ class Population():
         obj = problem.objectives(ind)
         CV = 0
         fitness = obj
-        if problem.constraints:
+        if problem.num_of_constraints:
             CV = problem.constraints(ind, obj)
             fitness = self.eval_fitness(ind, obj, problem)
         return(obj, CV, fitness)
@@ -256,7 +258,7 @@ class Population():
         param = parameters.params['RVEA']
         evolved_population = param.algorithm(self, problem, param)
         return(evolved_population)
-    
+
     def mate(self):
         """
         Conduct crossover and mutation over the population.
@@ -271,7 +273,7 @@ class Population():
         mating_pop = pop[shuffled_ids]
         if pop_size % 2 == 1:
             # Maybe it should be pop_size-1?
-            mating_pop = np.vstack(mating_pop, mating_pop[0])
+            mating_pop = np.vstack((mating_pop, mating_pop[0]))
             pop_size = pop_size + 1
         # The rest closely follows the matlab code.
         ProC = 1
@@ -285,7 +287,7 @@ class Population():
             beta[miu <= 0.5] = (2*miu[miu <= 0.5]) ** (1/(DisC + 1))
             beta[miu > 0.5] = (2-2*miu[miu > 0.5]) ** (-1/(DisC + 1))
             beta = beta * ((-1) ** np.random.randint(0, high=2, size=num_var))
-            beta[np.random.rand(10) > ProC] = 1  # Why? It was in matlab code
+            beta[np.random.rand(num_var) > ProC] = 1  # Why? It was in matlab code
             avg = (mating_pop[i] + mating_pop[i+1]) / 2
             diff = (mating_pop[i] - mating_pop[i+1]) / 2
             offspring[i] = avg + beta * diff
@@ -303,7 +305,7 @@ class Population():
         temp = np.logical_and((k <= ProM), (miu >= 0.5))
         offspring[temp] = (offspring[temp] + (max_val[temp]-min_val[temp]) *
                            (1 - (2 * (1 - miu[temp]) + 2 * (miu[temp] - 0.5) *
-                                 offspring_scaled ** (DisM + 1)) **
+                                 offspring_scaled[temp] ** (DisM + 1)) **
                             (1 / (DisM + 1))))
         offspring[offspring > max_val] = max_val[offspring > max_val]
         offspring[offspring < min_val] = min_val[offspring < min_val]
@@ -311,15 +313,17 @@ class Population():
 
     def plot_objectives(self):
         """Plot the objective values of non_dominated individuals."""
-        print('Plotting not supported yet.')
         obj = self.objectives
         num_obj = obj.shape[1]  # Check
         if num_obj == 2:
             plt.scatter(obj[:, 0], obj[:, 1])
         elif num_obj == 3:
-            plt.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
         else:
             print('Plotting more than 3 objectives not supported yet.')
+        plt.show()
 
     def hypervolume(self, ref_point):
         """Calculate hypervolume. Uses package pygmo."""
@@ -341,5 +345,3 @@ class Population():
             non_dom_front = nds(obj)
         self.non_dom = non_dom_front
         return(self.non_dom)
-
-

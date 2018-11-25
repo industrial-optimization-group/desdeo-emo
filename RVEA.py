@@ -21,6 +21,9 @@ from pareto import eps_sort
 from progress.bar import IncrementalBar as Bar
 from time import time
 from warnings import warn
+from scipy.special import comb
+from itertools import combinations
+
 
 class ReferenceVectors():
     """Class object for reference vectors."""
@@ -78,23 +81,23 @@ def rvea(population, problem, parameters):
     refV = reference_vectors.neighbouring_angles()
     print('Running RVEA generations\n')
     # setup toolbar
-    bar = Bar('Processing', max=parameters.generations)
+    bar = Bar('Processing', max=parameters['generations'])
     # setup plots
-    ploton = 0
+    ploton = parameters['ploton']
 
-    for gen_count in range(parameters.generations):
+    for gen_count in range(parameters['generations']):
         # Random mating and evaluation
         offspring = population.mate()
-        population.add(offspring)
+        population.add(offspring, problem)
         # APD Based selection
-        penalty_factor = ((gen_count/parameters.generations) **
-                          parameters.Alpha)*problem.num_of_objectives
+        penalty_factor = ((gen_count/parameters['generations']) **
+                          parameters['Alpha'])*problem.num_of_objectives
         select = APD_select(population.fitness, reference_vectors,
                             penalty_factor, refV)
         population.keep(select)
         # Reference Vector Adaptation
-        if ((gen_count) % ceil(parameters.generations *
-                               parameters.refV_adapt_frequency)) == 0:
+        if ((gen_count) % ceil(parameters['generations'] *
+                               parameters['refV_adapt_frequency'])) == 0:
             zmax = np.amax(np.asarray(population.fitness), axis=0)
             zmin = np.amin(np.asarray(population.fitness), axis=0)
             # print('Processing generation number', gen_count, '\n')
@@ -118,9 +121,6 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
 
     Returns a list of indices of the selected individuals.
     """
-    fitness = np.asarray(fitness)
-    # CV = fitness[:, -1]
-    fitness = fitness[:, 0:-1]
     # Normalization - There may be problems here
     fmin = np.amin(fitness, axis=0)
     fitness = fitness - fmin
@@ -173,6 +173,6 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
                 selection = np.hstack((selection, np.transpose(selx[0])))
             else:
                 selection = np.vstack((selection, np.transpose(selx[0])))
-    return(selection)
+    return(selection.squeeze())
 
 
