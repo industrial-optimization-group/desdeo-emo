@@ -1,28 +1,35 @@
 """Testing code."""
 
-# from math import sqrt
-from random import shuffle
-from deap import benchmarks
-import numpy as np
-from deap.tools import cxSimulatedBinaryBounded, mutPolynomialBounded
-from optproblems import dtlz, zdt
 
-from pyDOE import lhs
-from RVEA import rvea
-from pygmo import hypervolume as hv
-from pygmo import fast_non_dominated_sorting as nds
-from pygmo import non_dominated_front_2d as nd2
+from collections import Sequence
+from itertools import combinations
+from random import shuffle
+import numpy as np
+from deap import benchmarks
 from matplotlib import pyplot as plt
-from collections import defaultdict
 from mpl_toolkits.mplot3d import Axes3D
+from optproblems import dtlz, zdt
+from plotly.graph_objs import graph_objs as go
+import plotly.offline
+from pyDOE import lhs
+from pygmo import fast_non_dominated_sorting as nds
+from pygmo import hypervolume as hv
+from pygmo import non_dominated_front_2d as nd2
+from scipy.special import comb
+from tqdm import tqdm, tqdm_notebook
+from RVEA import rvea
 
 
 class Problem():
     """Defines the problem."""
 
-    def __init__(
-            self, name, num_of_variables, upper_limits, lower_limits,
-            num_of_objectives, num_of_constraints):
+    def __init__(self,
+                 name,
+                 num_of_variables,
+                 num_of_objectives,
+                 num_of_constraints,
+                 upper_limits=1,
+                 lower_limits=0):
         """Pydocstring is ruthless."""
         self.name = name
         self.num_of_variables = num_of_variables
@@ -112,9 +119,9 @@ class Parameters():
             rveaparams = {'population_size': population_size,
                           'lattice_resolution': lattice_resolution,
                           'algorithm': rvea,
-                          'generations': 1000,
+                          'generations': 100,
+                          'iterations': 10,
                           'Alpha': 2,
-                          'refV_adapt_frequency': 0.1,
                           'ploton': 1}
         self.params = rveaparams
 
@@ -125,7 +132,7 @@ class Population():
     def __init__(self,
                  problem: Problem,
                  parameters: Parameters,
-                 assign_type: str='RandomAssign',
+                 assign_type: str = 'RandomAssign',
                  *args):
         """Initialize the population.
 
@@ -186,7 +193,7 @@ class Population():
             else:
                 objs = np.vstack((objs, problem.objectives(ind)))
         if problem.num_of_constraints:
-            for ind, obj in zip(pop, obj):
+            for ind, obj in zip(pop, objs):
                 if cons is None:
                     cons = problem.constraints(ind, obj)
                 else:
@@ -248,16 +255,36 @@ class Population():
         return(obj, CV, fitness)
 
     def evolve(self, problem: Problem, parameters: Parameters)-> 'Population':
-        """Evolve and return the population."""
-        param = parameters.params
-        evolved_population = param['algorithm'](self, problem, param)
-        return(evolved_population)
-
-    def ievolve(self, problem: Problem, parameters: Parameters)-> 'Population':
         """Evolve and return the population with interruptions."""
-        param = parameters.params['RVEA']
-        evolved_population = param.algorithm(self, problem, param)
-        return(evolved_population)
+        parameters = parameters.params
+        population = self
+        try:
+            shell = get_ipython().__class__.__name__
+            if shell == 'ZMQInteractiveShell':
+                isnotebook = True   # Jupyter notebook or qtconsole
+            elif shell == 'TerminalInteractiveShell':
+                isnotebook = False  # Terminal running IPython
+            else:
+                isnotebook = False  # Other type (?)
+        except NameError:
+            isnotebook = False
+        if isnotebook:
+            progressbar = tqdm_notebook
+        else:
+            progressbar = tqdm
+        reference_vectors = ReferenceVectors(parameters['lattice_resolution'],
+                                             problem.num_of_objectives)
+        iterations = parameters['iterations']
+        for i in progressbar(range(iterations), desc='Iteration'):
+            population = parameters['algorithm'](self,
+                                                 problem,
+                                                 parameters,
+                                                 reference_vectors,
+                                                 progressbar)
+            reference_vectors.adapt(population.fitness)
+            if parameters['ploton']:
+                population.plot_objectives(isnotebook)
+        return(population)
 
     def mate(self):
         """
@@ -287,7 +314,7 @@ class Population():
             beta[miu <= 0.5] = (2*miu[miu <= 0.5]) ** (1/(DisC + 1))
             beta[miu > 0.5] = (2-2*miu[miu > 0.5]) ** (-1/(DisC + 1))
             beta = beta * ((-1) ** np.random.randint(0, high=2, size=num_var))
-            beta[np.random.rand(num_var) > ProC] = 1  # Why? It was in matlab code
+            beta[np.random.rand(num_var) > ProC] = 1  # It was in matlab code
             avg = (mating_pop[i] + mating_pop[i+1]) / 2
             diff = (mating_pop[i] - mating_pop[i+1]) / 2
             offspring[i] = avg + beta * diff
@@ -311,24 +338,42 @@ class Population():
         offspring[offspring < min_val] = min_val[offspring < min_val]
         return(offspring)
 
-    def plot_objectives(self):
-        """Plot the objective values of non_dominated individuals."""
+    def plot_objectives(self, isnotebook=True):
+        """Redirect to plotting method depending upon interface."""
+        if isnotebook:
+            self.plot_in_notebook()
+        else:
+            self.plot_in_terminal()
+
+    def plot_in_terminal(self):
+        """Plot the objective values of non_dominated individuals in term."""
         obj = self.objectives
         num_obj = obj.shape[1]  # Check
         if num_obj == 2:
             plt.scatter(obj[:, 0], obj[:, 1])
         elif num_obj == 3:
             fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
+            ax = fig.add_subplot(111, projection=Axes3D.name)
             ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
         else:
             print('Plotting more than 3 objectives not supported yet.')
         plt.show()
 
+    def plot_in_notebook(self):
+        """Plot the objective values of non_dominated individuals in notebook."""
+        obj = self.objectives
+        plotly.offline.init_notebook_mode()
+        fig = go.Scatter3d(x=list(obj[:, 0]),
+                           y=list(obj[:, 1]),
+                           z=list(obj[:, 2]),
+                           mode=)
+        fig = go.Figure(data=[fig])
+        plotly.offline.iplot(fig)
+
     def hypervolume(self, ref_point):
         """Calculate hypervolume. Uses package pygmo."""
         non_dom = self.non_dom
-        if len(ref_point) == 1:
+        if not isinstance(ref_point, (Sequence, np.ndarray)):
             num_obj = non_dom.shape[1]
             ref_point = [ref_point] * num_obj
         hyp = hv(non_dom)
@@ -343,5 +388,53 @@ class Population():
             non_dom_front = nd2(obj)
         else:
             non_dom_front = nds(obj)
-        self.non_dom = non_dom_front
-        return(self.non_dom)
+        self.non_dom = self.objectives[non_dom_front[0][0]]
+
+
+class ReferenceVectors():
+    """Class object for reference vectors."""
+
+    def __init__(self, lattice_resolution: int, number_of_objectives):
+        """Create a simplex lattice."""
+        number_of_vectors = comb(
+            lattice_resolution + number_of_objectives - 1,
+            number_of_objectives - 1, exact=True)
+        temp1 = range(1, number_of_objectives + lattice_resolution)
+        temp1 = np.array(list(combinations(temp1, number_of_objectives-1)))
+        temp2 = np.array([range(number_of_objectives-1)]*number_of_vectors)
+        temp = temp1 - temp2 - 1
+        weight = np.zeros((number_of_vectors, number_of_objectives), dtype=int)
+        weight[:, 0] = temp[:, 0]
+        for i in range(1, number_of_objectives-1):
+            weight[:, i] = temp[:, i] - temp[:, i-1]
+        weight[:, -1] = lattice_resolution - temp[:, -1]
+        self.values = weight/lattice_resolution
+        self.initial_values = self.values
+        self.number_of_objectives = number_of_objectives
+        self.lattice_resolution = lattice_resolution
+        self.number_of_vectors = number_of_vectors
+        self.normalize()
+
+    def normalize(self):
+        """Normalize the reference vectors."""
+        norm = np.linalg.norm(self.values, axis=1)
+        norm = np.repeat(norm, self.number_of_objectives).reshape(
+            self.number_of_vectors, self.number_of_objectives)
+        self.values = np.divide(self.values, norm)
+
+    def neighbouring_angles(self) -> np.ndarray:
+        """Calculate neighbouring angles for normalization."""
+        cosvv = np.dot(self.values, self.values.transpose())
+        cosvv.sort(axis=1)
+        cosvv = np.flip(cosvv, 1)
+        acosvv = np.arccos(cosvv[:, 1])
+        return(acosvv)
+
+    def adapt(self, fitness):
+        """Adapt reference vectors."""
+        max_val = np.amax(np.asarray(fitness), axis=0)
+        min_val = np.amin(np.asarray(fitness), axis=0)
+        self.values = np.multiply(self.initial_values,
+                                  np.tile(np.subtract(max_val, min_val),
+                                          (self.number_of_vectors, 1)))
+        self.normalize()

@@ -13,80 +13,27 @@ If you have any questions about the code, please contact:
 Bhupinder Saini: bhupinder.s.saini@jyu.fi
 Project researcher at University of Jyväskylä.
 """
-
-from math import ceil
+from __future__ import annotations
 import numpy as np
-from random import shuffle, randint
-from pareto import eps_sort
-from progress.bar import IncrementalBar as Bar
-from time import time
 from warnings import warn
-from scipy.special import comb
-from itertools import combinations
 
 
-class ReferenceVectors():
-    """Class object for reference vectors."""
+def rvea(population,
+         problem,
+         parameters,
+         reference_vectors,
+         progressbar):
+    """
+    Run RVEA.
 
-    def __init__(self, lattice_resolution: int, number_of_objectives):
-        """Create a simplex lattice."""
-        number_of_vectors = comb(
-            lattice_resolution + number_of_objectives - 1,
-            number_of_objectives - 1, exact=True)
-        temp1 = range(1, number_of_objectives + lattice_resolution)
-        temp1 = np.array(list(combinations(temp1, number_of_objectives-1)))
-        temp2 = np.array([range(number_of_objectives-1)]*number_of_vectors)
-        temp = temp1 - temp2 - 1
-        weight = np.zeros((number_of_vectors, number_of_objectives), dtype=int)
-        weight[:, 0] = temp[:, 0]
-        for i in range(1, number_of_objectives-1):
-            weight[:, i] = temp[:, i] - temp[:, i-1]
-        weight[:, -1] = lattice_resolution - temp[:, -1]
-        self.values = weight/lattice_resolution
-        self.initial_values = self.values
-        self.number_of_objectives = number_of_objectives
-        self.lattice_resolution = lattice_resolution
-        self.number_of_vectors = number_of_vectors
-        self.normalize()
-
-    def normalize(self):
-        """Normalize the reference vectors."""
-        norm = np.linalg.norm(self.values, axis=1)
-        norm = np.repeat(norm, self.number_of_objectives).reshape(
-            self.number_of_vectors, self.number_of_objectives)
-        self.values = np.divide(self.values, norm)
-
-    def neighbouring_angles(self) -> np.ndarray:
-        """Calculate neighbouring angles for normalization."""
-        cosvv = np.dot(self.values, self.values.transpose())
-        cosvv.sort(axis=1)
-        cosvv = np.flip(cosvv, 1)
-        acosvv = np.arccos(cosvv[:, 1])
-        return(acosvv)
-
-    def adapt(self, max_val, min_val):
-        """Adapt reference vectors."""
-        self.values = np.multiply(self.initial_values,
-                                  np.tile(np.subtract(max_val, min_val),
-                                          (self.number_of_vectors, 1)))
-        self.normalize()
-
-
-def rvea(population, problem, parameters):
-    """Run RVEA."""
-    start_time = time()
-    # Initializing Reference Vectors
-    reference_vectors = ReferenceVectors(
-        parameters['lattice_resolution'], problem.num_of_objectives)
+    This only conducts reproduction and selection.
+    Reference vector adaptation should be done outside.
+    """
     refV = reference_vectors.neighbouring_angles()
-    print('Running RVEA generations\n')
-    # setup toolbar
-    bar = Bar('Processing', max=parameters['generations'])
-    # setup plots
-    ploton = parameters['ploton']
-
-    for gen_count in range(parameters['generations']):
-        # Random mating and evaluation
+    progress = progressbar(range(parameters['generations']),
+                           desc='Generations',
+                           leave=False)
+    for gen_count in progress:
         offspring = population.mate()
         population.add(offspring, problem)
         # APD Based selection
@@ -95,24 +42,8 @@ def rvea(population, problem, parameters):
         select = APD_select(population.fitness, reference_vectors,
                             penalty_factor, refV)
         population.keep(select)
-        # Reference Vector Adaptation
-        if ((gen_count) % ceil(parameters['generations'] *
-                               parameters['refV_adapt_frequency'])) == 0:
-            zmax = np.amax(np.asarray(population.fitness), axis=0)
-            zmin = np.amin(np.asarray(population.fitness), axis=0)
-            # print('Processing generation number', gen_count, '\n')
-            reference_vectors.adapt(zmax, zmin)
-            refV = reference_vectors.neighbouring_angles()
-            # plotting
-            if ploton:
-                population.plot_objectives()
-        bar.next()
-    bar.finish()
-    time_elapsed = time() - start_time
-    # plotting
-    if ploton:
-        population.plot_objectives()
-    return(population, time_elapsed)
+    progress.close()
+    return(population)
 
 
 def APD_select(fitness: list, vectors: ReferenceVectors,
@@ -130,11 +61,11 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
     normalized_fitness = np.divide(fitness, fitness_norm)
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
     if cosine[np.where(cosine > 1)].size:
-        warn('RVEA.py line 103 cosine larger than 1 decreased to 1:',
+        warn('RVEA.py line 60 cosine larger than 1 decreased to 1:',
              cosine[np.where(cosine > 1)])
         cosine[np.where(cosine > 1)] = 1
     if cosine[np.where(cosine < 0)].size:
-        warn('RVEA.py line 103 cosine smaller than 0 decreased to 0:',
+        warn('RVEA.py line 64 cosine smaller than 0 decreased to 0:',
              cosine[np.where(cosine < 0)])
         cosine[np.where(cosine < 0)] = 0
     theta = np.array([])
@@ -174,5 +105,3 @@ def APD_select(fitness: list, vectors: ReferenceVectors,
             else:
                 selection = np.vstack((selection, np.transpose(selx[0])))
     return(selection.squeeze())
-
-
