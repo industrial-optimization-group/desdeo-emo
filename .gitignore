@@ -3,5 +3,6 @@ Backup_results/
 Temptests/
 *.python
 __pycache__/
+.ipynb_checkpoints/
 .vscode/
 *.p

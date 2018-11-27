@@ -9,8 +9,6 @@ from deap import benchmarks
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from optproblems import dtlz, zdt
-from plotly.graph_objs import graph_objs as go
-import plotly.offline
 from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
@@ -21,13 +19,13 @@ from RVEA import rvea
 
 
 class Problem():
-    """Defines the problem."""
+    """Base class for the problems."""
 
     def __init__(self,
-                 name,
-                 num_of_variables,
-                 num_of_objectives,
-                 num_of_constraints,
+                 name=None,
+                 num_of_variables=None,
+                 num_of_objectives=None,
+                 num_of_constraints=0,
                  upper_limits=1,
                  lower_limits=0):
         """Pydocstring is ruthless."""
@@ -35,55 +33,95 @@ class Problem():
         self.num_of_variables = num_of_variables
         self.num_of_objectives = num_of_objectives
         self.num_of_constraints = num_of_constraints
+        self.obj_func = []
+        self.upper_limits = upper_limits
+        self.lower_limits = lower_limits
+
+    def objectives():
+        """
+        Accept a sample.
+
+        Return all corresponding objective values as a
+        list or array.
+        """
+        pass
+
+    def constraints():
+        """
+        Accept a sample and/or corresponding objective values.
+
+        Return all corresponding constraint violation values as a
+        list or array.
+        """
+        pass
+
+
+class testProblem(Problem):
+    """Defines the problem."""
+
+    def __init__(self,
+                 name=None,
+                 num_of_variables=None,
+                 num_of_objectives=None,
+                 num_of_constraints=0,
+                 upper_limits=1,
+                 lower_limits=0):
+        """Pydocstring is ruthless."""
+        super(testProblem, self).__init__(name,
+                                          num_of_variables,
+                                          num_of_objectives,
+                                          num_of_constraints,
+                                          upper_limits,
+                                          lower_limits)
         if name == 'ZDT1':
             self.obj_func = zdt.ZDT1()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'ZDT2':
+        elif name == 'ZDT2':
             self.obj_func = zdt.ZDT2()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'ZDT3':
+        elif name == 'ZDT3':
             self.obj_func = zdt.ZDT3()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'ZDT4':
+        elif name == 'ZDT4':
             self.obj_func = zdt.ZDT4()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'ZDT5':
+        elif name == 'ZDT5':
             self.obj_func = zdt.ZDT5()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'ZDT6':
+        elif name == 'ZDT6':
             self.obj_func = zdt.ZDT6()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ1':
+        elif name == 'DTLZ1':
             self.obj_func = dtlz.DTLZ1(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ2':
+        elif name == 'DTLZ2':
             self.obj_func = dtlz.DTLZ2(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ3':
+        elif name == 'DTLZ3':
             self.obj_func = benchmarks.dtlz3
             self.lower_limits = 0
             self.upper_limits = 1
-        if name == 'DTLZ4':
+        elif name == 'DTLZ4':
             self.obj_func = dtlz.DTLZ4(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ5':
+        elif name == 'DTLZ5':
             self.obj_func = dtlz.DTLZ5(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ6':
+        elif name == 'DTLZ6':
             self.obj_func = dtlz.DTLZ6(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        if name == 'DTLZ7':
+        elif name == 'DTLZ7':
             self.obj_func = dtlz.DTLZ7(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
@@ -107,12 +145,11 @@ class Problem():
 class Parameters():
     """This object contains the parameters necessary for evolution."""
 
-    def __init__(
-            self,
-            population_size,
-            lattice_resolution=None,
-            algorithm_name='RVEA',
-            *args):
+    def __init__(self,
+                 population_size=None,
+                 lattice_resolution=None,
+                 algorithm_name='RVEA',
+                 *args):
         """Initialize the parameters class."""
         self.algorithm_name = algorithm_name
         if algorithm_name == 'RVEA':
@@ -268,6 +305,8 @@ class Population():
                 isnotebook = False  # Other type (?)
         except NameError:
             isnotebook = False
+        if parameters['ploton']:
+            figure, ax = self.plot_init_()
         if isnotebook:
             progressbar = tqdm_notebook
         else:
@@ -276,14 +315,14 @@ class Population():
                                              problem.num_of_objectives)
         iterations = parameters['iterations']
         for i in progressbar(range(iterations), desc='Iteration'):
-            population = parameters['algorithm'](self,
-                                                 problem,
-                                                 parameters,
-                                                 reference_vectors,
-                                                 progressbar)
+            self = parameters['algorithm'](self,
+                                           problem,
+                                           parameters,
+                                           reference_vectors,
+                                           progressbar)
             reference_vectors.adapt(population.fitness)
             if parameters['ploton']:
-                population.plot_objectives(isnotebook)
+                population.plot_objectives(figure, ax)
         return(population)
 
     def mate(self):
@@ -338,37 +377,32 @@ class Population():
         offspring[offspring < min_val] = min_val[offspring < min_val]
         return(offspring)
 
-    def plot_objectives(self, isnotebook=True):
-        """Redirect to plotting method depending upon interface."""
-        if isnotebook:
-            self.plot_in_notebook()
-        else:
-            self.plot_in_terminal()
-
-    def plot_in_terminal(self):
-        """Plot the objective values of non_dominated individuals in term."""
+    def plot_init_(self):
+        """Initialize plot objects."""
         obj = self.objectives
-        num_obj = obj.shape[1]  # Check
+        num_obj = obj.shape[1]
         if num_obj == 2:
-            plt.scatter(obj[:, 0], obj[:, 1])
+            pass
         elif num_obj == 3:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection=Axes3D.name)
+        plt.ion()
+        plt.show()
+        self.plot_objectives(fig, ax)
+        return(fig, ax)
+
+    def plot_objectives(self, fig, ax):
+        """Plot the objective values of non_dominated individuals in notebook."""
+        obj = self.objectives
+        num_obj = obj.shape[1]
+        ax.clear()
+        if num_obj == 2:
+            plt.scatter(obj[:, 0], obj[:, 1])
+        elif num_obj == 3:
             ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
         else:
             print('Plotting more than 3 objectives not supported yet.')
-        plt.show()
-
-    def plot_in_notebook(self):
-        """Plot the objective values of non_dominated individuals in notebook."""
-        obj = self.objectives
-        plotly.offline.init_notebook_mode()
-        fig = go.Scatter3d(x=list(obj[:, 0]),
-                           y=list(obj[:, 1]),
-                           z=list(obj[:, 2]),
-                           mode=)
-        fig = go.Figure(data=[fig])
-        plotly.offline.iplot(fig)
+        fig.canvas.draw()
 
     def hypervolume(self, ref_point):
         """Calculate hypervolume. Uses package pygmo."""
@@ -389,6 +423,7 @@ class Population():
         else:
             non_dom_front = nds(obj)
         self.non_dom = self.objectives[non_dom_front[0][0]]
+        return(non_dom_front)
 
 
 class ReferenceVectors():
