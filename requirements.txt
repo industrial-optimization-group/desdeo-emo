@@ -1,0 +1,10 @@
+python==3.7
+numpy
+deap
+matplotlib
+mpl_toolkits
+optproblems
+pyDOE
+pyGMO
+scipy
+tqdm

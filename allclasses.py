@@ -392,7 +392,7 @@ class Population():
         return(fig, ax)
 
     def plot_objectives(self, fig, ax):
-        """Plot the objective values of non_dominated individuals in notebook."""
+        """Plot the objective values of individuals in notebook."""
         obj = self.objectives
         num_obj = obj.shape[1]
         ax.clear()
