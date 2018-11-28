@@ -13,7 +13,7 @@ If you have any questions about the code, please contact:
 Bhupinder Saini: bhupinder.s.saini@jyu.fi
 Project researcher at University of Jyväskylä.
 """
-from __future__ import annotations
+
 import numpy as np
 from warnings import warn
 
@@ -46,7 +46,7 @@ def rvea(population,
     return(population)
 
 
-def APD_select(fitness: list, vectors: ReferenceVectors,
+def APD_select(fitness: list, vectors: 'ReferenceVectors',
                penalty_factor: float, refV: np.ndarray):
     """Select individuals for mating on basis of Angle penalized distance.
 
