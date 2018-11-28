@@ -9,7 +9,7 @@ R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff,
 A Reference Vector Guided Evolutionary Algorithm for Many-objective
 Optimization, IEEE Transactions on Evolutionary Computation, 2016
 
-The source code of cRVEA is implemented by Bhupinder Saini
+The source code of pyRVEA is implemented by Bhupinder Saini
 
 If you have any questions about the code, please contact:
 
