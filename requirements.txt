@@ -6,3 +6,4 @@ pyDOE
 pyGMO
 scipy
 tqdm
+diversipy
