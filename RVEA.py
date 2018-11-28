@@ -1,4 +1,4 @@
-"""The constrained verstion reference vector guided evolutionary algorithm.
+"""The python version reference vector guided evolutionary algorithm.
 
 See the details of RVEA in the following paper
 
