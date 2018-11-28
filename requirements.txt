@@ -1,7 +1,6 @@
 numpy
 deap
 matplotlib
-mpl_toolkits
 optproblems
 pyDOE
 pyGMO
