@@ -3,17 +3,20 @@
 from collections import Sequence
 from itertools import combinations
 from random import shuffle
+
 import numpy as np
-from deap import benchmarks
+import pandas as pd
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from optproblems import dtlz, zdt
+from pandas.plotting import parallel_coordinates
 from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from scipy.special import comb
 from tqdm import tqdm, tqdm_notebook
+
 from RVEA import rvea
 
 
@@ -111,7 +114,7 @@ class testProblem(Problem):
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
         elif name == "DTLZ3":
-            self.obj_func = benchmarks.dtlz3
+            self.obj_func = dtlz.DTLZ3(num_of_objectives, num_of_variables)
             self.lower_limits = 0
             self.upper_limits = 1
         elif name == "DTLZ4":
@@ -133,13 +136,6 @@ class testProblem(Problem):
 
     def objectives(self, decision_variables) -> list:
         """Use this method to calculate objective functions."""
-        # if self.name == 'ZDT1':
-        #    obj1 = decision_variables[0]
-        #    g = 1 + (9/29)*sum(decision_variables[1:])
-        #    obj2 = g*(1 - sqrt(obj1/g))
-        #    return([obj1, obj2])
-        if self.name == "DTLZ3":
-            return self.obj_func(decision_variables, self.num_of_objectives)
         return self.obj_func(decision_variables)
 
     def constraints(self, decision_variables, objective_variables):
@@ -405,27 +401,32 @@ class Population:
         """Initialize plot objects."""
         obj = self.objectives
         num_obj = obj.shape[1]
-        if num_obj == 2:
-            pass
-        elif num_obj == 3:
+        if num_obj == 3:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection=Axes3D.name)
+        else:
+            fig, ax = plt.subplots()
         plt.ion()
         plt.show()
         self.plot_objectives(fig, ax)
         return (fig, ax)
 
     def plot_objectives(self, fig, ax):
-        """Plot the objective values of individuals in notebook."""
+        """Plot the objective values of individuals in notebook. This is a hack."""
         obj = self.objectives
-        num_obj = obj.shape[1]
+        num_samples, num_obj = obj.shape
         ax.clear()
         if num_obj == 2:
             plt.scatter(obj[:, 0], obj[:, 1])
         elif num_obj == 3:
             ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
         else:
-            print("Plotting more than 3 objectives not supported yet.")
+            objectives = pd.DataFrame(obj)
+            objectives["why"] = objectives[0]
+            color = plt.cm.rainbow(np.linspace(0, 1, len(objectives.index)))
+            ax.clear()
+            ax = parallel_coordinates(objectives, "why", ax=ax, color=color)
+            ax.get_legend().remove()
         fig.canvas.draw()
 
     def hypervolume(self, ref_point):
