@@ -1,10 +1,17 @@
+"""
+An example file demonstrating the use of pyRVEA.
+
+Visit the github/binder page for further information.
+"""
 from allclasses import Problem, Parameters, Population
 from optproblems import dtlz
 
 
 class newProblem(Problem):
     def objectives(self, decision_variables):
-        return dtlz.DTLZ3(3, 12)(decision_variables)
+        return dtlz.DTLZ3(self.num_of_objectives, self.num_of_variables)(
+            decision_variables
+        )
 
 
 name = "DTLZ3"
