@@ -160,8 +160,8 @@ class Parameters:
                 "population_size": population_size,
                 "lattice_resolution": lattice_resolution,
                 "algorithm": rvea,
-                "generations": 100,
-                "iterations": 10,
+                "generations": 200,
+                "iterations": 20,
                 "Alpha": 2,
                 "ploton": 1,
             }
