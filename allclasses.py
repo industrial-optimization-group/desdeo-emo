@@ -41,7 +41,7 @@ class Problem:
         self.upper_limits = upper_limits
         self.lower_limits = lower_limits
 
-    def objectives():
+    def objectives(self, decision_variables):
         """
         Accept a sample.
 
@@ -57,6 +57,10 @@ class Problem:
         Return all corresponding constraint violation values as a
         list or array.
         """
+        pass
+
+    def update():
+        """Update the problem based on new information."""
         pass
 
 
@@ -326,7 +330,7 @@ class Population:
             self = parameters["algorithm"](
                 self, problem, parameters, reference_vectors, progressbar
             )
-            reference_vectors.adapt(population.fitness)
+            interrupt_evolution(reference_vectors, population, problem, "RVEA")
             if parameters["ploton"]:
                 population.plot_objectives(figure, ax)
         return population
@@ -502,3 +506,51 @@ class ReferenceVectors:
             np.tile(np.subtract(max_val, min_val), (self.number_of_vectors, 1)),
         )
         self.normalize()
+
+
+def interrupt_evolution(
+    reference_vectors: ReferenceVectors,
+    population: Population,
+    problem: Problem = None,
+    keyword="RVEA",
+):
+    """Perform operations while optimization is interrupted.
+
+    Currently supported: Adaptaion of reference vectors.
+
+    Parameters
+    ----------
+    keyword: string
+        Defines the kind of interruption that needs to be run.
+        When keyword is 'RVEA', ReferenceVectors object in **kwargs is updated.
+
+    reference_vectors: ReferenceVectors Object
+
+    problem: Object of the class Problem or derived from class Problem.
+
+    """
+    if keyword == "RVEA":
+        reference_vectors.adapt(population.fitness)
+    elif keyword == "KRVEA":
+        reference_vectors.adapt(population.fitness)
+        problem.update(population)
+
+
+class KrigingProblem(Problem):
+    """Create and update kriging models."""
+
+    def __init__(self, dataset, otherarguments):
+        """Create a kriging model on the dataset."""
+        super.__init__()
+        pass
+
+    def objectives(self, decision_variables):
+        """Return objective values based on decision variables."""
+        pass
+
+    def update(self, population: Population):
+        """Update the kriging model based on population.
+
+        Change the return of method objectives.
+        """
+        pass
