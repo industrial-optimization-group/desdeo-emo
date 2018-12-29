@@ -7,6 +7,7 @@ verify_ssl = true
 flake8 = "*"
 pydocstyle = "*"
 pygments = "*"
+black = "*"
 
 [packages]
 numpy = "*"
@@ -18,6 +19,7 @@ scipy = "*"
 tqdm = "*"
 diversipy = "*"
 pyDOE = "*"
+ipython = "*"
 
 [requires]
 python_version = "3.6"

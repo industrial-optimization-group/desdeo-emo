@@ -152,8 +152,14 @@ class Parameters:
 
     def __init__(
         self,
-        population_size=None,
-        lattice_resolution=None,
+        population_size: int = None,
+        lattice_resolution: int = None,
+        interact: bool = True,
+        a_priori_preference: bool = False,
+        generations_per_iteration: int = 100,
+        iterations: int = 10,
+        Alpha: float = 2,
+        plotting: bool = True,
         algorithm_name="RVEA",
         *args
     ):
@@ -164,10 +170,12 @@ class Parameters:
                 "population_size": population_size,
                 "lattice_resolution": lattice_resolution,
                 "algorithm": rvea,
-                "generations": 200,
-                "iterations": 20,
-                "Alpha": 2,
-                "ploton": 1,
+                "interact": interact,
+                "a_priori": a_priori_preference,
+                "generations": generations_per_iteration,
+                "iterations": iterations,
+                "Alpha": Alpha,
+                "ploton": plotting,
             }
         self.params = rveaparams
 
@@ -231,6 +239,7 @@ class Population:
         self.objectives = pop_eval["objectives"]
         self.constraint_violation = pop_eval["constraint violation"]
         self.fitness = pop_eval["fitness"]
+        self.reference_vectors = None
 
     def evaluate(self, problem: Problem):
         """Evaluate and return objective values."""
@@ -304,8 +313,10 @@ class Population:
 
     def evolve(self, problem: Problem, parameters: Parameters) -> "Population":
         """Evolve and return the population with interruptions."""
-        parameters = parameters.params
         population = self
+        self.reference_vectors = ReferenceVectors(
+            parameters.params["lattice_resolution"], problem.num_of_objectives
+        )
         try:
             shell = get_ipython().__class__.__name__
             if shell == "ZMQInteractiveShell":
@@ -316,22 +327,20 @@ class Population:
                 isnotebook = False  # Other type (?)
         except NameError:
             isnotebook = False
-        if parameters["ploton"]:
+        if parameters.params["ploton"]:
             figure, ax = self.plot_init_()
         if isnotebook:
             progressbar = tqdm_notebook
         else:
             progressbar = tqdm
-        reference_vectors = ReferenceVectors(
-            parameters["lattice_resolution"], problem.num_of_objectives
-        )
-        iterations = parameters["iterations"]
+
+        iterations = parameters.params["iterations"]
         for i in progressbar(range(iterations), desc="Iteration"):
-            self = parameters["algorithm"](
-                self, problem, parameters, reference_vectors, progressbar
+            self = parameters.params["algorithm"](
+                self, problem, parameters.params, self.reference_vectors, progressbar
             )
-            interrupt_evolution(reference_vectors, population, problem, "RVEA")
-            if parameters["ploton"]:
+            interrupt_evolution(self.reference_vectors, population, problem, parameters)
+            if parameters.params["ploton"]:
                 population.plot_objectives(figure, ax)
         return population
 
@@ -418,12 +427,14 @@ class Population:
     def plot_objectives(self, fig, ax):
         """Plot the objective values of individuals in notebook. This is a hack."""
         obj = self.objectives
+        ref = self.reference_vectors.values
         num_samples, num_obj = obj.shape
         ax.clear()
         if num_obj == 2:
             plt.scatter(obj[:, 0], obj[:, 1])
         elif num_obj == 3:
             ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
+            ax.scatter(ref[:, 0], ref[:, 1], ref[:, 2])
         else:
             objectives = pd.DataFrame(obj)
             objectives["why"] = objectives[0]
@@ -475,14 +486,16 @@ class ReferenceVectors:
             weight[:, i] = temp[:, i] - temp[:, i - 1]
         weight[:, -1] = lattice_resolution - temp[:, -1]
         self.values = weight / lattice_resolution
-        self.initial_values = self.values
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
         self.normalize()
+        self.initial_values = self.values
+        # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def normalize(self):
         """Normalize the reference vectors."""
+        self.number_of_vectors = self.values.shape[0]
         norm = np.linalg.norm(self.values, axis=1)
         norm = np.repeat(norm, self.number_of_objectives).reshape(
             self.number_of_vectors, self.number_of_objectives
@@ -499,39 +512,92 @@ class ReferenceVectors:
 
     def adapt(self, fitness):
         """Adapt reference vectors."""
-        max_val = np.amax(np.asarray(fitness), axis=0)
-        min_val = np.amin(np.asarray(fitness), axis=0)
+        max_val = np.amax(fitness, axis=0)
+        min_val = np.amin(fitness, axis=0)
         self.values = np.multiply(
             self.initial_values,
             np.tile(np.subtract(max_val, min_val), (self.number_of_vectors, 1)),
         )
         self.normalize()
 
+    def iteractive_adapt_1(self, ref_point, translation_param=0.2):
+        """Adapt reference vectors linearly towards a reference point.
+
+        The details can be found in the following paper: Hakanen, Jussi & Chugh, Tinkle
+        & Sindhya, Karthik & Jin, Yaochu & Miettinen, Kaisa. (2016). Connections of
+        Reference Vectors and Different Types of Preference Information in
+        Interactive Multiobjective Evolutionary Algorithms.
+
+        Parameters:
+        ------------
+            ref_point: list. Signifies the reference point towards which the
+                       reference vectors are translated.
+            translation_param: double between 0 and 1.
+                               Describes the strength of translation.
+
+        """
+        self.values = self.initial_values * translation_param + (
+            (1 - translation_param) * ref_point
+        )
+        self.normalize()
+
+    def add_edge_vectors(self):
+        """Add edge vectors to the list of reference vectors.
+
+        Used to cover the entire orthant when preference information is provided.
+        """
+        edge_vectors = np.eye(self.values.shape[1])
+        self.values = np.vstack([self.values, edge_vectors])
+        self.number_of_vectors = self.values.shape[0]
+        self.normalize()
+
+    def plot_ref_V(self):
+        """Plot the reference vectors."""
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection=Axes3D.name)
+        plt.ion()
+        plt.show()
+        ax.scatter(self.values[:, 0], self.values[:, 1], self.values[:, 2])
+        ax.scatter(
+            self.initial_values[:, 0],
+            self.initial_values[:, 1],
+            self.initial_values[:, 2],
+        )
+        fig.canvas.draw()
+        plt.pause(5)
+
 
 def interrupt_evolution(
     reference_vectors: ReferenceVectors,
     population: Population,
     problem: Problem = None,
-    keyword="RVEA",
+    parameters: Parameters = None,
 ):
     """Perform operations while optimization is interrupted.
 
-    Currently supported: Adaptaion of reference vectors.
+    Currently supported: Adaptaion of reference vectors with or without preference info.
 
     Parameters
     ----------
-    keyword: string
-        Defines the kind of interruption that needs to be run.
-        When keyword is 'RVEA', ReferenceVectors object in **kwargs is updated.
 
     reference_vectors: ReferenceVectors Object
 
+    population: A Population Object
     problem: Object of the class Problem or derived from class Problem.
 
     """
-    if keyword == "RVEA":
-        reference_vectors.adapt(population.fitness)
-    elif keyword == "KRVEA":
+    if parameters.algorithm_name == "RVEA":
+        if parameters.params["interact"] or parameters.params["a_priori"]:
+            refpoint = np.mean(population.fitness, axis=0)
+            min_val = np.amin(population.fitness, axis=0)
+            refpoint = refpoint - min_val
+            norm = np.sum(np.square(refpoint))
+            refpoint = refpoint/norm
+            reference_vectors.iteractive_adapt_1(refpoint)
+            reference_vectors.add_edge_vectors()
+        else:
+            reference_vectors.adapt(population.fitness)
+    elif parameters.algorithm_name == "KRVEA":
         reference_vectors.adapt(population.fitness)
         problem.update(population)
 

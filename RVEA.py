@@ -51,12 +51,12 @@ def APD_select(
     """
     # Normalization - There may be problems here
     fmin = np.amin(fitness, axis=0)
-    fitness = fitness - fmin
-    fitness_norm = np.linalg.norm(fitness, axis=1)
-    fitness_norm = np.repeat(fitness_norm, len(fitness[0, :])).reshape(
+    translated_fitness = fitness - fmin
+    fitness_norm = np.linalg.norm(translated_fitness, axis=1)
+    fitness_norm = np.repeat(fitness_norm, len(translated_fitness[0, :])).reshape(
         len(fitness), len(fitness[0, :])
     )
-    normalized_fitness = np.divide(fitness, fitness_norm)
+    normalized_fitness = np.divide(translated_fitness, fitness_norm)  # Checked, works.
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
     if cosine[np.where(cosine > 1)].size:
         warn(
@@ -79,14 +79,14 @@ def APD_select(
             theta = np.hstack((theta, thetatemp))
         else:
             theta = np.vstack((theta, thetatemp))
-    # Better way? - theta = np.arccos(cosine)
+    # Better way - theta = np.arccos(cosine) Try this in the future
     # Reference vector assignment
     assigned_vectors = np.argmax(cosine, axis=1)
     selection = np.array([], dtype=int)
     # Selection
     for i in range(0, len(vectors.values)):
         sub_population_index = np.where(assigned_vectors == i)
-        sub_population_fitness = fitness[sub_population_index]
+        sub_population_fitness = translated_fitness[sub_population_index]
         if len(sub_population_fitness > 0):
             # APD Calculation
             angles = theta[sub_population_index[0], i]
