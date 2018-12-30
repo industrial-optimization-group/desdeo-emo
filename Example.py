@@ -22,7 +22,7 @@ numvar = numobj + k - 1
 problem = newProblem(name, numvar, numobj, numconst)
 
 lattice_resolution = 13
-population_size = 500
+population_size = 105
 
 parameters = Parameters(population_size, lattice_resolution, algorithm_name="RVEA")
 

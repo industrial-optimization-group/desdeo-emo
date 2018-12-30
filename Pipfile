@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+pydocstyle = "*"
+pygments = "*"
+black = "*"
+
+[packages]
+numpy = "*"
+pandas = "*"
+matplotlib = "*"
+optproblems = "*"
+pygmo = "*"
+scipy = "*"
+tqdm = "*"
+diversipy = "*"
+pyDOE = "*"
+ipython = "*"
+
+[requires]
+python_version = "3.6"
