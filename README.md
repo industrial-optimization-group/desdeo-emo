@@ -1,7 +1,11 @@
 # pyRVEA
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/EchoBetaGlass/pyRVEA/master)
 
 The python version reference vector guided evolutionary algorithm.
+
+Currently supported: Multi-objective minimization with visualization and interaction support. Preference is accepted as a reference point.
+
+To test the code, open the [binder link](https://mybinder.org/v2/gh/EchoBetaGlass/pyRVEA/master) and read example.ipynb.
 
 See the details of RVEA in the following paper
 
@@ -15,5 +19,3 @@ If you have any questions about the code, please contact:
 
 Bhupinder Saini: bhupinder.s.saini@jyu.fi\
 Project researcher at University of Jyväskylä.
-
-To test the code, open the following binder link and read example.ipynb: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/EchoBetaGlass/pyRVEA/master)
