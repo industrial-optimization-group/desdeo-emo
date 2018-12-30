@@ -339,9 +339,9 @@ class Population:
             self = parameters.params["algorithm"](
                 self, problem, parameters.params, self.reference_vectors, progressbar
             )
-            interrupt_evolution(self.reference_vectors, population, problem, parameters)
             if parameters.params["ploton"]:
                 population.plot_objectives(figure, ax)
+            interrupt_evolution(self.reference_vectors, population, problem, parameters)
         return population
 
     def mate(self):
@@ -579,7 +579,6 @@ def interrupt_evolution(
 
     Parameters
     ----------
-
     reference_vectors: ReferenceVectors Object
 
     population: A Population Object
@@ -588,11 +587,26 @@ def interrupt_evolution(
     """
     if parameters.algorithm_name == "RVEA":
         if parameters.params["interact"] or parameters.params["a_priori"]:
-            refpoint = np.mean(population.fitness, axis=0)
-            min_val = np.amin(population.fitness, axis=0)
-            refpoint = refpoint - min_val
-            norm = np.sum(np.square(refpoint))
-            refpoint = refpoint/norm
+            # refpoint = np.mean(population.fitness, axis=0)
+            ideal = np.amin(population.fitness, axis=0)
+            nadir = np.amax(population.fitness, axis=0)
+            refpoint = np.zeros_like(ideal)
+            print('Ideal vector is ', ideal)
+            print('Nadir vector is ', nadir)
+            for index in range(len(refpoint)):
+                while True:
+                    print("Preference for objective ", index + 1)
+                    print("Ideal value = ", ideal[index])
+                    print("Nadir value = ", nadir[index])
+                    pref_val = float(
+                        input("Please input a value between ideal and nadir: ")
+                    )
+                    if pref_val > ideal[index] and pref_val < nadir[index]:
+                        refpoint[index] = pref_val
+                        break
+            refpoint = refpoint - ideal
+            norm = np.sqrt(np.sum(np.square(refpoint)))
+            refpoint = refpoint / norm
             reference_vectors.iteractive_adapt_1(refpoint)
             reference_vectors.add_edge_vectors()
         else:

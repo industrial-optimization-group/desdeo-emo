@@ -70,16 +70,8 @@ def APD_select(
             cosine[np.where(cosine < 0)],
         )
         cosine[np.where(cosine < 0)] = 0
-    theta = np.array([])
     # Calculation of angles between reference vectors and solutions
-    for i in range(0, len(cosine)):
-        thetatemp = np.arccos(cosine[i, :])
-        # Shenanigans to keep the correct shape. Find a better way to do this?
-        if i == 0:
-            theta = np.hstack((theta, thetatemp))
-        else:
-            theta = np.vstack((theta, thetatemp))
-    # Better way - theta = np.arccos(cosine) Try this in the future
+    theta = np.arccos(cosine)
     # Reference vector assignment
     assigned_vectors = np.argmax(cosine, axis=1)
     selection = np.array([], dtype=int)
@@ -90,7 +82,7 @@ def APD_select(
         if len(sub_population_fitness > 0):
             # APD Calculation
             angles = theta[sub_population_index[0], i]
-            angles = np.divide(angles, refV[i])  # min(refV[i])?
+            angles = np.divide(angles, refV[i])  # This is correct.
             # You have done this calculation before. Check with fitness_norm
             # Remove this horrible line
             sub_pop_fitness_magnitude = np.sqrt(
