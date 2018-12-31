@@ -1,0 +1,158 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyRVEA.RVEA module &#8212; pyRVEA 0.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyRVEA.RVEA">
+<span id="pyrvea-rvea-module"></span><h1>pyRVEA.RVEA module<a class="headerlink" href="#module-pyRVEA.RVEA" title="Permalink to this headline">¶</a></h1>
+<p>The python version reference vector guided evolutionary algorithm.</p>
+<p>See the details of RVEA in the following paper</p>
+<p>R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff,
+A Reference Vector Guided Evolutionary Algorithm for Many-objective
+Optimization, IEEE Transactions on Evolutionary Computation, 2016</p>
+<p>The source code of cRVEA is implemented by Bhupinder Saini</p>
+<p>If you have any questions about the code, please contact:</p>
+<p>Bhupinder Saini: <a class="reference external" href="mailto:bhupinder&#46;s&#46;saini&#37;&#52;&#48;jyu&#46;fi">bhupinder<span>&#46;</span>s<span>&#46;</span>saini<span>&#64;</span>jyu<span>&#46;</span>fi</a>
+Project researcher at University of Jyväskylä.</p>
+<dl class="function">
+<dt id="pyRVEA.RVEA.APD_select">
+<code class="descclassname">pyRVEA.RVEA.</code><code class="descname">APD_select</code><span class="sig-paren">(</span><em>fitness: list</em>, <em>vectors: ReferenceVectors</em>, <em>penalty_factor: float</em>, <em>refV: numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#pyRVEA.RVEA.APD_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select individuals for mating on basis of Angle penalized distance.</p>
+<dl class="docutils">
+<dt>fitness <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>Fitness of the current population.</dd>
+<dt>vectors <span class="classifier-delimiter">:</span> <span class="classifier">ReferenceVectors</span></dt>
+<dd>Class containing reference vectors.</dd>
+<dt>penalty_factor <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Multiplier of angular deviation from Reference vectors.
+See RVEA paper for details.</dd>
+<dt>refV <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd>Contains the minimum angles between reference vectors.</dd>
+</dl>
+<dl class="docutils">
+<dt>[type]</dt>
+<dd>A list of indices of the selected individuals.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyRVEA.RVEA.rvea">
+<code class="descclassname">pyRVEA.RVEA.</code><code class="descname">rvea</code><span class="sig-paren">(</span><em>population: Population</em>, <em>problem: Problem</em>, <em>parameters: Parameters</em>, <em>reference_vectors: ReferenceVectors</em>, <em>progressbar: tqdm</em><span class="sig-paren">)</span><a class="headerlink" href="#pyRVEA.RVEA.rvea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run RVEA.</p>
+<p>This only conducts reproduction and selection. Reference vector adaptation should
+be done outside. Changes variable population.</p>
+<dl class="docutils">
+<dt>population <span class="classifier-delimiter">:</span> <span class="classifier">Population</span></dt>
+<dd>This variable is updated as evolution takes place</dd>
+<dt>problem <span class="classifier-delimiter">:</span> <span class="classifier">Problem</span></dt>
+<dd>Contains the details of the problem.</dd>
+<dt>parameters <span class="classifier-delimiter">:</span> <span class="classifier">Parameters</span></dt>
+<dd>Contains the hyper-parameters of RVEA evolution.</dd>
+<dt>reference_vectors <span class="classifier-delimiter">:</span> <span class="classifier">ReferenceVectors</span></dt>
+<dd>Class containing the reference vectors.</dd>
+<dt>progressbar <span class="classifier-delimiter">:</span> <span class="classifier">tqdm or tqdm_notebook</span></dt>
+<dd>An iterable used to display the progress bar.</dd>
+</dl>
+<dl class="docutils">
+<dt>Population</dt>
+<dd>Returns the Population after evolution.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyRVEA</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Bhupinder Saini.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/pyRVEA.RVEA.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

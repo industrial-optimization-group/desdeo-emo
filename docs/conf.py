@@ -20,13 +20,13 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyRVEA'
-copyright = '2018, Bhupinder'
-author = 'Bhupinder'
+copyright = '2018, Bhupinder Saini'
+author = 'Bhupinder Saini'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '0.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -40,8 +40,7 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
+    'sphinx.ext.githubpages',
     'm2r'
 ]
 
@@ -133,7 +132,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'pyRVEA.tex', 'pyRVEA Documentation',
-     'Bhupinder', 'manual'),
+     'Bhupinder Saini', 'manual'),
 ]
 
 
@@ -178,8 +177,3 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
-
-# -- Options for todo extension ----------------------------------------------
-
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
