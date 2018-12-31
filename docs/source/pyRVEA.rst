@@ -6,7 +6,6 @@ Submodules
 
 .. toctree::
 
-   pyRVEA.Example
    pyRVEA.RVEA
    pyRVEA.allclasses
 
