@@ -8,6 +8,8 @@ flake8 = "*"
 pydocstyle = "*"
 pygments = "*"
 black = "*"
+sphinx = "*"
+m2r = "*"
 
 [packages]
 numpy = "*"

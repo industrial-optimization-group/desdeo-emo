@@ -1,0 +1,343 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyRVEA.allclasses module &#8212; pyRVEA 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyRVEA.allclasses">
+<span id="pyrvea-allclasses-module"></span><h1>pyRVEA.allclasses module<a class="headerlink" href="#module-pyRVEA.allclasses" title="Permalink to this headline">¶</a></h1>
+<p>Testing code.</p>
+<dl class="class">
+<dt id="pyRVEA.allclasses.KrigingProblem">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">KrigingProblem</code><span class="sig-paren">(</span><em>dataset</em>, <em>otherarguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#KrigingProblem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.KrigingProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyRVEA.allclasses.Problem" title="pyRVEA.allclasses.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyRVEA.allclasses.Problem</span></code></a></p>
+<p>Create and update kriging models.</p>
+<dl class="method">
+<dt id="pyRVEA.allclasses.KrigingProblem.objectives">
+<code class="descname">objectives</code><span class="sig-paren">(</span><em>decision_variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#KrigingProblem.objectives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.KrigingProblem.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return objective values based on decision variables.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.KrigingProblem.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>population: pyRVEA.allclasses.Population</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#KrigingProblem.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.KrigingProblem.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the kriging model based on population.</p>
+<p>Change the return of method objectives.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.allclasses.Parameters">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">Parameters</code><span class="sig-paren">(</span><em>population_size: int = None</em>, <em>lattice_resolution: int = None</em>, <em>interact: bool = True</em>, <em>a_priori_preference: bool = False</em>, <em>generations_per_iteration: int = 100</em>, <em>iterations: int = 10</em>, <em>Alpha: float = 2</em>, <em>plotting: bool = True</em>, <em>algorithm_name='RVEA'</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This object contains the parameters necessary for evolution.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.allclasses.Population">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">Population</code><span class="sig-paren">(</span><em>problem: pyRVEA.allclasses.Problem</em>, <em>parameters: pyRVEA.allclasses.Parameters</em>, <em>assign_type: str = 'RandomAssign'</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Define the population.</p>
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_pop: numpy.ndarray</em>, <em>problem: pyRVEA.allclasses.Problem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and add individuals to the population.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.append_individual">
+<code class="descname">append_individual</code><span class="sig-paren">(</span><em>ind: numpy.ndarray</em>, <em>problem: pyRVEA.allclasses.Problem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.append_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.append_individual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and add individual to the population.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.eval_fitness">
+<code class="descname">eval_fitness</code><span class="sig-paren">(</span><em>pop</em>, <em>objs</em>, <em>problem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.eval_fitness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.eval_fitness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return fitness values. Maybe add maximization support here.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><em>problem: pyRVEA.allclasses.Problem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and return objective values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.evaluate_individual">
+<code class="descname">evaluate_individual</code><span class="sig-paren">(</span><em>ind: numpy.ndarray</em>, <em>problem: pyRVEA.allclasses.Problem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.evaluate_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.evaluate_individual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate individual.</p>
+<p>Returns objective values, constraint violation, and fitness.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.evolve">
+<code class="descname">evolve</code><span class="sig-paren">(</span><em>problem: pyRVEA.allclasses.Problem</em>, <em>parameters: pyRVEA.allclasses.Parameters</em><span class="sig-paren">)</span> &#x2192; pyRVEA.allclasses.Population<a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.evolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.evolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evolve and return the population with interruptions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.hypervolume">
+<code class="descname">hypervolume</code><span class="sig-paren">(</span><em>ref_point</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.hypervolume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.hypervolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate hypervolume. Uses package pygmo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.keep">
+<code class="descname">keep</code><span class="sig-paren">(</span><em>indices: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.keep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.keep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove individuals from population which are not in “indices”.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.mate">
+<code class="descname">mate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.mate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.mate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conduct crossover and mutation over the population.</p>
+<p>Conduct simulated binary crossover and bounded polunomial mutation.
+Return offspring population as an array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.non_dominated">
+<code class="descname">non_dominated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.non_dominated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.non_dominated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the pareto front of a given population.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.plot_init_">
+<code class="descname">plot_init_</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.plot_init_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.plot_init_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize plot objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Population.plot_objectives">
+<code class="descname">plot_objectives</code><span class="sig-paren">(</span><em>fig</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Population.plot_objectives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Population.plot_objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the objective values of individuals in notebook. This is a hack.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.allclasses.Problem">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">Problem</code><span class="sig-paren">(</span><em>name=None</em>, <em>num_of_variables=None</em>, <em>num_of_objectives=None</em>, <em>num_of_constraints=0</em>, <em>upper_limits=1</em>, <em>lower_limits=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for the problems.</p>
+<dl class="method">
+<dt id="pyRVEA.allclasses.Problem.constraints">
+<code class="descname">constraints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Problem.constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Problem.constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accept a sample and/or corresponding objective values.</p>
+<p>Return all corresponding constraint violation values as a
+list or array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Problem.objectives">
+<code class="descname">objectives</code><span class="sig-paren">(</span><em>decision_variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Problem.objectives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Problem.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accept a sample.</p>
+<p>Return all corresponding objective values as a
+list or array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.Problem.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#Problem.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.Problem.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the problem based on new information.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.allclasses.ReferenceVectors">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">ReferenceVectors</code><span class="sig-paren">(</span><em>lattice_resolution: int</em>, <em>number_of_objectives</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class object for reference vectors.</p>
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.adapt">
+<code class="descname">adapt</code><span class="sig-paren">(</span><em>fitness</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.adapt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.adapt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt reference vectors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.add_edge_vectors">
+<code class="descname">add_edge_vectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.add_edge_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.add_edge_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add edge vectors to the list of reference vectors.</p>
+<p>Used to cover the entire orthant when preference information is provided.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.iteractive_adapt_1">
+<code class="descname">iteractive_adapt_1</code><span class="sig-paren">(</span><em>ref_point</em>, <em>translation_param=0.2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.iteractive_adapt_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.iteractive_adapt_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt reference vectors linearly towards a reference point.</p>
+<p>The details can be found in the following paper: Hakanen, Jussi &amp; Chugh, Tinkle
+&amp; Sindhya, Karthik &amp; Jin, Yaochu &amp; Miettinen, Kaisa. (2016). Connections of
+Reference Vectors and Different Types of Preference Information in
+Interactive Multiobjective Evolutionary Algorithms.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>ref_point: list. Signifies the reference point towards which the</dt>
+<dd>reference vectors are translated.</dd>
+<dt>translation_param: double between 0 and 1.</dt>
+<dd>Describes the strength of translation.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.neighbouring_angles">
+<code class="descname">neighbouring_angles</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.neighbouring_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.neighbouring_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate neighbouring angles for normalization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.normalize">
+<code class="descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the reference vectors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.ReferenceVectors.plot_ref_V">
+<code class="descname">plot_ref_V</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#ReferenceVectors.plot_ref_V"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.ReferenceVectors.plot_ref_V" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the reference vectors.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pyRVEA.allclasses.interrupt_evolution">
+<code class="descclassname">pyRVEA.allclasses.</code><code class="descname">interrupt_evolution</code><span class="sig-paren">(</span><em>reference_vectors: pyRVEA.allclasses.ReferenceVectors</em>, <em>population: pyRVEA.allclasses.Population</em>, <em>problem: pyRVEA.allclasses.Problem = None</em>, <em>parameters: pyRVEA.allclasses.Parameters = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#interrupt_evolution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.interrupt_evolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform operations while optimization is interrupted.</p>
+<p>Currently supported: Adaptaion of reference vectors with or without preference info.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>reference_vectors</strong> (<em>ReferenceVectors Object</em>) – </li>
+<li><strong>population</strong> (<em>A Population Object</em>) – </li>
+<li><strong>problem</strong> (<em>Object of the class Problem</em><em> or </em><em>derived from class Problem.</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.allclasses.testProblem">
+<em class="property">class </em><code class="descclassname">pyRVEA.allclasses.</code><code class="descname">testProblem</code><span class="sig-paren">(</span><em>name=None</em>, <em>num_of_variables=None</em>, <em>num_of_objectives=None</em>, <em>num_of_constraints=0</em>, <em>upper_limits=1</em>, <em>lower_limits=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#testProblem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.testProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyRVEA.allclasses.Problem" title="pyRVEA.allclasses.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyRVEA.allclasses.Problem</span></code></a></p>
+<p>Defines the problem.</p>
+<dl class="method">
+<dt id="pyRVEA.allclasses.testProblem.constraints">
+<code class="descname">constraints</code><span class="sig-paren">(</span><em>decision_variables</em>, <em>objective_variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/allclasses.html#testProblem.constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.testProblem.constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate constraint violation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.allclasses.testProblem.objectives">
+<code class="descname">objectives</code><span class="sig-paren">(</span><em>decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/pyRVEA/allclasses.html#testProblem.objectives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.allclasses.testProblem.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to calculate objective functions.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pyRVEA</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">readme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Bhupinder.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/pyRVEA.allclasses.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
