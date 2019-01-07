@@ -16,14 +16,43 @@ Project researcher at University of Jyväskylä.
 
 import numpy as np
 from warnings import warn
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyRVEA.allclasses import Population, Problem, Parameters, ReferenceVectors
 
 
-def rvea(population, problem, parameters, reference_vectors, progressbar):
+def rvea(
+    population: "Population",
+    problem: "Problem",
+    parameters: "Parameters",
+    reference_vectors: "ReferenceVectors",
+    progressbar: "tqdm",
+):
     """
     Run RVEA.
 
-    This only conducts reproduction and selection.
-    Reference vector adaptation should be done outside.
+    This only conducts reproduction and selection. Reference vector adaptation should
+    be done outside. Changes variable population.
+
+    Parameters
+    ----------
+    population : Population
+        This variable is updated as evolution takes place
+    problem : Problem
+        Contains the details of the problem.
+    parameters : Parameters
+        Contains the hyper-parameters of RVEA evolution.
+    reference_vectors : ReferenceVectors
+        Class containing the reference vectors.
+    progressbar : tqdm or tqdm_notebook
+        An iterable used to display the progress bar.
+
+    Returns
+    -------
+    Population
+        Returns the Population after evolution.
+
     """
     refV = reference_vectors.neighbouring_angles()
     progress = progressbar(
@@ -45,18 +74,35 @@ def rvea(population, problem, parameters, reference_vectors, progressbar):
 def APD_select(
     fitness: list, vectors: "ReferenceVectors", penalty_factor: float, refV: np.ndarray
 ):
-    """Select individuals for mating on basis of Angle penalized distance.
+    """
+    Select individuals for mating on basis of Angle penalized distance.
 
-    Returns a list of indices of the selected individuals.
+    Parameters
+    ----------
+    fitness : list
+        Fitness of the current population.
+    vectors : ReferenceVectors
+        Class containing reference vectors.
+    penalty_factor : float
+        Multiplier of angular deviation from Reference vectors.
+        See RVEA paper for details.
+    refV : np.ndarray
+        Contains the minimum angles between reference vectors.
+
+    Returns
+    -------
+    [type]
+        A list of indices of the selected individuals.
+
     """
     # Normalization - There may be problems here
     fmin = np.amin(fitness, axis=0)
-    fitness = fitness - fmin
-    fitness_norm = np.linalg.norm(fitness, axis=1)
-    fitness_norm = np.repeat(fitness_norm, len(fitness[0, :])).reshape(
+    translated_fitness = fitness - fmin
+    fitness_norm = np.linalg.norm(translated_fitness, axis=1)
+    fitness_norm = np.repeat(fitness_norm, len(translated_fitness[0, :])).reshape(
         len(fitness), len(fitness[0, :])
     )
-    normalized_fitness = np.divide(fitness, fitness_norm)
+    normalized_fitness = np.divide(translated_fitness, fitness_norm)  # Checked, works.
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
     if cosine[np.where(cosine > 1)].size:
         warn(
@@ -70,27 +116,19 @@ def APD_select(
             cosine[np.where(cosine < 0)],
         )
         cosine[np.where(cosine < 0)] = 0
-    theta = np.array([])
     # Calculation of angles between reference vectors and solutions
-    for i in range(0, len(cosine)):
-        thetatemp = np.arccos(cosine[i, :])
-        # Shenanigans to keep the correct shape. Find a better way to do this?
-        if i == 0:
-            theta = np.hstack((theta, thetatemp))
-        else:
-            theta = np.vstack((theta, thetatemp))
-    # Better way? - theta = np.arccos(cosine)
+    theta = np.arccos(cosine)
     # Reference vector assignment
     assigned_vectors = np.argmax(cosine, axis=1)
     selection = np.array([], dtype=int)
     # Selection
     for i in range(0, len(vectors.values)):
         sub_population_index = np.where(assigned_vectors == i)
-        sub_population_fitness = fitness[sub_population_index]
+        sub_population_fitness = translated_fitness[sub_population_index]
         if len(sub_population_fitness > 0):
             # APD Calculation
             angles = theta[sub_population_index[0], i]
-            angles = np.divide(angles, refV[i])  # min(refV[i])?
+            angles = np.divide(angles, refV[i])  # This is correct.
             # You have done this calculation before. Check with fitness_norm
             # Remove this horrible line
             sub_pop_fitness_magnitude = np.sqrt(

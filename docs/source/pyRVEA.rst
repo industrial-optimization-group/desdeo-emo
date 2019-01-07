@@ -1,0 +1,18 @@
+pyRVEA package
+==============
+
+Submodules
+----------
+
+.. toctree::
+
+   pyRVEA.RVEA
+   pyRVEA.allclasses
+
+Module contents
+---------------
+
+.. automodule:: pyRVEA
+    :members:
+    :undoc-members:
+    :show-inheritance:
