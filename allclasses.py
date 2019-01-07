@@ -41,7 +41,7 @@ class Problem:
         self.upper_limits = upper_limits
         self.lower_limits = lower_limits
 
-    def objectives():
+    def objectives(self, decision_variables):
         """
         Accept a sample.
 
@@ -50,7 +50,7 @@ class Problem:
         """
         pass
 
-    def constraints():
+    def constraints(self, decision_variables):
         """
         Accept a sample and/or corresponding objective values.
 

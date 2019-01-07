@@ -8,7 +8,10 @@ from optproblems import dtlz
 
 
 class newProblem(Problem):
+    """New problem description."""
+
     def objectives(self, decision_variables):
+        """Return objective value."""
         return dtlz.DTLZ3(self.num_of_objectives, self.num_of_variables)(
             decision_variables
         )
