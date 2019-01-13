@@ -490,7 +490,7 @@ class ReferenceVectors:
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
         self.normalize()
-        self.initial_values = self.values
+        self.initial_values = self.values[:]
         # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def normalize(self):
@@ -562,9 +562,11 @@ class ReferenceVectors:
             self.initial_values[:, 0],
             self.initial_values[:, 1],
             self.initial_values[:, 2],
+            alpha=0.5
         )
+        ax.view_init(azim=45)
         fig.canvas.draw()
-        plt.pause(5)
+        plt.show(block=True)
 
 
 def interrupt_evolution(
