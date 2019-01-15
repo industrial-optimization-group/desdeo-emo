@@ -96,13 +96,13 @@ def dist_based_translation(vectors):
     """Translates points towards origin based on distance."""
     dist = np.sqrt(np.sum(np.square(vectors), axis=1))
     max_dist = np.amax(dist)
-    # max_dist = 1
-    alpha = 200
+    #max_dist = 1
+    alpha = 5
     ratio = alpha * (1 / (dist * dist) - 1 / (max_dist * max_dist))
     t_factor = 1 / (1 + ratio)
     return vectors * t_factor[np.newaxis].T
 
 
-rv = newRV(15, 3)
+rv = newRV(20, 3)
 rv.interact_v3([1, 1, 1])
 rv.plot_ref_V()
