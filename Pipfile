@@ -22,6 +22,7 @@ tqdm = "*"
 diversipy = "*"
 pyDOE = "*"
 ipython = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.6"
