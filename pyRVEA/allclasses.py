@@ -16,7 +16,8 @@ from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from scipy.special import comb
 from tqdm import tqdm, tqdm_notebook
-
+import plotly as py
+import plotly.graph_objs as go
 from pyRVEA.RVEA import rvea
 
 
@@ -433,16 +434,53 @@ class Population:
         if num_obj == 2:
             plt.scatter(obj[:, 0], obj[:, 1])
         elif num_obj == 3:
-            ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
-            ax.scatter(ref[:, 0], ref[:, 1], ref[:, 2])
+            # ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
+            # ax.scatter(ref[:, 0], ref[:, 1], ref[:, 2])
+            trace = go.Scatter3d(x=obj[:, 0], y=obj[:, 1], z=obj[:, 2], mode="markers")
+            figure = go.Figure(data=[trace])
+            py.offline.plot(figure, filename="3dscatter")
         else:
             objectives = pd.DataFrame(obj)
-            objectives["why"] = objectives[0]
-            color = plt.cm.rainbow(np.linspace(0, 1, len(objectives.index)))
-            ax.clear()
-            ax = parallel_coordinates(objectives, "why", ax=ax, color=color)
-            ax.get_legend().remove()
-        fig.canvas.draw()
+            # objectives["why"] = objectives[0]
+            # color = plt.cm.rainbow(np.linspace(0, 1, len(objectives.index)))
+            # ax.clear()
+            # ax = parallel_coordinates(objectives, "why", ax=ax, color=color)
+            # ax.get_legend().remove()
+            data = go.Parcoords(
+                line=dict(
+                    color=objectives[0],
+                    colorscale="Viridis",
+                    showscale=True,
+                    cmin=min(objectives[0]),
+                    cmax=max(objectives[0]),
+                ),
+                dimensions=list(
+                    [
+                        dict(
+                            range=[min(objectives[0]), max(objectives[0])],
+                            label="f0",
+                            values=objectives[0],
+                        ),
+                        dict(
+                            range=[min(objectives[1]), max(objectives[1])],
+                            label="f1",
+                            values=objectives[1],
+                        ),
+                        dict(
+                            range=[min(objectives[2]), max(objectives[2])],
+                            label="f2",
+                            values=objectives[2],
+                        ),
+                        dict(
+                            range=[min(objectives[3]), max(objectives[3])],
+                            label="f3",
+                            values=objectives[3],
+                        ),
+                    ]
+                ),
+            )
+            py.offline.plot([data], filename="parallelplot.html")
+        # fig.canvas.draw()
 
     def hypervolume(self, ref_point):
         """Calculate hypervolume. Uses package pygmo."""
@@ -591,8 +629,8 @@ def interrupt_evolution(
             ideal = np.amin(population.fitness, axis=0)
             nadir = np.amax(population.fitness, axis=0)
             refpoint = np.zeros_like(ideal)
-            print('Ideal vector is ', ideal)
-            print('Nadir vector is ', nadir)
+            print("Ideal vector is ", ideal)
+            print("Nadir vector is ", nadir)
             for index in range(len(refpoint)):
                 while True:
                     print("Preference for objective ", index + 1)

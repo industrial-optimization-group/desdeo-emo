@@ -19,12 +19,12 @@ class newProblem(Problem):
 
 name = "DTLZ3"
 k = 10
-numobj = 3
+numobj = 4
 numconst = 0
 numvar = numobj + k - 1
 problem = newProblem(name, numvar, numobj, numconst)
 
-lattice_resolution = 13
+lattice_resolution = 9
 population_size = 105
 
 parameters = Parameters(

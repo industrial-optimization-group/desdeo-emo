@@ -7,9 +7,9 @@ verify_ssl = true
 flake8 = "*"
 pydocstyle = "*"
 pygments = "*"
-black = "*"
 sphinx = "*"
 m2r = "*"
+black = "*"
 
 [packages]
 numpy = "*"
