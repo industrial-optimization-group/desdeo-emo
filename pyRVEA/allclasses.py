@@ -376,7 +376,7 @@ class Population:
             avg = (mating_pop[i] + mating_pop[i + 1]) / 2
             diff = (mating_pop[i] - mating_pop[i + 1]) / 2
             offspring[i] = avg + beta * diff
-            offspring[i] = avg - beta * diff
+            offspring[i+1] = avg - beta * diff
         min_val = np.ones_like(offspring) * self.lower_limits
         max_val = np.ones_like(offspring) * self.upper_limits
         k = np.random.random(offspring.shape)
