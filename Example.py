@@ -3,11 +3,13 @@ An example file demonstrating the use of pyRVEA.
 
 Visit the github/binder page for further information.
 """
-from pyRVEA.allclasses import Problem, Parameters, Population
+from pyRVEA.Population.Population import Population
+from pyRVEA.Problem.baseProblem import baseProblem
+from pyRVEA.allclasses import Parameters
 from optproblems import dtlz
 
 
-class newProblem(Problem):
+class newProblem(baseProblem):
     """New problem description."""
 
     def objectives(self, decision_variables):
