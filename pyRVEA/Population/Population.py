@@ -13,10 +13,10 @@ from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from pyRVEA.allclasses import interrupt_evolution
 from tqdm import tqdm, tqdm_notebook
+from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
 
 if TYPE_CHECKING:
     from pyRVEA.Problem.baseProblem import baseProblem
-    from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
     from pyRVEA.allclasses import Parameters
 
 

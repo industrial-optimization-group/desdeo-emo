@@ -53,16 +53,18 @@ def APD_select(
         cosine[np.where(cosine < 0)] = 0
     # Calculation of angles between reference vectors and solutions
     theta = np.arccos(cosine)
-    # Reference vector assignment
+    # Reference vector asub_population_indexssignment
     assigned_vectors = np.argmax(cosine, axis=1)
     selection = np.array([], dtype=int)
     # Selection
     for i in range(0, len(vectors.values)):
-        sub_population_index = np.where(assigned_vectors == i)
+        sub_population_index = np.atleast_1d(
+            np.squeeze(np.where(assigned_vectors == i))
+        )
         sub_population_fitness = translated_fitness[sub_population_index]
         if len(sub_population_fitness > 0):
             # APD Calculation
-            angles = theta[sub_population_index[0], i]
+            angles = theta[sub_population_index, i]
             angles = np.divide(angles, refV[i])  # This is correct.
             # You have done this calculation before. Check with fitness_norm
             # Remove this horrible line
@@ -74,7 +76,7 @@ def APD_select(
                 (1 + np.dot(penalty_factor, angles)),
             )
             minidx = np.where(apd == np.amin(apd))
-            selx = np.asarray(sub_population_index)[0][minidx]
+            selx = sub_population_index[minidx]
             if selection.shape[0] == 0:
                 selection = np.hstack((selection, np.transpose(selx[0])))
             else:
