@@ -312,7 +312,7 @@ def test():
 def test2():
     data = np.random.rand(100, 1) * np.pi
     obj = np.hstack((data, np.sin(data), np.cos(data), np.log(data)))
-    figure = animate_parallel_coords_init(obj, "partest.html")
+    figure = animate_parallel_coords_init_(obj, "partest.html")
     for i in range(1, 10):
         obj = np.hstack((data, np.sin(data / i), np.cos(data / i), np.log(data / i)))
-        figure = animate_parallel_coords_next(obj, figure, "partest.html", i)
+        figure = animate_parallel_coords_next_(obj, figure, "partest.html", i)
