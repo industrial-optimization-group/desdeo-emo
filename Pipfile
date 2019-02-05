@@ -23,6 +23,8 @@ diversipy = "*"
 pyDOE = "*"
 ipython = "*"
 plotly = "*"
+ipykernel = "*"
+ipywidgets = "*"
 
 [requires]
 python_version = "3.7"
