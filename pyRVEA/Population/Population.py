@@ -3,16 +3,14 @@ from random import shuffle
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from pandas.plotting import parallel_coordinates
 from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
-from pyRVEA.allclasses import interrupt_evolution
 from tqdm import tqdm, tqdm_notebook
+
+from pyRVEA.allclasses import interrupt_evolution
+from pyRVEA.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
 
 if TYPE_CHECKING:
@@ -25,8 +23,8 @@ class Population:
 
     def __init__(
         self,
-        problem: 'baseProblem',
-        parameters: 'Parameters',
+        problem: "baseProblem",
+        parameters: "Parameters",
         assign_type: str = "RandomAssign",
         *args
     ):
@@ -80,8 +78,12 @@ class Population:
         self.constraint_violation = pop_eval["constraint violation"]
         self.fitness = pop_eval["fitness"]
         self.reference_vectors = None
+        self.filename = problem.name + "_" + str(problem.num_of_objectives)
+        if parameters.params["ploton"]:
+            self.figure = []
+            self.plot_init_()
 
-    def evaluate(self, problem: 'baseProblem'):
+    def evaluate(self, problem: "baseProblem"):
         """Evaluate and return objective values."""
         pop = self.individuals
         objs = None
@@ -108,7 +110,7 @@ class Population:
         fitness = objs
         return fitness
 
-    def add(self, new_pop: np.ndarray, problem: 'baseProblem'):
+    def add(self, new_pop: np.ndarray, problem: "baseProblem"):
         """Evaluate and add individuals to the population."""
         if new_pop.ndim == 1:
             self.append_individual(new_pop, problem)
@@ -129,7 +131,7 @@ class Population:
         self.fitness = new_fitness
         self.constraint_violation = new_CV
 
-    def append_individual(self, ind: np.ndarray, problem: 'baseProblem'):
+    def append_individual(self, ind: np.ndarray, problem: "baseProblem"):
         """Evaluate and add individual to the population."""
         self.individuals = np.vstack((self.individuals, ind))
         obj, CV, fitness = self.evaluate_individual(ind, problem)
@@ -137,7 +139,7 @@ class Population:
         self.constraint_violation = np.vstack((self.constraint_violation, CV))
         self.fitness = np.vstack((self.fitness, fitness))
 
-    def evaluate_individual(self, ind: np.ndarray, problem: 'baseProblem'):
+    def evaluate_individual(self, ind: np.ndarray, problem: "baseProblem"):
         """
         Evaluate individual.
 
@@ -151,7 +153,7 @@ class Population:
             fitness = self.eval_fitness(ind, obj, problem)
         return (obj, CV, fitness)
 
-    def evolve(self, problem: 'baseProblem', parameters: 'Parameters') -> "Population":
+    def evolve(self, problem: "baseProblem", parameters: "Parameters") -> "Population":
         """Evolve and return the population with interruptions."""
         population = self
         self.reference_vectors = ReferenceVectors(
@@ -167,8 +169,6 @@ class Population:
                 isnotebook = False  # Other type (?)
         except NameError:
             isnotebook = False
-        if parameters.params["ploton"]:
-            figure, ax = self.plot_init_()
         if isnotebook:
             progressbar = tqdm_notebook
         else:
@@ -180,7 +180,7 @@ class Population:
                 self, problem, parameters.params, self.reference_vectors, progressbar
             )
             if parameters.params["ploton"]:
-                population.plot_objectives(figure, ax)
+                population.plot_objectives(i + 1)
             interrupt_evolution(self.reference_vectors, population, problem, parameters)
         return population
 
@@ -251,38 +251,18 @@ class Population:
         return offspring
 
     def plot_init_(self):
-        """Initialize plot objects."""
+        """Initialize animation objects. Return figure"""
         obj = self.objectives
-        num_obj = obj.shape[1]
-        if num_obj == 3:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection=Axes3D.name)
-        else:
-            fig, ax = plt.subplots()
-        plt.ion()
-        plt.show()
-        self.plot_objectives(fig, ax)
-        return (fig, ax)
+        self.figure = animate_init_(obj, self.filename + ".html")
+        return self.figure
 
-    def plot_objectives(self, fig, ax):
+    def plot_objectives(self, iteration):
         """Plot the objective values of individuals in notebook. This is a hack."""
         obj = self.objectives
-        ref = self.reference_vectors.values
-        num_samples, num_obj = obj.shape
-        ax.clear()
-        if num_obj == 2:
-            plt.scatter(obj[:, 0], obj[:, 1])
-        elif num_obj == 3:
-            ax.scatter(obj[:, 0], obj[:, 1], obj[:, 2])
-            ax.scatter(ref[:, 0], ref[:, 1], ref[:, 2])
-        else:
-            objectives = pd.DataFrame(obj)
-            objectives["why"] = objectives[0]
-            color = plt.cm.rainbow(np.linspace(0, 1, len(objectives.index)))
-            ax.clear()
-            ax = parallel_coordinates(objectives, "why", ax=ax, color=color)
-            ax.get_legend().remove()
-        fig.canvas.draw()
+        self.figure = animate_next_(
+            obj, self.figure, self.filename + ".html", iteration
+        )
+        return self.figure
 
     def hypervolume(self, ref_point):
         """Calculate hypervolume. Uses package pygmo."""
@@ -302,5 +282,10 @@ class Population:
             non_dom_front = nd2(obj)
         else:
             non_dom_front = nds(obj)
-        self.non_dom = self.objectives[non_dom_front[0][0]]
+        if isinstance(non_dom_front, tuple):
+            self.non_dom = self.objectives[non_dom_front[0][0]]
+        elif isinstance(non_dom_front, np.ndarray):
+            self.non_dom = self.objectives[non_dom_front]
+        else:
+            print("Non Dom error Line 285 in population.py")
         return non_dom_front
