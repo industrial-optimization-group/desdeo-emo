@@ -30,7 +30,8 @@ class ReferenceVectors:
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
         self.normalize()
-        self.initial_values = self.values
+        self.initial_values = np.copy(self.values)
+        self.neighbouring_angles()
         # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def normalize(self):
@@ -48,6 +49,7 @@ class ReferenceVectors:
         cosvv.sort(axis=1)
         cosvv = np.flip(cosvv, 1)
         acosvv = np.arccos(cosvv[:, 1])
+        self.neighbouring_angles_current = acosvv
         return acosvv
 
     def adapt(self, fitness):

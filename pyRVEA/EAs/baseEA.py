@@ -37,10 +37,10 @@ class baseDecompositionEA(baseEA):
 
     def __init__(self, population: "Population", problem: "baseProblem"):
         """
-        Initialize RVEA.
+        Initialize a Base Decomposition EA.
 
-        This will set up the parameters of RVEA, create Reference Vectors, and
-        (as of Feb 2019) run the first iteration of RVEA.
+        This will call methods to set up the parameters of RVEA,
+        create Reference Vectors, and (as of Feb 2019) run the first iteration of RVEA.
 
         Parameters
         ----------
@@ -59,21 +59,16 @@ class baseDecompositionEA(baseEA):
         self.reference_vectors = self.create_reference_vectors(
             self.params.lattice_resolution
         )
-        self.select = None
         print("Using baseDecompositionEA init")
+        self._next_iteration_()
 
     def _next_gen_(self, population: "Population", problem: "baseProblem"):
         """Run one generation of decomposition based EA.
 
         This method leaves method.params unchanged.
         Intended to be used by next_iteration.
-
-        Parameters
-        ----------
-        population : Population
-        problem : baseProblem
-
-        """
+        
+        sample code:
         offspring = population.mate()
         population.add(offspring, problem)
         # APD Based selection
@@ -82,6 +77,17 @@ class baseDecompositionEA(baseEA):
         ) * problem.num_of_objectives
         select = self.select(population.fitness, self.reference_vectors, penalty_factor)
         population.keep(select)
+        
+        
+        Parameters
+        ----------
+        population : Population
+        problem : baseProblem
+
+
+        """
+        pass
 
     def select(self):
         """Describe a selection mechanism. Return indices of selected individuals."""
+        pass

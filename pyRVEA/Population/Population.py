@@ -9,13 +9,11 @@ from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
-from pyRVEA.allclasses import interrupt_evolution
 from pyRVEA.OtherTools.plotlyanimate import animate_init_, animate_next_
-from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
 
 if TYPE_CHECKING:
     from pyRVEA.Problem.baseProblem import baseProblem
-    from pyRVEA.allclasses import Parameters
+    from pyRVEA.EAs.baseEA import baseEA
 
 
 class Population:
@@ -24,8 +22,8 @@ class Population:
     def __init__(
         self,
         problem: "baseProblem",
-        parameters: "Parameters",
         assign_type: str = "RandomAssign",
+        plotting: bool = True,
         *args
     ):
         """Initialize the population.
@@ -45,13 +43,17 @@ class Population:
                 file.
                 If assign_type is 'empty', create blank population.
 
+            plotting : Bool. If true, plots are created and saved.
+
         """
-        pop_size = parameters.params["population_size"]
+        pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
+        pop_size = pop_size_options[problem.num_of_objectives - 2]
         num_var = problem.num_of_variables
         self.lower_limits = np.asarray(problem.lower_limits)
         self.upper_limits = np.asarray(problem.upper_limits)
         self.hyp = 0
         self.non_dom = 0
+        self.problem = problem
         if assign_type == "RandomAssign":
             self.individuals = np.random.random((pop_size, num_var))
             # Scaling
@@ -73,50 +75,52 @@ class Population:
             self.objectives = np.asarray([])
             self.fitness = np.asarray([])
             self.constraint_violation = np.asarray([])
-        pop_eval = self.evaluate(problem)
+        pop_eval = self.evaluate()
         self.objectives = pop_eval["objectives"]
         self.constraint_violation = pop_eval["constraint violation"]
         self.fitness = pop_eval["fitness"]
-        self.reference_vectors = None
+        self.ideal = np.amin(self.fitness, axis=0)
+        self.nadir = np.amax(self.fitness, axis=0)
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
-        if parameters.params["ploton"]:
+        self.plotting = plotting
+        if self.plotting:
             self.figure = []
             self.plot_init_()
 
-    def evaluate(self, problem: "baseProblem"):
+    def evaluate(self):
         """Evaluate and return objective values."""
         pop = self.individuals
         objs = None
         cons = None
         for ind in pop:
             if objs is None:
-                objs = np.asarray(problem.objectives(ind))
+                objs = np.asarray(self.problem.objectives(ind))
             else:
-                objs = np.vstack((objs, problem.objectives(ind)))
-        if problem.num_of_constraints:
+                objs = np.vstack((objs, self.problem.objectives(ind)))
+        if self.problem.num_of_constraints:
             for ind, obj in zip(pop, objs):
                 if cons is None:
-                    cons = problem.constraints(ind, obj)
+                    cons = self.problem.constraints(ind, obj)
                 else:
-                    cons = np.vstack((cons, problem.constraints(ind, obj)))
-            fitness = self.eval_fitness(pop, objs, problem)
+                    cons = np.vstack((cons, self.problem.constraints(ind, obj)))
+            fitness = self.eval_fitness(pop, objs)
         else:
             cons = np.zeros((pop.shape[0], 1))
             fitness = objs
         return {"objectives": objs, "constraint violation": cons, "fitness": fitness}
 
-    def eval_fitness(self, pop, objs, problem):
+    def eval_fitness(self, pop, objs):
         """Return fitness values. Maybe add maximization support here."""
         fitness = objs
         return fitness
 
-    def add(self, new_pop: np.ndarray, problem: "baseProblem"):
+    def add(self, new_pop: np.ndarray):
         """Evaluate and add individuals to the population."""
         if new_pop.ndim == 1:
-            self.append_individual(new_pop, problem)
+            self.append_individual(new_pop)
         elif new_pop.ndim == 2:
             for ind in new_pop:
-                self.append_individual(ind, problem)
+                self.append_individual(ind)
         else:
             print("Error while adding new individuals. Check dimensions.")
 
@@ -131,34 +135,40 @@ class Population:
         self.fitness = new_fitness
         self.constraint_violation = new_CV
 
-    def append_individual(self, ind: np.ndarray, problem: "baseProblem"):
+    def append_individual(self, ind: np.ndarray):
         """Evaluate and add individual to the population."""
         self.individuals = np.vstack((self.individuals, ind))
-        obj, CV, fitness = self.evaluate_individual(ind, problem)
+        obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
         self.constraint_violation = np.vstack((self.constraint_violation, CV))
         self.fitness = np.vstack((self.fitness, fitness))
 
-    def evaluate_individual(self, ind: np.ndarray, problem: "baseProblem"):
+    def evaluate_individual(self, ind: np.ndarray):
         """
         Evaluate individual.
 
         Returns objective values, constraint violation, and fitness.
         """
-        obj = problem.objectives(ind)
+        obj = self.problem.objectives(ind)
         CV = 0
         fitness = obj
-        if problem.num_of_constraints:
-            CV = problem.constraints(ind, obj)
-            fitness = self.eval_fitness(ind, obj, problem)
+        if self.problem.num_of_constraints:
+            CV = self.problem.constraints(ind, obj)
+            fitness = self.eval_fitness(ind, obj, self.problem)
         return (obj, CV, fitness)
 
-    def evolve(self, problem: "baseProblem", parameters: "Parameters") -> "Population":
-        """Evolve and return the population with interruptions."""
-        population = self
-        self.reference_vectors = ReferenceVectors(
-            parameters.params["lattice_resolution"], problem.num_of_objectives
-        )
+    def evolve(self, EA: "baseEA" = None, EA_parameters: dict = None) -> "Population":
+        """Evolve and return the population with interruptions.
+
+        Evolves the population based on the EA sent by the user.
+
+        Returns
+        -------
+        Population
+            Evolved population in a Population class
+        """
+        ##################################
+        # To determine whether running in console or in notebook. Used for TQDM.
         try:
             shell = get_ipython().__class__.__name__
             if shell == "ZMQInteractiveShell":
@@ -173,16 +183,18 @@ class Population:
             progressbar = tqdm_notebook
         else:
             progressbar = tqdm
-
-        iterations = parameters.params["iterations"]
-        for i in progressbar(range(iterations), desc="Iteration"):
-            self = parameters.params["algorithm"](
-                self, problem, parameters.params, self.reference_vectors, progressbar
-            )
-            if parameters.params["ploton"]:
-                population.plot_objectives(i + 1)
-            interrupt_evolution(self.reference_vectors, population, problem, parameters)
-        return population
+        ####################################
+        # A basic evolution cycle. Will be updated to optimize() in future versions.
+        ea = EA(self)
+        iterations = ea.params["iterations"]
+        if self.plotting:
+            self.plot_objectives(1)
+        for i in progressbar(range(1, iterations), desc="Iteration"):
+            ea._run_interruption(self)
+            ea._next_iteration(self)
+            if self.plotting:
+                self.plot_objectives(i + 1)
+        return self
 
     def mate(self):
         """
@@ -256,7 +268,7 @@ class Population:
         self.figure = animate_init_(obj, self.filename + ".html")
         return self.figure
 
-    def plot_objectives(self, iteration):
+    def plot_objectives(self, iteration: int):
         """Plot the objective values of individuals in notebook. This is a hack."""
         obj = self.objectives
         self.figure = animate_next_(

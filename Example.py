@@ -5,7 +5,7 @@ Visit the github/binder page for further information.
 """
 from pyRVEA.Population.Population import Population
 from pyRVEA.Problem.baseProblem import baseProblem
-from pyRVEA.allclasses import Parameters
+from pyRVEA.EAs.RVEA import RVEA
 from optproblems import dtlz
 
 
@@ -21,7 +21,7 @@ class newProblem(baseProblem):
 
 name = "DTLZ3"
 k = 10
-numobj = 6
+numobj = 3
 numconst = 0
 numvar = numobj + k - 1
 problem = newProblem(name, numvar, numobj, numconst)
@@ -29,13 +29,9 @@ problem = newProblem(name, numvar, numobj, numconst)
 lattice_resolution = 4
 population_size = 105
 
-parameters = Parameters(
-    population_size, lattice_resolution, algorithm_name="RVEA", interact=False
-)
+pop = Population(problem)
 
-pop = Population(problem, parameters)
-
-newpop = pop.evolve(problem, parameters)
+newpop = pop.evolve(RVEA)
 
 newpop.non_dominated()
 refpoint = 2

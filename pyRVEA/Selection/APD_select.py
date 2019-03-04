@@ -6,9 +6,7 @@ if TYPE_CHECKING:
     from pyRVEA.allclasses import ReferenceVectors
 
 
-def APD_select(
-    fitness: list, vectors: "ReferenceVectors", penalty_factor: float, refV: np.ndarray
-):
+def APD_select(fitness: list, vectors: "ReferenceVectors", penalty_factor: float):
     """
     Select individuals for mating on basis of Angle penalized distance.
 
@@ -21,8 +19,6 @@ def APD_select(
     penalty_factor : float
         Multiplier of angular deviation from Reference vectors.
         See RVEA paper for details.
-    refV : np.ndarray
-        Contains the minimum angles between reference vectors.
 
     Returns
     -------
@@ -30,6 +26,7 @@ def APD_select(
         A list of indices of the selected individuals.
 
     """
+    refV = vectors.neighbouring_angles_current
     # Normalization - There may be problems here
     fmin = np.amin(fitness, axis=0)
     translated_fitness = fitness - fmin
