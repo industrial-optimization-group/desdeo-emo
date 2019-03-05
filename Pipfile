@@ -26,10 +26,10 @@ ipykernel = "*"
 ipywidgets = "*"
 jupyter = "*"
 plotly = "*"
+tornado = "==5.1.1"
 
 [requires]
 python_version = "3.7"
-
 
 [pipenv]
 allow_prereleases = true

@@ -12,6 +12,9 @@ def animate_init_(data, filename):
         figure = animate_3d_init_(data, filename)
     elif numobj >= 4:
         figure = animate_parallel_coords_init_(data, filename)
+    print("Plot saved as: ", filename)
+    print("View the plot by opening the file in browser.")
+    print("To view the plot in Jupyter Notebook, use the IFrame command.")
     return figure
 
 
