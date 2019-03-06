@@ -59,6 +59,24 @@ class baseDecompositionEA(baseEA):
         # print("Using baseDecompositionEA init")
         self._next_iteration(population)
 
+    def _next_iteration(self, population: "Population"):
+        """Run one iteration of EA.
+
+        One iteration consists of a constant or variable number of generations. This
+        method leaves EA.params unchanged, except the current iteration count and
+        gen count.
+
+        Parameters
+        ----------
+        population : Population
+
+        """
+        self.params["current_iteration_gen_count"] = 1
+        while self.continue_iteration():
+            self._next_gen(population)
+            self.params["current_iteration_gen_count"] += 1
+        self.params["current_iteration_count"] += 1
+
     def _next_gen(self, population: "Population"):
         """Run one generation of decomposition based EA.
 
@@ -91,7 +109,7 @@ class baseDecompositionEA(baseEA):
         """
         pass
 
-    def continueiteration(self):
+    def continue_iteration(self):
         """Checks whether the current iteration should be continued or not.
 
         Returns
@@ -99,4 +117,14 @@ class baseDecompositionEA(baseEA):
         bool
             True if iteration to be continued. False otherwise.
         """
-        return self.params["current_iteration_gen_count"] < self.params["generations"]
+        return self.params["current_iteration_gen_count"] <= self.params["generations"]
+
+    def continue_evolution(self):
+        """Checks whether the current iteration should be continued or not.
+
+        Returns
+        -------
+        bool
+            True if iteration to be continued. False otherwise.
+        """
+        pass

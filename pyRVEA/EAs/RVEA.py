@@ -76,24 +76,6 @@ class RVEA(baseDecompositionEA):
         }
         return rveaparams
 
-    def _next_iteration(self, population: "Population"):
-        """Run one iteration of RVEA.
-
-        One iteration consists of a constant or variable number of generations. This
-        method leaves RVEA.params unchanged.
-
-        Parameters
-        ----------
-        population : Population
-
-        """
-        self.params["current_iteration_gen_count"] = 0
-        while self.continueiteration():
-            self.params["reference_vectors"].neighbouring_angles()
-            self._next_gen(population)
-            self.params["current_iteration_gen_count"] += 1
-        self.params["current_iteration_count"] += 1
-
     def _run_interruption(self, population: "Population"):
         """Run the interruption phase of RVEA.
 
@@ -132,6 +114,7 @@ class RVEA(baseDecompositionEA):
             self.params["reference_vectors"].add_edge_vectors()
         else:
             self.params["reference_vectors"].adapt(population.fitness)
+        self.params["reference_vectors"].neighbouring_angles()
 
     def select(self, population):
         """Describe a selection mechanism. Return indices of selected individuals.
@@ -159,4 +142,3 @@ class RVEA(baseDecompositionEA):
             vectors=self.params["reference_vectors"],
             penalty_factor=penalty_factor,
         )
-
