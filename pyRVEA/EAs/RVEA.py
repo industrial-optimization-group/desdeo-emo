@@ -46,24 +46,24 @@ class RVEA(BaseDecompositionEA):
 
         Parameters
         ----------
-        population :
-
+        population : Population
+            Population object
         population_size : int
-
+            Population Size
         lattice_resolution : int
-
+            Lattice resolution
         interact : bool
-
+            bool to enable or disable interaction. Enabled if True
         a_priori_preference : bool
-
+            similar to interact
         generations_per_iteration : int
-
+            Number of generations per iteration.
         iterations : int
-
+            Total Number of iterations.
         Alpha : float
-
+            The alpha parameter of APD selection.
         plotting : bool
-
+            Useless really.
         Returns
         -------
 
@@ -150,11 +150,12 @@ class RVEA(BaseDecompositionEA):
 
         Parameters
         ----------
-        population : Population information
+        population : Population
+            Population information
 
         Returns
         -------
-        type
+        list
             list: Indices of selected individuals.
         """
         penalty_factor = (

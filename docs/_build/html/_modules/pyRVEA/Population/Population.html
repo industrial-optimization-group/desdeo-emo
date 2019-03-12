@@ -1,0 +1,536 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyRVEA.Population.Population &mdash; pyRVEA 0.6.6 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyRVEA
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">pyRVEA</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyRVEA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyRVEA.Population.Population</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyRVEA.Population.Population</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="k">import</span> <span class="n">shuffle</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyDOE</span> <span class="k">import</span> <span class="n">lhs</span>
+<span class="kn">from</span> <span class="nn">pygmo</span> <span class="k">import</span> <span class="n">fast_non_dominated_sorting</span> <span class="k">as</span> <span class="n">nds</span>
+<span class="kn">from</span> <span class="nn">pygmo</span> <span class="k">import</span> <span class="n">hypervolume</span> <span class="k">as</span> <span class="n">hv</span>
+<span class="kn">from</span> <span class="nn">pygmo</span> <span class="k">import</span> <span class="n">non_dominated_front_2d</span> <span class="k">as</span> <span class="n">nd2</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span><span class="p">,</span> <span class="n">tqdm_notebook</span>
+
+<span class="kn">from</span> <span class="nn">pyRVEA.OtherTools.plotlyanimate</span> <span class="k">import</span> <span class="n">animate_init_</span><span class="p">,</span> <span class="n">animate_next_</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyRVEA.Problem.baseProblem</span> <span class="k">import</span> <span class="n">baseProblem</span>
+    <span class="kn">from</span> <span class="nn">pyRVEA.EAs.baseEA</span> <span class="k">import</span> <span class="n">BaseEA</span>
+
+
+<div class="viewcode-block" id="Population"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population">[docs]</a><span class="k">class</span> <span class="nc">Population</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Define the population.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">problem</span><span class="p">:</span> <span class="s2">&quot;baseProblem&quot;</span><span class="p">,</span>
+        <span class="n">assign_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RandomAssign&quot;</span><span class="p">,</span>
+        <span class="n">plotting</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the population.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        problem : baseProblem</span>
+<span class="sd">            An object of the class Problem</span>
+<span class="sd">        assign_type : str, optional</span>
+<span class="sd">            Define the method of creation of population.</span>
+<span class="sd">            If &#39;assign_type&#39; is &#39;RandomAssign&#39; the population is generated</span>
+<span class="sd">            randomly. If &#39;assign_type&#39; is &#39;LHSDesign&#39;, the population is</span>
+<span class="sd">            generated via Latin Hypercube Sampling. If &#39;assign_type&#39; is</span>
+<span class="sd">            &#39;custom&#39;, the population is imported from file. If assign_type</span>
+<span class="sd">            is &#39;empty&#39;, create blank population. (the default is &quot;RandomAssign&quot;)</span>
+<span class="sd">        plotting : bool, optional</span>
+<span class="sd">            (the default is True, which creates the plots)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pop_size_options</span> <span class="o">=</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">126</span><span class="p">,</span> <span class="mi">132</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">156</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">275</span><span class="p">]</span>
+        <span class="n">pop_size</span> <span class="o">=</span> <span class="n">pop_size_options</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">num_of_objectives</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">num_var</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">num_of_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">lower_limits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">upper_limits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">non_dom</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
+        <span class="k">if</span> <span class="n">assign_type</span> <span class="o">==</span> <span class="s2">&quot;RandomAssign&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">pop_size</span><span class="p">,</span> <span class="n">num_var</span><span class="p">))</span>
+            <span class="c1"># Scaling</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper_limits</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span><span class="p">)</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">assign_type</span> <span class="o">==</span> <span class="s2">&quot;LHSDesign&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">lhs</span><span class="p">(</span><span class="n">num_var</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">pop_size</span><span class="p">)</span>
+            <span class="c1"># Scaling</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper_limits</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span><span class="p">)</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">assign_type</span> <span class="o">==</span> <span class="s2">&quot;custom&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Custom assign type not supported yet.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">assign_type</span> <span class="o">==</span> <span class="s2">&quot;empty&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>
+        <span class="n">pop_eval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span> <span class="o">=</span> <span class="n">pop_eval</span><span class="p">[</span><span class="s2">&quot;objectives&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span> <span class="o">=</span> <span class="n">pop_eval</span><span class="p">[</span><span class="s2">&quot;constraint violation&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">pop_eval</span><span class="p">[</span><span class="s2">&quot;fitness&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ideal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nadir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">num_of_objectives</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotting</span> <span class="o">=</span> <span class="n">plotting</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotting</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_init_</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Population.evaluate"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate and return objective values.&quot;&quot;&quot;</span>
+        <span class="n">pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span>
+        <span class="n">objs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cons</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">pop</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">objs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">objs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">objectives</span><span class="p">(</span><span class="n">ind</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">objs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">objs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">objectives</span><span class="p">(</span><span class="n">ind</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">num_of_constraints</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">objs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">cons</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">cons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">constraints</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">cons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">constraints</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">obj</span><span class="p">)))</span>
+            <span class="n">fitness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_fitness</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">objs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pop</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">fitness</span> <span class="o">=</span> <span class="n">objs</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;objectives&quot;</span><span class="p">:</span> <span class="n">objs</span><span class="p">,</span> <span class="s2">&quot;constraint violation&quot;</span><span class="p">:</span> <span class="n">cons</span><span class="p">,</span> <span class="s2">&quot;fitness&quot;</span><span class="p">:</span> <span class="n">fitness</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Population.eval_fitness"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.eval_fitness">[docs]</a>    <span class="k">def</span> <span class="nf">eval_fitness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate fitness based on objective values. Fitness = obj if minimized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">objs</span>
+        <span class="k">return</span> <span class="n">fitness</span></div>
+
+<div class="viewcode-block" id="Population.add"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_pop</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate and add individuals to the population.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_pop: np.ndarray</span>
+<span class="sd">            Decision variable values for new population.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new_pop</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_individual</span><span class="p">(</span><span class="n">new_pop</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">new_pop</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">new_pop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_individual</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error while adding new individuals. Check dimensions.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Population.keep"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.keep">[docs]</a>    <span class="k">def</span> <span class="nf">keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove individuals from population which are not in &quot;indices&quot;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        indices: list</span>
+<span class="sd">            Indices of individuals to keep</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">new_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">new_fitness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">new_CV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">new_pop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span> <span class="o">=</span> <span class="n">new_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">new_fitness</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span> <span class="o">=</span> <span class="n">new_CV</span></div>
+
+<div class="viewcode-block" id="Population.append_individual"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.append_individual">[docs]</a>    <span class="k">def</span> <span class="nf">append_individual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate and add individual to the population.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ind: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">,</span> <span class="n">ind</span><span class="p">))</span>
+        <span class="n">obj</span><span class="p">,</span> <span class="n">CV</span><span class="p">,</span> <span class="n">fitness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_individual</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">objectives</span><span class="p">,</span> <span class="n">obj</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">constraint_violation</span><span class="p">,</span> <span class="n">CV</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="p">,</span> <span class="n">fitness</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Population.evaluate_individual"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.evaluate_individual">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_individual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate individual.</span>
+
+<span class="sd">        Returns objective values, constraint violation, and fitness.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ind: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">objectives</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+        <span class="n">CV</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fitness</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">num_of_constraints</span><span class="p">:</span>
+            <span class="n">CV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">constraints</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+            <span class="n">fitness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_fitness</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">CV</span><span class="p">,</span> <span class="n">fitness</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Population.evolve"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.evolve">[docs]</a>    <span class="k">def</span> <span class="nf">evolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">EA</span><span class="p">:</span> <span class="s2">&quot;BaseEA&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">EA_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Population&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Evolve the population with interruptions.</span>
+
+<span class="sd">        Evolves the population based on the EA sent by the user.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        EA: &quot;BaseEA&quot;</span>
+<span class="sd">            Should be a derivative of BaseEA (Default value = None)</span>
+<span class="sd">        EA_parameters: dict</span>
+<span class="sd">            Contains the parameters needed by EA (Default value = None)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">##################################</span>
+        <span class="c1"># To determine whether running in console or in notebook. Used for TQDM.</span>
+        <span class="c1"># TQDM will be removed in future generations as number of iterations can vary</span>
+        <span class="k">if</span> <span class="n">IsNotebook</span><span class="p">():</span>
+            <span class="n">progressbar</span> <span class="o">=</span> <span class="n">tqdm_notebook</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">progressbar</span> <span class="o">=</span> <span class="n">tqdm</span>
+        <span class="c1">####################################</span>
+        <span class="c1"># A basic evolution cycle. Will be updated to optimize() in future versions.</span>
+        <span class="n">ea</span> <span class="o">=</span> <span class="n">EA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">iterations</span> <span class="o">=</span> <span class="n">ea</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotting</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_objectives</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Figure was created in init</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">progressbar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Iteration&quot;</span><span class="p">):</span>
+            <span class="n">ea</span><span class="o">.</span><span class="n">_run_interruption</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">ea</span><span class="o">.</span><span class="n">_next_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotting</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plot_objectives</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Population.mate"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.mate">[docs]</a>    <span class="k">def</span> <span class="nf">mate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Conduct crossover and mutation over the population.</span>
+
+<span class="sd">        Conduct simulated binary crossover and bounded polunomial mutation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span>
+        <span class="n">pop_size</span><span class="p">,</span> <span class="n">num_var</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">shuffled_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">pop_size</span><span class="p">))</span>
+        <span class="n">shuffle</span><span class="p">(</span><span class="n">shuffled_ids</span><span class="p">)</span>
+        <span class="n">mating_pop</span> <span class="o">=</span> <span class="n">pop</span><span class="p">[</span><span class="n">shuffled_ids</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">pop_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Maybe it should be pop_size-1?</span>
+            <span class="n">mating_pop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">mating_pop</span><span class="p">,</span> <span class="n">mating_pop</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">pop_size</span> <span class="o">=</span> <span class="n">pop_size</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># The rest closely follows the matlab code.</span>
+        <span class="n">ProC</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ProM</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">num_var</span>
+        <span class="n">DisC</span> <span class="o">=</span> <span class="mi">30</span>
+        <span class="n">DisM</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="n">offspring</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mating_pop</span><span class="p">)</span>  <span class="c1"># empty_like() more efficient?</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_var</span><span class="p">)</span>
+            <span class="n">miu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_var</span><span class="p">)</span>
+            <span class="n">beta</span><span class="p">[</span><span class="n">miu</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">miu</span><span class="p">[</span><span class="n">miu</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">])</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">DisC</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">beta</span><span class="p">[</span><span class="n">miu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">miu</span><span class="p">[</span><span class="n">miu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">])</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">DisC</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">num_var</span><span class="p">))</span>
+            <span class="n">beta</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_var</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">ProC</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># It was in matlab code</span>
+            <span class="n">avg</span> <span class="o">=</span> <span class="p">(</span><span class="n">mating_pop</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">mating_pop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">mating_pop</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mating_pop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">offspring</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">diff</span>
+            <span class="n">offspring</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">diff</span>
+        <span class="n">min_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">offspring</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_limits</span>
+        <span class="n">max_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">offspring</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_limits</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">offspring</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">miu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">offspring</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">k</span> <span class="o">&lt;=</span> <span class="n">ProM</span><span class="p">),</span> <span class="p">(</span><span class="n">miu</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">offspring_scaled</span> <span class="o">=</span> <span class="p">(</span><span class="n">offspring</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span>
+        <span class="n">offspring</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">=</span> <span class="n">offspring</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">max_val</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">[</span><span class="n">temp</span><span class="p">])</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="mi">2</span> <span class="o">*</span> <span class="n">miu</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">miu</span><span class="p">[</span><span class="n">temp</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">offspring_scaled</span><span class="p">[</span><span class="n">temp</span><span class="p">])</span> <span class="o">**</span> <span class="p">(</span><span class="n">DisM</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">DisM</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">k</span> <span class="o">&lt;=</span> <span class="n">ProM</span><span class="p">),</span> <span class="p">(</span><span class="n">miu</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">offspring</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">=</span> <span class="n">offspring</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">max_val</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">[</span><span class="n">temp</span><span class="p">])</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="mi">1</span>
+                <span class="o">-</span> <span class="p">(</span>
+                    <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">miu</span><span class="p">[</span><span class="n">temp</span><span class="p">])</span>
+                    <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">miu</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">offspring_scaled</span><span class="p">[</span><span class="n">temp</span><span class="p">]</span> <span class="o">**</span> <span class="p">(</span><span class="n">DisM</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">DisM</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">offspring</span><span class="p">[</span><span class="n">offspring</span> <span class="o">&gt;</span> <span class="n">max_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_val</span><span class="p">[</span><span class="n">offspring</span> <span class="o">&gt;</span> <span class="n">max_val</span><span class="p">]</span>
+        <span class="n">offspring</span><span class="p">[</span><span class="n">offspring</span> <span class="o">&lt;</span> <span class="n">min_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_val</span><span class="p">[</span><span class="n">offspring</span> <span class="o">&lt;</span> <span class="n">min_val</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">offspring</span></div>
+
+<div class="viewcode-block" id="Population.plot_init_"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.plot_init_">[docs]</a>    <span class="k">def</span> <span class="nf">plot_init_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize animation objects. Return figure&quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="n">animate_init_</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span></div>
+
+<div class="viewcode-block" id="Population.plot_objectives"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.plot_objectives">[docs]</a>    <span class="k">def</span> <span class="nf">plot_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot the objective values of individuals in notebook. This is a hack.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        iteration: int</span>
+<span class="sd">            Iteration count.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="n">animate_next_</span><span class="p">(</span>
+            <span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="n">iteration</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Population.hypervolume"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.hypervolume">[docs]</a>    <span class="k">def</span> <span class="nf">hypervolume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate hypervolume. Uses package pygmo. Add checks to prevent errors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ref_point</span>
+<span class="sd">            </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">non_dom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">non_dom</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref_point</span><span class="p">,</span> <span class="p">(</span><span class="n">Sequence</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="n">num_obj</span> <span class="o">=</span> <span class="n">non_dom</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ref_point</span> <span class="o">=</span> <span class="p">[</span><span class="n">ref_point</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_obj</span>
+        <span class="n">hyp</span> <span class="o">=</span> <span class="n">hv</span><span class="p">(</span><span class="n">non_dom</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">ref_point</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span></div>
+
+<div class="viewcode-block" id="Population.non_dominated"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.Population.non_dominated">[docs]</a>    <span class="k">def</span> <span class="nf">non_dominated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fix this. check if nd2 and nds mean the same thing&quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span>
+        <span class="n">num_obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">num_obj</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">non_dom_front</span> <span class="o">=</span> <span class="n">nd2</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">non_dom_front</span> <span class="o">=</span> <span class="n">nds</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">non_dom_front</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">non_dom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span><span class="p">[</span><span class="n">non_dom_front</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">non_dom_front</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">non_dom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectives</span><span class="p">[</span><span class="n">non_dom_front</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Non Dom error Line 285 in population.py&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">non_dom_front</span></div></div>
+
+
+<div class="viewcode-block" id="IsNotebook"><a class="viewcode-back" href="../../../pyRVEA.Population.html#pyRVEA.Population.Population.IsNotebook">[docs]</a><span class="k">def</span> <span class="nf">IsNotebook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Checks if the current environment is a Jupyter Notebook or a console.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if notebook. False if console</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">shell</span> <span class="o">==</span> <span class="s2">&quot;ZMQInteractiveShell&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># Jupyter notebook or qtconsole</span>
+        <span class="k">elif</span> <span class="n">shell</span> <span class="o">==</span> <span class="s2">&quot;TerminalInteractiveShell&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Terminal running IPython</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Other type (?)</span>
+    <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Bhupinder Saini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyRVEA.Population package &mdash; pyRVEA 0.6.6 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyRVEA.Problem package" href="pyRVEA.Problem.html" />
+    <link rel="prev" title="pyRVEA.OtherTools package" href="pyRVEA.OtherTools.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyRVEA
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyRVEA</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyRVEA.EAs.html">pyRVEA.EAs package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyRVEA.OtherTools.html">pyRVEA.OtherTools package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyRVEA.Population package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyRVEA.Population.Population">pyRVEA.Population.Population module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyRVEA.Problem.html">pyRVEA.Problem package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyRVEA.Recombination.html">pyRVEA.Recombination package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyRVEA.Selection.html">pyRVEA.Selection package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyRVEA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">pyRVEA</a> &raquo;</li>
+        
+          <li><a href="pyRVEA.html">&lt;no title&gt;</a> &raquo;</li>
+        
+      <li>pyRVEA.Population package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pyRVEA.Population.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pyrvea-population-package">
+<h1>pyRVEA.Population package<a class="headerlink" href="#pyrvea-population-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-pyRVEA.Population.Population">
+<span id="pyrvea-population-population-module"></span><h2>pyRVEA.Population.Population module<a class="headerlink" href="#module-pyRVEA.Population.Population" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyRVEA.Population.Population.IsNotebook">
+<code class="descclassname">pyRVEA.Population.Population.</code><code class="descname">IsNotebook</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/pyRVEA/Population/Population.html#IsNotebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.IsNotebook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the current environment is a Jupyter Notebook or a console.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if notebook. False if console</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyRVEA.Population.Population.Population">
+<em class="property">class </em><code class="descclassname">pyRVEA.Population.Population.</code><code class="descname">Population</code><span class="sig-paren">(</span><em>problem: baseProblem</em>, <em>assign_type: str = 'RandomAssign'</em>, <em>plotting: bool = True</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Define the population.</p>
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>new_pop: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and add individuals to the population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_pop</strong> (<em>np.ndarray</em>) – Decision variable values for new population.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.append_individual">
+<code class="descname">append_individual</code><span class="sig-paren">(</span><em>ind: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.append_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.append_individual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and add individual to the population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ind</strong> (<em>np.ndarray</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.eval_fitness">
+<code class="descname">eval_fitness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.eval_fitness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.eval_fitness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate fitness based on objective values. Fitness = obj if minimized.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate and return objective values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.evaluate_individual">
+<code class="descname">evaluate_individual</code><span class="sig-paren">(</span><em>ind: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.evaluate_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.evaluate_individual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate individual.</p>
+<p>Returns objective values, constraint violation, and fitness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ind</strong> (<em>np.ndarray</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.evolve">
+<code class="descname">evolve</code><span class="sig-paren">(</span><em>EA: BaseEA = None</em>, <em>EA_parameters: dict = None</em><span class="sig-paren">)</span> &#x2192; Population<a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.evolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.evolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evolve the population with interruptions.</p>
+<p>Evolves the population based on the EA sent by the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>EA</strong> (<em>&quot;BaseEA&quot;</em>) – Should be a derivative of BaseEA (Default value = None)</p></li>
+<li><p><strong>EA_parameters</strong> (<em>dict</em>) – Contains the parameters needed by EA (Default value = None)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.hypervolume">
+<code class="descname">hypervolume</code><span class="sig-paren">(</span><em>ref_point</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.hypervolume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.hypervolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate hypervolume. Uses package pygmo. Add checks to prevent errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ref_point</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.keep">
+<code class="descname">keep</code><span class="sig-paren">(</span><em>indices: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.keep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.keep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove individuals from population which are not in “indices”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>indices</strong> (<em>list</em>) – Indices of individuals to keep</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.mate">
+<code class="descname">mate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.mate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.mate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conduct crossover and mutation over the population.</p>
+<p>Conduct simulated binary crossover and bounded polunomial mutation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.non_dominated">
+<code class="descname">non_dominated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.non_dominated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.non_dominated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fix this. check if nd2 and nds mean the same thing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.plot_init_">
+<code class="descname">plot_init_</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.plot_init_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.plot_init_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize animation objects. Return figure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyRVEA.Population.Population.Population.plot_objectives">
+<code class="descname">plot_objectives</code><span class="sig-paren">(</span><em>iteration: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyRVEA/Population/Population.html#Population.plot_objectives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyRVEA.Population.Population.Population.plot_objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the objective values of individuals in notebook. This is a hack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>iteration</strong> (<em>int</em>) – Iteration count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyRVEA.Problem.html" class="btn btn-neutral float-right" title="pyRVEA.Problem package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyRVEA.OtherTools.html" class="btn btn-neutral float-left" title="pyRVEA.OtherTools package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Bhupinder Saini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -7,7 +7,6 @@ verify_ssl = true
 flake8 = "*"
 pydocstyle = "*"
 pygments = "*"
-sphinx = "*"
 black = "*"
 m2r  = "*"
 
@@ -27,6 +26,9 @@ ipywidgets = "*"
 jupyter = "*"
 plotly = "*"
 tornado = "==5.1.1"
+doctuils = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [requires]
 python_version = "3.7"
