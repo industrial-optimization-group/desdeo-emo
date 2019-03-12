@@ -9,8 +9,18 @@ from scipy.special import comb
 class ReferenceVectors:
     """Class object for reference vectors."""
 
-    def __init__(self, lattice_resolution: int, number_of_objectives):
-        """Create a simplex lattice."""
+    def __init__(self, lattice_resolution: int, number_of_objectives: int):
+        """Create a Reference vectors object.
+
+        A simplex lattice is formed
+
+        Parameters
+        ----------
+        lattice_resolution : int
+            Number of divisions along an axis when creating the simplex lattice.
+        number_of_objectives : int
+            Number of objectives.
+        """
         number_of_vectors = comb(
             lattice_resolution + number_of_objectives - 1,
             number_of_objectives - 1,
@@ -35,7 +45,7 @@ class ReferenceVectors:
         # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def normalize(self):
-        """Normalize the reference vectors."""
+        """Normalize the reference vectors to a unit hypersphere."""
         self.number_of_vectors = self.values.shape[0]
         norm = np.linalg.norm(self.values, axis=1)
         norm = np.repeat(norm, self.number_of_objectives).reshape(
@@ -52,8 +62,13 @@ class ReferenceVectors:
         self.neighbouring_angles_current = acosvv
         return acosvv
 
-    def adapt(self, fitness):
-        """Adapt reference vectors."""
+    def adapt(self, fitness: np.ndarray):
+        """Adapt reference vectors. Then normalize.
+
+        Parameters
+        ----------
+        fitness : np.ndarray
+        """
         max_val = np.amax(fitness, axis=0)
         min_val = np.amin(fitness, axis=0)
         self.values = np.multiply(
@@ -63,19 +78,20 @@ class ReferenceVectors:
         self.normalize()
 
     def iteractive_adapt_1(self, ref_point, translation_param=0.2):
-        """Adapt reference vectors linearly towards a reference point.
+        """Adapt reference vectors linearly towards a reference point. Then normalize.
 
-        The details can be found in the following paper: Hakanen, Jussi & Chugh, Tinkle
-        & Sindhya, Karthik & Jin, Yaochu & Miettinen, Kaisa. (2016). Connections of
-        Reference Vectors and Different Types of Preference Information in
-        Interactive Multiobjective Evolutionary Algorithms.
+        The details can be found in the following paper: Hakanen, Jussi &
+        Chugh, Tinkle & Sindhya, Karthik & Jin, Yaochu & Miettinen, Kaisa.
+        (2016). Connections of Reference Vectors and Different Types of
+        Preference Information in Interactive Multiobjective Evolutionary
+        Algorithms.
 
-        Parameters:
-        ------------
-            ref_point: list. Signifies the reference point towards which the
-                       reference vectors are translated.
-            translation_param: double between 0 and 1.
-                               Describes the strength of translation.
+        Parameters
+        ----------
+        ref_point :
+
+        translation_param :
+            (Default value = 0.2)
 
         """
         self.values = self.initial_values * translation_param + (
@@ -85,8 +101,10 @@ class ReferenceVectors:
 
     def add_edge_vectors(self):
         """Add edge vectors to the list of reference vectors.
+     
+        Used to cover the entire orthant when preference information is
+        provided.
 
-        Used to cover the entire orthant when preference information is provided.
         """
         edge_vectors = np.eye(self.values.shape[1])
         self.values = np.vstack([self.values, edge_vectors])

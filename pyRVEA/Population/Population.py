@@ -13,7 +13,7 @@ from pyRVEA.OtherTools.plotlyanimate import animate_init_, animate_next_
 
 if TYPE_CHECKING:
     from pyRVEA.Problem.baseProblem import baseProblem
-    from pyRVEA.EAs.baseEA import baseEA
+    from pyRVEA.EAs.baseEA import BaseEA
 
 
 class Population:
@@ -28,22 +28,19 @@ class Population:
     ):
         """Initialize the population.
 
-        Parameters:
-        ------------
-            problem: An object of the class Problem
-
-            parameters: An object of the class Parameters
-
-            assign_type: Define the method of creation of population.
-                If 'assign_type' is 'RandomAssign' the population is generated
-                randomly.
-                If 'assign_type' is 'LHSDesign', the population is generated
-                via Latin Hypercube Sampling.
-                If 'assign_type' is 'custom', the population is imported from
-                file.
-                If assign_type is 'empty', create blank population.
-
-            plotting : Bool. If true, plots are created and saved.
+        Parameters
+        ----------
+        problem : baseProblem
+            An object of the class Problem
+        assign_type : str, optional
+            Define the method of creation of population.
+            If 'assign_type' is 'RandomAssign' the population is generated
+            randomly. If 'assign_type' is 'LHSDesign', the population is
+            generated via Latin Hypercube Sampling. If 'assign_type' is
+            'custom', the population is imported from file. If assign_type
+            is 'empty', create blank population. (the default is "RandomAssign")
+        plotting : bool, optional
+            (the default is True, which creates the plots)
 
         """
         pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
@@ -109,13 +106,21 @@ class Population:
             fitness = objs
         return {"objectives": objs, "constraint violation": cons, "fitness": fitness}
 
-    def eval_fitness(self, pop, objs):
-        """Return fitness values. Maybe add maximization support here."""
-        fitness = objs
+    def eval_fitness(self):
+        """
+        Calculate fitness based on objective values. Fitness = obj if minimized.
+        """
+        fitness = self.objectives * self.problem.objs
         return fitness
 
     def add(self, new_pop: np.ndarray):
-        """Evaluate and add individuals to the population."""
+        """Evaluate and add individuals to the population.
+
+        Parameters
+        ----------
+        new_pop: np.ndarray
+            Decision variable values for new population.
+        """
         if new_pop.ndim == 1:
             self.append_individual(new_pop)
         elif new_pop.ndim == 2:
@@ -125,7 +130,13 @@ class Population:
             print("Error while adding new individuals. Check dimensions.")
 
     def keep(self, indices: list):
-        """Remove individuals from population which are not in "indices"."""
+        """Remove individuals from population which are not in "indices".
+
+        Parameters
+        ----------
+        indices: list
+            Indices of individuals to keep
+        """
         new_pop = self.individuals[indices, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
@@ -136,7 +147,12 @@ class Population:
         self.constraint_violation = new_CV
 
     def append_individual(self, ind: np.ndarray):
-        """Evaluate and add individual to the population."""
+        """Evaluate and add individual to the population.
+
+        Parameters
+        ----------
+        ind: np.ndarray
+        """
         self.individuals = np.vstack((self.individuals, ind))
         obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
@@ -144,10 +160,13 @@ class Population:
         self.fitness = np.vstack((self.fitness, fitness))
 
     def evaluate_individual(self, ind: np.ndarray):
-        """
-        Evaluate individual.
+        """Evaluate individual.
 
         Returns objective values, constraint violation, and fitness.
+
+        Parameters
+        ----------
+        ind: np.ndarray
         """
         obj = self.problem.objectives(ind)
         CV = 0
@@ -157,29 +176,23 @@ class Population:
             fitness = self.eval_fitness(ind, obj, self.problem)
         return (obj, CV, fitness)
 
-    def evolve(self, EA: "baseEA" = None, EA_parameters: dict = None) -> "Population":
-        """Evolve and return the population with interruptions.
+    def evolve(self, EA: "BaseEA" = None, EA_parameters: dict = None) -> "Population":
+        """Evolve the population with interruptions.
 
         Evolves the population based on the EA sent by the user.
 
-        Returns
-        -------
-        Population
-            Evolved population in a Population class
+        Parameters
+        ----------
+        EA: "BaseEA"
+            Should be a derivative of BaseEA (Default value = None)
+        EA_parameters: dict
+            Contains the parameters needed by EA (Default value = None)
+
         """
         ##################################
         # To determine whether running in console or in notebook. Used for TQDM.
-        try:
-            shell = get_ipython().__class__.__name__
-            if shell == "ZMQInteractiveShell":
-                isnotebook = True  # Jupyter notebook or qtconsole
-            elif shell == "TerminalInteractiveShell":
-                isnotebook = False  # Terminal running IPython
-            else:
-                isnotebook = False  # Other type (?)
-        except NameError:
-            isnotebook = False
-        if isnotebook:
+        # TQDM will be removed in future generations as number of iterations can vary
+        if IsNotebook():
             progressbar = tqdm_notebook
         else:
             progressbar = tqdm
@@ -188,20 +201,17 @@ class Population:
         ea = EA(self)
         iterations = ea.params["iterations"]
         if self.plotting:
-            self.plot_objectives(1)
+            self.plot_objectives(1)  # Figure was created in init
         for i in progressbar(range(1, iterations), desc="Iteration"):
             ea._run_interruption(self)
             ea._next_iteration(self)
             if self.plotting:
                 self.plot_objectives(i + 1)
-        return self
 
     def mate(self):
-        """
-        Conduct crossover and mutation over the population.
+        """Conduct crossover and mutation over the population.
 
         Conduct simulated binary crossover and bounded polunomial mutation.
-        Return offspring population as an array.
         """
         pop = self.individuals
         pop_size, num_var = pop.shape
@@ -269,15 +279,30 @@ class Population:
         return self.figure
 
     def plot_objectives(self, iteration: int):
-        """Plot the objective values of individuals in notebook. This is a hack."""
+        """Plot the objective values of individuals in notebook. This is a hack.
+
+        Parameters
+        ----------
+        iteration: int
+            Iteration count.
+        """
         obj = self.objectives
         self.figure = animate_next_(
             obj, self.figure, self.filename + ".html", iteration
         )
-        return self.figure
 
     def hypervolume(self, ref_point):
-        """Calculate hypervolume. Uses package pygmo."""
+        """Calculate hypervolume. Uses package pygmo. Add checks to prevent errors.
+
+        Parameters
+        ----------
+        ref_point
+            
+
+        Returns
+        -------
+
+        """
         non_dom = self.non_dom
         if not isinstance(ref_point, (Sequence, np.ndarray)):
             num_obj = non_dom.shape[1]
@@ -287,7 +312,7 @@ class Population:
         return self.hyp
 
     def non_dominated(self):
-        """Return the pareto front of a given population."""
+        """Fix this. check if nd2 and nds mean the same thing"""
         obj = self.objectives
         num_obj = obj.shape[1]
         if num_obj == 2:
@@ -301,3 +326,23 @@ class Population:
         else:
             print("Non Dom error Line 285 in population.py")
         return non_dom_front
+
+
+def IsNotebook() -> bool:
+    """Checks if the current environment is a Jupyter Notebook or a console.
+
+    Returns
+    -------
+    bool
+        True if notebook. False if console
+    """
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from pyRVEA.Selection.APD_select import APD_select
-from pyRVEA.EAs.baseEA import baseDecompositionEA
+from pyRVEA.EAs.baseEA import BaseDecompositionEA
 from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
 
 import numpy as np
@@ -10,20 +10,21 @@ if TYPE_CHECKING:
     from pyRVEA.Population.Population import Population
 
 
-class RVEA(baseDecompositionEA):
+class RVEA(BaseDecompositionEA):
     """The python version reference vector guided evolutionary algorithm.
 
     See the details of RVEA in the following paper
 
-    R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff,
-    A Reference Vector Guided Evolutionary Algorithm for Many-objective
-    Optimization, IEEE Transactions on Evolutionary Computation, 2016
+    R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff, A Reference Vector Guided
+    Evolutionary Algorithm for Many-objective Optimization, IEEE Transactions on
+    Evolutionary Computation, 2016
 
     The source code of pyRVEA is implemented by Bhupinder Saini
 
     If you have any questions about the code, please contact:
 
     Bhupinder Saini: bhupinder.s.saini@jyu.fi
+
     Project researcher at University of Jyväskylä.
     """
 
@@ -40,8 +41,33 @@ class RVEA(baseDecompositionEA):
         plotting: bool = True,
         algorithm_name="RVEA",
     ):
-        """Set up the parameters. Save in RVEA.params. Note, this should be changed
-        to align with the current structure."""
+        """Set up the parameters. Save in RVEA.params. Note, this should be
+        changed to align with the current structure.
+
+        Parameters
+        ----------
+        population :
+
+        population_size : int
+
+        lattice_resolution : int
+
+        interact : bool
+
+        a_priori_preference : bool
+
+        generations_per_iteration : int
+
+        iterations : int
+
+        Alpha : float
+
+        plotting : bool
+
+        Returns
+        -------
+
+        """
         lattice_resolution_options = {
             "2": 49,
             "3": 13,
@@ -85,7 +111,6 @@ class RVEA(baseDecompositionEA):
         Parameters
         ----------
         population : Population
-
         """
         if self.params["interact"] or (
             self.params["a_priori"] and self.params["current_iteration_count"] == 1
@@ -117,21 +142,20 @@ class RVEA(baseDecompositionEA):
         self.params["reference_vectors"].neighbouring_angles()
 
     def select(self, population):
-        """Describe a selection mechanism. Return indices of selected individuals.
+        """Describe a selection mechanism. Return indices of selected
+        individuals.
 
-        # APD Based selection.
-        # This is different from the paper.
-        # params.genetations != total number of generations. This is a compromise.
+        # APD Based selection. # This is different from the paper. #
+        params.genetations != total number of generations. This is a compromise.
 
         Parameters
         ----------
-        population : Population
-            Contains the current population and problem information.
+        population : Population information
 
         Returns
         -------
-        list
-            Indices of selected individuals.
+        type
+            list: Indices of selected individuals.
         """
         penalty_factor = (
             (self.params["current_iteration_gen_count"] / self.params["generations"])

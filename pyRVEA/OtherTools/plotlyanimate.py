@@ -2,9 +2,27 @@ from plotly.offline.offline import plot
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
+from typing import Union
 
 
-def animate_init_(data, filename):
+def animate_init_(data: Union[np.ndarray, pd.DataFrame, list], filename: str) -> dict:
+    """Plot the first (or zeroth) iteration of a population.
+
+    Intended as a frames object. Plots Scatter for 2D and 3D data.
+    Plots parallel coordinate plot for higher dimensional data.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        Contains the data to be plotted. Each row is an individual's objective values.
+    filename : str
+        Contains the name of the file to which the plot is saved.
+
+    Returns
+    -------
+    dict
+        Plotly figure object
+    """
     numobj = data.shape[1]
     if numobj == 2:
         figure = animate_2d_init_(data, filename)
@@ -18,7 +36,33 @@ def animate_init_(data, filename):
     return figure
 
 
-def animate_next_(data, figure, filename, generation):
+def animate_next_(
+    data: Union[np.ndarray, pd.DataFrame, list],
+    figure: dict,
+    filename: str,
+    generation: int,
+) -> dict:
+    """Plot the next set of individuals in an animation.
+
+    Plots scatter for 2D and 3D data, parallel coordinate plot for 4D and up.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        The objective values to be plotted
+    figure : dict
+        Plotly figure object compatible dict
+    filename : str
+        Name of the file to which the plot is saved
+    generation : int
+        Iteration Number
+
+    Returns
+    -------
+    dict
+        Plotly Figure Object
+    """
+
     numobj = data.shape[1]
     if numobj == 2:
         figure = animate_2d_next_(data, figure, filename, generation)
@@ -29,7 +73,26 @@ def animate_next_(data, figure, filename, generation):
     return figure
 
 
-def animate_2d_init_(data, filename):
+def animate_2d_init_(
+    data: Union[np.ndarray, pd.DataFrame, list], filename: str
+) -> dict:
+    """Initiate a 2D scatter animation.
+    
+    Only for 2D data.
+    
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        Objective values
+    filename : str
+        Name of the file to which plot is saved
+    
+    Returns
+    -------
+    dict
+        Plotly Figure Object
+    """
+
     figure = {"data": [], "layout": {}, "frames": []}
     figure["layout"]["xaxis"] = {"autorange": True}
     figure["layout"]["yaxis"] = {"autorange": True}
@@ -74,7 +137,30 @@ def animate_2d_init_(data, filename):
     return figure
 
 
-def animate_2d_next_(data, figure, filename, generation):
+def animate_2d_next_(
+    data: Union[np.ndarray, pd.DataFrame, list],
+    figure: dict,
+    filename: str,
+    generation: int,
+) -> dict:
+    """Plot the next set of individuals in a 2D scatter animation.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        The objective values to be plotted
+    figure : dict
+        Plotly figure object compatible dict
+    filename : str
+        Name of the file to which the plot is saved
+    generation : int
+        Iteration Number
+
+    Returns
+    -------
+    dict
+        Plotly Figure Object
+    """
     frame = {"data": [], "name": str(generation)}
     sliders_dict = figure["layout"]["sliders"][0]
     data_dict = {
@@ -107,7 +193,25 @@ def animate_2d_next_(data, figure, filename, generation):
     return figure
 
 
-def animate_3d_init_(data, filename):
+def animate_3d_init_(
+    data: Union[np.ndarray, pd.DataFrame, list], filename: str
+) -> dict:
+    """Plot the first (or zeroth) iteration of a population.
+
+    Intended as a frames object. Plots Scatter 3D data.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        Contains the data to be plotted. Each row is an individual's objective values.
+    filename : str
+        Contains the name of the file to which the plot is saved.
+
+    Returns
+    -------
+    dict
+        Plotly figure object
+    """
     figure = {"data": [], "layout": {}, "frames": []}
     figure["layout"]["hovermode"] = "closest"
     figure["layout"]["sliders"] = {
@@ -174,7 +278,32 @@ def animate_3d_init_(data, filename):
     return figure
 
 
-def animate_3d_next_(data, figure, filename, generation):
+def animate_3d_next_(
+    data: Union[np.ndarray, pd.DataFrame, list],
+    figure: dict,
+    filename: str,
+    generation: int,
+) -> dict:
+    """Plot the next set of individuals in an animation.
+
+    Plots scatter for 3D data.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        The objective values to be plotted
+    figure : dict
+        Plotly figure object compatible dict
+    filename : str
+        Name of the file to which the plot is saved
+    generation : int
+        Iteration Number
+
+    Returns
+    -------
+    dict
+        Plotly Figure Object
+    """
     frame = {"data": [], "name": str(generation)}
     sliders_dict = figure["layout"]["sliders"][0]
     data_dict = go.Scatter3d(
@@ -210,7 +339,25 @@ def animate_3d_next_(data, figure, filename, generation):
     return figure
 
 
-def animate_parallel_coords_init_(data, filename):
+def animate_parallel_coords_init_(
+    data: Union[np.ndarray, pd.DataFrame, list], filename: str
+) -> dict:
+    """Plot the first (or zeroth) iteration of a population.
+
+    Intended as a frames object. Plots parallel coordinate plot for >3D data.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        Contains the data to be plotted. Each row is an individual's objective values.
+    filename : str
+        Contains the name of the file to which the plot is saved.
+
+    Returns
+    -------
+    dict
+        Plotly figure object
+    """
     figure = {"data": [], "layout": {}, "frames": []}
     objectives = pd.DataFrame(data)
     figure["layout"]["hovermode"] = "closest"
@@ -260,7 +407,32 @@ def animate_parallel_coords_init_(data, filename):
     return figure
 
 
-def animate_parallel_coords_next_(data, figure, filename, generation):
+def animate_parallel_coords_next_(
+    data: Union[np.ndarray, pd.DataFrame, list],
+    figure: dict,
+    filename: str,
+    generation: int,
+) -> dict:
+    """Plot the next set of individuals in an animation.
+
+    Plots parallel coordinate plot for 4D and up.
+
+    Parameters
+    ----------
+    data : Union[np.ndarray, pd.DataFrame, list]
+        The objective values to be plotted
+    figure : dict
+        Plotly figure object compatible dict
+    filename : str
+        Name of the file to which the plot is saved
+    generation : int
+        Iteration Number
+
+    Returns
+    -------
+    dict
+        Plotly Figure Object
+    """
     frame = {"data": [], "name": str(generation)}
     objectives = pd.DataFrame(data)
     sliders_dict = figure["layout"]["sliders"][0]

@@ -14,7 +14,16 @@ class testProblem(baseProblem):
         upper_limits=1,
         lower_limits=0,
     ):
-        """Pydocstring is ruthless."""
+        """Pydocstring is ruthless.
+
+        Args:
+            name:
+            num_of_variables:
+            num_of_objectives:
+            num_of_constraints:
+            upper_limits:
+            lower_limits:
+        """
         super(testProblem, self).__init__(
             name,
             num_of_variables,
@@ -77,9 +86,18 @@ class testProblem(baseProblem):
             self.upper_limits = self.obj_func.max_bounds
 
     def objectives(self, decision_variables) -> list:
-        """Use this method to calculate objective functions."""
+        """Use this method to calculate objective functions.
+
+        Args:
+            decision_variables:
+        """
         return self.obj_func(decision_variables)
 
     def constraints(self, decision_variables, objective_variables):
-        """Calculate constraint violation."""
+        """Calculate constraint violation.
+
+        Args:
+            decision_variables:
+            objective_variables:
+        """
         print("Error: Constraints not supported yet.")

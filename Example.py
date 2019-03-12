@@ -13,7 +13,6 @@ class newProblem(baseProblem):
     """New problem description."""
 
     def objectives(self, decision_variables):
-        """Return objective value."""
         return dtlz.DTLZ3(self.num_of_objectives, self.num_of_variables)(
             decision_variables
         )
@@ -21,7 +20,7 @@ class newProblem(baseProblem):
 
 name = "DTLZ3"
 k = 10
-numobj = 3
+numobj = 4
 numconst = 0
 numvar = numobj + k - 1
 problem = newProblem(name, numvar, numobj, numconst)

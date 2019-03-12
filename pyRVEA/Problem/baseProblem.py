@@ -10,7 +10,24 @@ class baseProblem:
         upper_limits=1,
         lower_limits=0,
     ):
-        """Pydocstring is ruthless."""
+        """
+        Pydocstring is ruthless.
+
+        Parameters
+        ----------
+        name
+
+        num_of_variables
+
+        num_of_objectives
+
+        num_of_constraints
+
+        upper_limits
+
+        lower_limits
+
+        """
         self.name = name
         self.num_of_variables = num_of_variables
         self.num_of_objectives = num_of_objectives
@@ -20,24 +37,23 @@ class baseProblem:
         self.lower_limits = lower_limits
 
     def objectives(self, decision_variables):
-        """
-        Accept a sample.
+        """Accept a sample. Return Objective values.
 
-        Return all corresponding objective values as a
-        list or array.
+        Parameters
+        ----------
+        decision_variables
         """
         pass
 
     def constraints(self, decision_variables):
-        """
-        Accept a sample and/or corresponding objective values.
+        """Accept a sample and/or corresponding objective values.
 
-        Return all corresponding constraint violation values as a
-        list or array.
+        Parameters
+        ----------
+        decision_variables
         """
         pass
 
     def update():
         """Update the problem based on new information."""
         pass
-

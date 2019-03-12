@@ -7,24 +7,16 @@ if TYPE_CHECKING:
 
 
 def APD_select(fitness: list, vectors: "ReferenceVectors", penalty_factor: float):
-    """
-    Select individuals for mating on basis of Angle penalized distance.
+    """Select individuals for mating on basis of Angle penalized distance.
 
-    Parameters
-    ----------
-    fitness : list
-        Fitness of the current population.
-    vectors : ReferenceVectors
-        Class containing reference vectors.
-    penalty_factor : float
-        Multiplier of angular deviation from Reference vectors.
-        See RVEA paper for details.
+    Args:
+        fitness (list): Fitness of the current population.
+        vectors (ReferenceVectors): Class containing reference vectors.
+        penalty_factor (float): Multiplier of angular deviation from Reference
+            vectors. See RVEA paper for details.
 
-    Returns
-    -------
-    [type]
-        A list of indices of the selected individuals.
-
+    Returns:
+        [type]: A list of indices of the selected individuals.
     """
     refV = vectors.neighbouring_angles_current
     # Normalization - There may be problems here
