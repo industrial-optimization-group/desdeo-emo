@@ -78,7 +78,7 @@ class Population:
         self.constraint_violation = pop_eval["constraint violation"]
         self.fitness = pop_eval["fitness"]
         self.ideal_fitness = np.amin(self.fitness, axis=0)
-        self.nadir_fitness = np.amax(self.fitness, axis=0)
+        self.worst_fitness = np.amax(self.fitness, axis=0)
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         if self.plotting:
@@ -300,7 +300,6 @@ class Population:
         Parameters
         ----------
         ref_point
-            
 
         Returns
         -------
@@ -343,8 +342,8 @@ class Population:
 
         """
         if new_objective_vals is None:
-            check_ideal_with = np.amin(self.fitness, axis=0)
+            check_ideal_with = self.fitness
         else:
             check_ideal_with = new_objective_vals
         self.ideal_fitness = np.amin((self.ideal_fitness, check_ideal_with), axis=0)
-        self.nadir_fitness = np.amax(self.fitness)
+        self.worst_fitness = np.amax((self.worst_fitness, check_ideal_with), axis=0)
