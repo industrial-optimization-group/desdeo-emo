@@ -6,21 +6,34 @@ if TYPE_CHECKING:
     from pyRVEA.allclasses import ReferenceVectors
 
 
-def APD_select(fitness: list, vectors: "ReferenceVectors", penalty_factor: float):
+def APD_select(
+    fitness: list,
+    vectors: "ReferenceVectors",
+    penalty_factor: float,
+    ideal: list = None,
+):
     """Select individuals for mating on basis of Angle penalized distance.
 
     Args:
         fitness (list): Fitness of the current population.
+
         vectors (ReferenceVectors): Class containing reference vectors.
+
         penalty_factor (float): Multiplier of angular deviation from Reference
             vectors. See RVEA paper for details.
+
+        ideal (list): ideal point for the population.
+            Uses the min fitness value if None.
 
     Returns:
         [type]: A list of indices of the selected individuals.
     """
     refV = vectors.neighbouring_angles_current
     # Normalization - There may be problems here
-    fmin = np.amin(fitness, axis=0)
+    if ideal is not None:
+        fmin = ideal
+    else:
+        fmin = np.amin(fitness, axis=0)
     translated_fitness = fitness - fmin
     fitness_norm = np.linalg.norm(translated_fitness, axis=1)
     fitness_norm = np.repeat(fitness_norm, len(translated_fitness[0, :])).reshape(

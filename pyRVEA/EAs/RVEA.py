@@ -141,12 +141,14 @@ class RVEA(BaseDecompositionEA):
             self.params["reference_vectors"].adapt(population.fitness)
         self.params["reference_vectors"].neighbouring_angles()
 
-    def select(self, population):
+    def select(self, population: "Population"):
         """Describe a selection mechanism. Return indices of selected
         individuals.
 
         # APD Based selection. # This is different from the paper. #
         params.genetations != total number of generations. This is a compromise.
+        Also this APD uses an archived ideal point, rather than current, potentially
+        worse ideal point.
 
         Parameters
         ----------
@@ -166,4 +168,5 @@ class RVEA(BaseDecompositionEA):
             fitness=population.fitness,
             vectors=self.params["reference_vectors"],
             penalty_factor=penalty_factor,
+            ideal=population.ideal_fitness,
         )

@@ -10,6 +10,7 @@ from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
 from pyRVEA.OtherTools.plotlyanimate import animate_init_, animate_next_
+from pyRVEA.OtherTools.IsNotebook import IsNotebook
 
 if TYPE_CHECKING:
     from pyRVEA.Problem.baseProblem import baseProblem
@@ -76,8 +77,8 @@ class Population:
         self.objectives = pop_eval["objectives"]
         self.constraint_violation = pop_eval["constraint violation"]
         self.fitness = pop_eval["fitness"]
-        self.ideal = np.amin(self.fitness, axis=0)
-        self.nadir = np.amax(self.fitness, axis=0)
+        self.ideal_fitness = np.amin(self.fitness, axis=0)
+        self.nadir_fitness = np.amax(self.fitness, axis=0)
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         if self.plotting:
@@ -114,7 +115,7 @@ class Population:
         return fitness
 
     def add(self, new_pop: np.ndarray):
-        """Evaluate and add individuals to the population.
+        """Evaluate and add individuals to the population. Update ideal and nadir point.
 
         Parameters
         ----------
@@ -128,6 +129,8 @@ class Population:
                 self.append_individual(ind)
         else:
             print("Error while adding new individuals. Check dimensions.")
+        print(self.ideal_fitness)
+        self.update_ideal_and_nadir()
 
     def keep(self, indices: list):
         """Remove individuals from population which are not in "indices".
@@ -327,22 +330,21 @@ class Population:
             print("Non Dom error Line 285 in population.py")
         return non_dom_front
 
+    def update_ideal_and_nadir(self, new_objective_vals: list = None):
+        """Updates self.ideal and self.nadir in the fitness space.
 
-def IsNotebook() -> bool:
-    """Checks if the current environment is a Jupyter Notebook or a console.
+        Uses the entire population if new_objective_vals is none.
 
-    Returns
-    -------
-    bool
-        True if notebook. False if console
-    """
-    try:
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
+        Parameters
+        ----------
+        new_objective_vals : list, optional
+            Objective values for a newly added individual (the default is None, which
+            calculated the ideal and nadir for the entire population.)
+
+        """
+        if new_objective_vals is None:
+            check_ideal_with = np.amin(self.fitness, axis=0)
         else:
-            return False  # Other type (?)
-    except NameError:
-        return False
+            check_ideal_with = new_objective_vals
+        self.ideal_fitness = np.amin((self.ideal_fitness, check_ideal_with), axis=0)
+        self.nadir_fitness = np.amax(self.fitness)

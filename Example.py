@@ -30,9 +30,9 @@ population_size = 105
 
 pop = Population(problem)
 
-newpop = pop.evolve(RVEA)
+pop.evolve(RVEA)
 
-newpop.non_dominated()
+pop.non_dominated()
 refpoint = 2
 volume = 2 ** numobj
-print(newpop.hypervolume(refpoint) / volume)
+print(pop.hypervolume(refpoint) / volume)
