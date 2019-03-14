@@ -39,6 +39,7 @@ class ReferenceVectors:
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
+        self.values_planar = np.copy(self.values)
         self.normalize()
         self.initial_values = np.copy(self.values)
         self.neighbouring_angles()

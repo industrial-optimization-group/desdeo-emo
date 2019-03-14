@@ -6,6 +6,7 @@ Visit the github/binder page for further information.
 from pyRVEA.Population.Population import Population
 from pyRVEA.Problem.baseProblem import baseProblem
 from pyRVEA.EAs.RVEA import RVEA
+from pyRVEA.EAs.NSGAIII import NSGAIII
 from optproblems import dtlz
 
 

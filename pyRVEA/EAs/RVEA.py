@@ -39,7 +39,6 @@ class RVEA(BaseDecompositionEA):
         iterations: int = 10,
         Alpha: float = 2,
         plotting: bool = True,
-        algorithm_name="RVEA",
     ):
         """Set up the parameters. Save in RVEA.params. Note, this should be
         changed to align with the current structure.
