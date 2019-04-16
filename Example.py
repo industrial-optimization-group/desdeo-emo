@@ -29,9 +29,9 @@ problem = newProblem(name, numvar, numobj, numconst)
 lattice_resolution = 4
 population_size = 105
 
-pop = Population(problem)
+pop = Population(problem, plotting=False)
 
-pop.evolve(RVEA)
+pop.evolve(NSGAIII)
 
 pop.non_dominated()
 refpoint = 2

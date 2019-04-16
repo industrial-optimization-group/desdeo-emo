@@ -129,7 +129,7 @@ class Population:
                 self.append_individual(ind)
         else:
             print("Error while adding new individuals. Check dimensions.")
-        #print(self.ideal_fitness)
+        # print(self.ideal_fitness)
         self.update_ideal_and_nadir()
 
     def keep(self, indices: list):
@@ -140,7 +140,7 @@ class Population:
         indices: list
             Indices of individuals to keep
         """
-        
+
         new_pop = self.individuals[indices, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
@@ -310,6 +310,7 @@ class Population:
         if not isinstance(ref_point, (Sequence, np.ndarray)):
             num_obj = non_dom.shape[1]
             ref_point = [ref_point] * num_obj
+        non_dom = non_dom[np.any([non_dom < ref_point], axis=1), :]
         hyp = hv(non_dom)
         self.hyp = hyp.compute(ref_point)
         return self.hyp
@@ -346,5 +347,9 @@ class Population:
             check_ideal_with = self.fitness
         else:
             check_ideal_with = new_objective_vals
-        self.ideal_fitness = np.amin(np.vstack((self.ideal_fitness, check_ideal_with)), axis=0)
-        self.worst_fitness = np.amax(np.vstack((self.worst_fitness, check_ideal_with)), axis=0)
+        self.ideal_fitness = np.amin(
+            np.vstack((self.ideal_fitness, check_ideal_with)), axis=0
+        )
+        self.worst_fitness = np.amax(
+            np.vstack((self.worst_fitness, check_ideal_with)), axis=0
+        )

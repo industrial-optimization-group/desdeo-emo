@@ -42,16 +42,10 @@ def APD_select(
     normalized_fitness = np.divide(translated_fitness, fitness_norm)  # Checked, works.
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
     if cosine[np.where(cosine > 1)].size:
-        warn(
-            "RVEA.py line 60 cosine larger than 1 decreased to 1:",
-            cosine[np.where(cosine > 1)],
-        )
+        warn("RVEA.py line 60 cosine larger than 1 decreased to 1")
         cosine[np.where(cosine > 1)] = 1
     if cosine[np.where(cosine < 0)].size:
-        warn(
-            "RVEA.py line 64 cosine smaller than 0 decreased to 0:",
-            cosine[np.where(cosine < 0)],
-        )
+        warn("RVEA.py line 64 cosine smaller than 0 increased to 0")
         cosine[np.where(cosine < 0)] = 0
     # Calculation of angles between reference vectors and solutions
     theta = np.arccos(cosine)
