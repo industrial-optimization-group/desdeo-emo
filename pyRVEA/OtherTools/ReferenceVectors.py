@@ -1,8 +1,6 @@
 from itertools import combinations
 
 import numpy as np
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from scipy.special import comb
 
 
@@ -112,17 +110,3 @@ class ReferenceVectors:
         self.number_of_vectors = self.values.shape[0]
         self.normalize()
 
-    def plot_ref_V(self):
-        """Plot the reference vectors."""
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection=Axes3D.name)
-        plt.ion()
-        plt.show()
-        ax.scatter(self.values[:, 0], self.values[:, 1], self.values[:, 2])
-        ax.scatter(
-            self.initial_values[:, 0],
-            self.initial_values[:, 1],
-            self.initial_values[:, 2],
-        )
-        fig.canvas.draw()
-        plt.pause(5)

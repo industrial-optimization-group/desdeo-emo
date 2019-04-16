@@ -1,4 +1,4 @@
-from collections import Sequence
+from collections import Sequence, defaultdict
 from random import shuffle
 from typing import TYPE_CHECKING
 
@@ -35,7 +35,7 @@ class Population:
             An object of the class Problem
         assign_type : str, optional
             Define the method of creation of population.
-            If 'assign_type' is 'RandomAssign' the population is generated
+            If 'assign_type' is 'RandomDesign' the population is generated
             randomly. If 'assign_type' is 'LHSDesign', the population is
             generated via Latin Hypercube Sampling. If 'assign_type' is
             'custom', the population is imported from file. If assign_type
@@ -44,68 +44,73 @@ class Population:
             (the default is True, which creates the plots)
 
         """
-        pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
-        pop_size = pop_size_options[problem.num_of_objectives - 2]
         num_var = problem.num_of_variables
         self.lower_limits = np.asarray(problem.lower_limits)
         self.upper_limits = np.asarray(problem.upper_limits)
         self.hyp = 0
         self.non_dom = 0
         self.problem = problem
-        if assign_type == "RandomAssign":
-            self.individuals = np.random.random((pop_size, num_var))
-            # Scaling
-            self.individuals = (
-                self.individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
-            )
-        elif assign_type == "LHSDesign":
-            self.individuals = lhs(num_var, samples=pop_size)
-            # Scaling
-            self.individuals = (
-                self.individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
-            )
-        elif assign_type == "custom":
-            print("Error: Custom assign type not supported yet.")
-        elif assign_type == "empty":
-            self.individuals = np.asarray([])
-            self.objectives = np.asarray([])
-            self.fitness = np.asarray([])
-            self.constraint_violation = np.asarray([])
-        pop_eval = self.evaluate()
-        self.objectives = pop_eval["objectives"]
-        self.constraint_violation = pop_eval["constraint violation"]
-        self.fitness = pop_eval["fitness"]
-        self.ideal_fitness = np.amin(self.fitness, axis=0)
-        self.worst_fitness = np.amax(self.fitness, axis=0)
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
+        # These attributes contain the solutions.
+        self.individuals = np.empty((0, num_var), float)
+        self.objectives = np.empty((0, self.problem.num_of_objectives), float)
+        self.fitness = np.empty((0, self.problem.num_of_objectives), float)
+        self.constraint_violation = np.empty(
+            (0, self.problem.num_of_constraints), float
+        )
+        self.individuals_archive = defaultdict(np.ndarray)
+        self.objectives_arvhive = defaultdict(np.ndarray)
+        self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
+        self.worst_fitness = -1 * self.ideal_fitness
+        self.create_new_individuals("LHSDesign")
+
+    def create_new_individuals(
+        self, design: str = "LHSDesign", pop_size: int = None, decision_variables=None
+    ):
+        """Create, evaluate and add new individuals to the population. Initiate Plots.
+
+        The individuals can be created randomly, by LHS design, or can be passed by the
+        user.
+
+        Parameters
+        ----------
+        design : str, optional
+            Describe the method of creation of new individuals.
+            "RandomDesign" creates individuals randomly.
+            "LHSDesign" creates individuals using Latin hypercube sampling.
+        pop_size : int, optional
+            Number of individuals in the population. If none, some default population
+            size based on number of objectives is chosen.
+        decision_variables : numpy array or list, optional
+            Pass decision variables to be added to the population.
+        """
+        if decision_variables is not None:
+            pass
+        if pop_size is None:
+            pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
+            pop_size = pop_size_options[self.problem.num_of_objectives - 2]
+        num_var = self.individuals.shape[1]
+        if design == "RandomDesign":
+            individuals = np.random.random((pop_size, num_var))
+            # Scaling
+            individuals = (
+                individuals * (self.upper_limits - self.lower_limits)
+                + self.lower_limits
+            )
+        elif design == "LHSDesign":
+            individuals = lhs(num_var, samples=pop_size)
+            # Scaling
+            individuals = (
+                individuals * (self.upper_limits - self.lower_limits)
+                + self.lower_limits
+            )
+        else:
+            print("Design not yet supported.")
+        self.add(individuals)
         if self.plotting:
             self.figure = []
             self.plot_init_()
-
-    def evaluate(self):
-        """Evaluate and return objective values."""
-        pop = self.individuals
-        objs = None
-        cons = None
-        for ind in pop:
-            if objs is None:
-                objs = np.asarray(self.problem.objectives(ind))
-            else:
-                objs = np.vstack((objs, self.problem.objectives(ind)))
-        if self.problem.num_of_constraints:
-            for ind, obj in zip(pop, objs):
-                if cons is None:
-                    cons = self.problem.constraints(ind, obj)
-                else:
-                    cons = np.vstack((cons, self.problem.constraints(ind, obj)))
-            fitness = self.eval_fitness(pop, objs)
-        else:
-            cons = np.zeros((pop.shape[0], 1))
-            fitness = objs
-        return {"objectives": objs, "constraint violation": cons, "fitness": fitness}
 
     def eval_fitness(self):
         """
@@ -147,6 +152,8 @@ class Population:
         new_CV = self.constraint_violation[indices, :]
         self.individuals = new_pop
         self.objectives = new_obj
+        self.individuals_archive[len(self.individuals_archive) + 1] = new_pop
+        self.objectives_arvhive[len(self.objectives_arvhive) + 1] = new_obj
         self.fitness = new_fitness
         self.constraint_violation = new_CV
 
@@ -173,7 +180,7 @@ class Population:
         ind: np.ndarray
         """
         obj = self.problem.objectives(ind)
-        CV = 0
+        CV = np.empty((0, self.problem.num_of_constraints), float)
         fitness = obj
         if self.problem.num_of_constraints:
             CV = self.problem.constraints(ind, obj)
@@ -310,7 +317,7 @@ class Population:
         if not isinstance(ref_point, (Sequence, np.ndarray)):
             num_obj = non_dom.shape[1]
             ref_point = [ref_point] * num_obj
-        non_dom = non_dom[np.any([non_dom < ref_point], axis=1), :]
+        non_dom = non_dom[np.all(non_dom < ref_point, axis=1), :]
         hyp = hv(non_dom)
         self.hyp = hyp.compute(ref_point)
         return self.hyp
