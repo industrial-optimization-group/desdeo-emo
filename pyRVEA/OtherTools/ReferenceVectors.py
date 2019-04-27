@@ -100,7 +100,7 @@ class ReferenceVectors:
 
     def add_edge_vectors(self):
         """Add edge vectors to the list of reference vectors.
-     
+
         Used to cover the entire orthant when preference information is
         provided.
 
@@ -109,4 +109,3 @@ class ReferenceVectors:
         self.values = np.vstack([self.values, edge_vectors])
         self.number_of_vectors = self.values.shape[0]
         self.normalize()
-
