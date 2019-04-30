@@ -7,6 +7,8 @@ Currently supported: Multi-objective minimization with visualization and interac
 
 To test the code, open the [binder link](https://mybinder.org/v2/gh/EchoBetaGlass/pyRVEA/master) and read example.ipynb.
 
+Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
+
 See the details of RVEA in the following paper
 
 R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff,
