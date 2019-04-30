@@ -21,7 +21,7 @@ class NSGAIII(BaseDecompositionEA):
         population: "Population" = None,
         population_size: int = None,
         lattice_resolution: int = None,
-        interact: bool = False,
+        interact: bool = True,
         a_priori_preference: bool = False,
         generations_per_iteration: int = 100,
         iterations: int = 10,
@@ -74,5 +74,38 @@ class NSGAIII(BaseDecompositionEA):
         self.params["extreme_points"] = extreme_points
         return Selection
 
-    def _run_interruption(self, population):
-        return
+    def _run_interruption(self, population: "Population"):
+        """Run the interruption phase of RVEA.
+
+        Use this phase to make changes to RVEA.params or other objects.
+        Updates Reference Vectors, conducts interaction with the user.
+
+        Parameters
+        ----------
+        population : Population
+        """
+        if self.params["interact"] or (
+            self.params["a_priori"] and self.params["current_iteration_count"] == 1
+        ):
+            ideal = population.ideal_fitness
+            refpoint = np.zeros_like(ideal)
+            print("Ideal vector is ", ideal)
+            for index in range(len(refpoint)):
+                while True:
+                    print("Preference for objective ", index + 1)
+                    print("Ideal value = ", ideal[index])
+                    pref_val = float(
+                        input("Please input a value worse than the ideal: ")
+                    )
+                    if pref_val > ideal[index]:
+                        refpoint[index] = pref_val
+                        break
+            refpoint = refpoint - ideal
+            norm = np.sqrt(np.sum(np.square(refpoint)))
+            refpoint = refpoint / norm
+            self.params["reference_vectors"].iteractive_adapt_1(refpoint)
+            self.params["reference_vectors"].add_edge_vectors()
+        else:
+            self.params["reference_vectors"].adapt(population.fitness)
+        self.params["reference_vectors"].neighbouring_angles()
+

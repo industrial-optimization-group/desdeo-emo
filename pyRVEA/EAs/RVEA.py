@@ -114,21 +114,17 @@ class RVEA(BaseDecompositionEA):
         if self.params["interact"] or (
             self.params["a_priori"] and self.params["current_iteration_count"] == 1
         ):
-            # refpoint = np.mean(population.fitness, axis=0)
-            ideal = population.ideal
-            nadir = population.nadir
+            ideal = population.ideal_fitness
             refpoint = np.zeros_like(ideal)
             print("Ideal vector is ", ideal)
-            print("Nadir vector is ", nadir)
             for index in range(len(refpoint)):
                 while True:
                     print("Preference for objective ", index + 1)
                     print("Ideal value = ", ideal[index])
-                    print("Nadir value = ", nadir[index])
                     pref_val = float(
-                        input("Please input a value between ideal and nadir: ")
+                        input("Please input a value worse than the ideal: ")
                     )
-                    if pref_val > ideal[index] and pref_val < nadir[index]:
+                    if pref_val > ideal[index]:
                         refpoint[index] = pref_val
                         break
             refpoint = refpoint - ideal

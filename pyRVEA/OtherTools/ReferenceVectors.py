@@ -40,17 +40,23 @@ class ReferenceVectors:
         self.values_planar = np.copy(self.values)
         self.normalize()
         self.initial_values = np.copy(self.values)
+        self.initial_values_planar = np.copy(self.values_planar)
         self.neighbouring_angles()
         # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def normalize(self):
         """Normalize the reference vectors to a unit hypersphere."""
         self.number_of_vectors = self.values.shape[0]
-        norm = np.linalg.norm(self.values, axis=1)
-        norm = np.repeat(norm, self.number_of_objectives).reshape(
+        norm_2 = np.linalg.norm(self.values, axis=1)
+        norm_1 = np.sum(self.values_planar, axis=1)
+        norm_2 = np.repeat(norm_2, self.number_of_objectives).reshape(
             self.number_of_vectors, self.number_of_objectives
         )
-        self.values = np.divide(self.values, norm)
+        norm_1 = np.repeat(norm_1, self.number_of_objectives).reshape(
+            self.number_of_vectors, self.number_of_objectives
+        )
+        self.values = np.divide(self.values, norm_1)
+        self.values_planar = np.divide(self.values_planar, norm_2)
 
     def neighbouring_angles(self) -> np.ndarray:
         """Calculate neighbouring angles for normalization."""
@@ -96,6 +102,9 @@ class ReferenceVectors:
         self.values = self.initial_values * translation_param + (
             (1 - translation_param) * ref_point
         )
+        self.values_planar = self.initial_values_planar * translation_param + (
+            (1 - translation_param) * ref_point
+        )
         self.normalize()
 
     def add_edge_vectors(self):
@@ -107,5 +116,6 @@ class ReferenceVectors:
         """
         edge_vectors = np.eye(self.values.shape[1])
         self.values = np.vstack([self.values, edge_vectors])
+        self.values_planar = np.vstack([self.values_planar, edge_vectors])
         self.number_of_vectors = self.values.shape[0]
         self.normalize()

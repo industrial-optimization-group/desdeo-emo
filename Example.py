@@ -21,7 +21,7 @@ class newProblem(baseProblem):
 
 name = "DTLZ3"
 k = 10
-numobj = 4
+numobj = 3
 numconst = 0
 numvar = numobj + k - 1
 problem = newProblem(name, numvar, numobj, numconst)
