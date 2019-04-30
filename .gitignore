@@ -9,3 +9,5 @@ __pycache__/
 *.p
 .venv/
 .idea/
+*.html
+setup.cfg

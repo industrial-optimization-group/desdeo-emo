@@ -111,41 +111,46 @@ def rotate_toward(initial_vector, final_vector, other_vectors, degrees: float = 
     return (rotate(initial_vector, rotated_vector, other_vectors), False)
 
 
-initial = np.array(list(product([0, 1, -1], [0, 1, -1])))[1:]
-initial = normalize(initial)
-initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
-fig = plt.figure()
-plt.ion()
-plt.show()
-ax = fig.add_subplot(111, projection="3d")
-ax.scatter(initial[:, 0], initial[:, 1], initial[:, 2], s=100)
-plt.pause(0.0001)
-final = shear(initial)
-ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-plt.pause(0.0001)
-complete = False
-while not complete:
-    center = np.average(final, axis=0)
-    final, complete = rotate_toward(center, np.array([1, 1, 1]), final)
+def main():
+    initial = np.array(list(product([0, 1, -1], [0, 1, -1])))[1:]
+    initial = normalize(initial)
+    initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
+    fig = plt.figure()
+    plt.ion()
+    plt.show()
+    ax = fig.add_subplot(111, projection="3d")
+    ax.scatter(initial[:, 0], initial[:, 1], initial[:, 2], s=100)
+    plt.pause(0.0001)
+    final = shear(initial)
     ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-    plt.pause(0.000001)
-plt.pause(0.5)
-complete = False
-while not complete:
-    center = np.average(final, axis=0)
-    final, complete = rotate_toward(center, np.array([1, 0, 1]), final)
-    ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-    plt.pause(0.000001)
-complete = False
-while not complete:
-    center = np.average(final, axis=0)
-    final, complete = rotate_toward(center, np.array([0, 0, 1]), final)
-    ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-    plt.pause(0.000001)
-complete = False
-while not complete:
-    center = np.average(final, axis=0)
-    final, complete = rotate_toward(center, np.array([1, 0, 0]), final)
-    ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-    plt.pause(0.000001)
-plt.pause(20)
+    plt.pause(0.0001)
+    complete = False
+    while not complete:
+        center = np.average(final, axis=0)
+        final, complete = rotate_toward(center, np.array([1, 1, 1]), final)
+        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
+        plt.pause(0.00001)
+    plt.pause(0.5)
+    complete = False
+    while not complete:
+        center = np.average(final, axis=0)
+        final, complete = rotate_toward(center, np.array([1, 0, 1]), final)
+        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
+        plt.pause(0.00001)
+    complete = False
+    while not complete:
+        center = np.average(final, axis=0)
+        final, complete = rotate_toward(center, np.array([0, 0, 1]), final)
+        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
+        plt.pause(0.00001)
+    complete = False
+    while not complete:
+        center = np.average(final, axis=0)
+        final, complete = rotate_toward(center, np.array([1, 0, 0]), final)
+        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
+        plt.pause(0.00001)
+    plt.pause(20)
+
+
+if __name__ == "__main__":
+    main()
