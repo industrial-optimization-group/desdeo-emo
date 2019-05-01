@@ -9,7 +9,17 @@ To test the code, open the [binder link](https://mybinder.org/v2/gh/EchoBetaGlas
 
 Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
 
-See the details of RVEA in the following paper
+### Requirements:
+* Python 3.6 or up
+* [Poetry dependency manager](https://github.com/sdispater/poetry)
+
+### Installation process:
+* Download and extract the code
+* Create a new virtual environment for the project
+* Run `poetry install --no-dev` in the activated virtual environment to install the packages necessary to run the code.
+* If you want to take part in the development process, run `poetry install` instead.
+
+## See the details of RVEA in the following paper
 
 R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff,
 A Reference Vector Guided Evolutionary Algorithm for Many-objective
