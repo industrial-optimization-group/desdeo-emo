@@ -1,6 +1,8 @@
-from pyrvea.allclasses import ReferenceVectors
-import numpy as np
 from itertools import product
+
+import numpy as np
+
+from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 
 
 class newRV(ReferenceVectors):
@@ -106,7 +108,6 @@ def dist_based_translation(vectors):
 def main():
     rv = newRV(20, 3)
     rv.interact_v3([1, 1, 1])
-    rv.plot_ref_V()
 
 
 if __name__ == '__main':

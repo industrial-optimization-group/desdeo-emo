@@ -30,7 +30,7 @@ class RVEA(BaseDecompositionEA):
 
     def set_params(
         self,
-        population: "Population" = None,
+        population: "Population",
         population_size: int = None,
         lattice_resolution: int = None,
         interact: bool = False,

@@ -1,4 +1,5 @@
-from collections import Sequence, defaultdict
+from collections import defaultdict
+from collections.abc import Sequence
 from random import shuffle
 from typing import TYPE_CHECKING
 
