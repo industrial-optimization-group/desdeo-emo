@@ -71,7 +71,9 @@ def APD_select(
                 np.transpose(sub_pop_fitness_magnitude),
                 (1 + np.dot(penalty_factor, angles)),
             )
-            minidx = np.where(apd == np.amin(apd))
+            minidx = np.where(apd == np.nanmin(apd))
+            if np.isnan(apd).all():
+                continue
             selx = sub_population_index[minidx]
             if selection.shape[0] == 0:
                 selection = np.hstack((selection, np.transpose(selx[0])))

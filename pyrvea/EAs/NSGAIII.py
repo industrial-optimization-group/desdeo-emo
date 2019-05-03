@@ -18,7 +18,7 @@ class NSGAIII(BaseDecompositionEA):
 
     def set_params(
         self,
-        population: "Population" ,
+        population: "Population",
         population_size: int = None,
         lattice_resolution: int = None,
         interact: bool = True,
@@ -108,4 +108,3 @@ class NSGAIII(BaseDecompositionEA):
         else:
             self.params["reference_vectors"].adapt(population.fitness)
         self.params["reference_vectors"].neighbouring_angles()
-

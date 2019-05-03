@@ -1,7 +1,7 @@
 {
     "python.pythonPath": "/home/bssainix/.virtualenvs/pyRVEA/bin/python",
-    "python.linting.flake8Enabled": false,
+    "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": false,
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": false
 }
