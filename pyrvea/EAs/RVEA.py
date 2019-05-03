@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from pyRVEA.Selection.APD_select import APD_select
-from pyRVEA.EAs.baseEA import BaseDecompositionEA
-from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
+from pyrvea.Selection.APD_select import APD_select
+from pyrvea.EAs.baseEA import BaseDecompositionEA
+from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from pyRVEA.Population.Population import Population
+    from pyrvea.Population.Population import Population
 
 
 class RVEA(BaseDecompositionEA):
@@ -19,7 +19,7 @@ class RVEA(BaseDecompositionEA):
     Evolutionary Algorithm for Many-objective Optimization, IEEE Transactions on
     Evolutionary Computation, 2016
 
-    The source code of pyRVEA is implemented by Bhupinder Saini
+    The source code of pyrvea is implemented by Bhupinder Saini
 
     If you have any questions about the code, please contact:
 

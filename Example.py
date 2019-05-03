@@ -1,12 +1,12 @@
 """
-An example file demonstrating the use of pyRVEA.
+An example file demonstrating the use of pyrvea.
 
 Visit the github/binder page for further information.
 """
-from pyRVEA.Population.Population import Population
-from pyRVEA.Problem.baseProblem import baseProblem
-from pyRVEA.EAs.RVEA import RVEA
-from pyRVEA.EAs.NSGAIII import NSGAIII
+from pyrvea.Population.Population import Population
+from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.EAs.RVEA import RVEA
+from pyrvea.EAs.NSGAIII import NSGAIII
 from optproblems import dtlz
 
 

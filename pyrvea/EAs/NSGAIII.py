@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from pyRVEA.Selection.NSGAIII_select import NSGAIII_select
-from pyRVEA.EAs.baseEA import BaseDecompositionEA
-from pyRVEA.OtherTools.ReferenceVectors import ReferenceVectors
+from pyrvea.Selection.NSGAIII_select import NSGAIII_select
+from pyrvea.EAs.baseEA import BaseDecompositionEA
+from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from pyRVEA.Population.Population import Population
+    from pyrvea.Population.Population import Population
 
 
 class NSGAIII(BaseDecompositionEA):

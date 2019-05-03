@@ -1,4 +1,4 @@
-from pyRVEA.allclasses import ReferenceVectors
+from pyrvea.allclasses import ReferenceVectors
 import numpy as np
 from itertools import product
 

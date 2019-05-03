@@ -1,11 +1,11 @@
-pyRVEA.Population
+pyrvea.Population
 =========================
 
 
-pyRVEA.Population.Population module
+pyrvea.Population.Population module
 -----------------------------------
 
-.. automodule:: pyRVEA.Population.Population
+.. automodule:: pyrvea.Population.Population
     :members:
     :undoc-members:
     :show-inheritance:

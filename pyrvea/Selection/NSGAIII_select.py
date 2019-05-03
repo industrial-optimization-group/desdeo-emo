@@ -4,7 +4,7 @@ from warnings import warn
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pyRVEA.allclasses import ReferenceVectors
+    from pyrvea.allclasses import ReferenceVectors
 
 
 def NSGAIII_select(

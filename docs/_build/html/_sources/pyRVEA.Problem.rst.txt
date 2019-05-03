@@ -1,21 +1,21 @@
-pyRVEA.Problem package
+pyrvea.Problem package
 ======================
 
 Submodules
 ----------
 
-pyRVEA.Problem.baseProblem module
+pyrvea.Problem.baseProblem module
 ---------------------------------
 
-.. automodule:: pyRVEA.Problem.baseProblem
+.. automodule:: pyrvea.Problem.baseProblem
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyRVEA.Problem.testProblem module
+pyrvea.Problem.testProblem module
 ---------------------------------
 
-.. automodule:: pyRVEA.Problem.testProblem
+.. automodule:: pyrvea.Problem.testProblem
     :members:
     :undoc-members:
     :show-inheritance:

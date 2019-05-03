@@ -1,5 +1,5 @@
 from optproblems import dtlz, zdt
-from pyRVEA.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseProblem import baseProblem
 
 
 class testProblem(baseProblem):

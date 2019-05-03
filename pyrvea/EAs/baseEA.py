@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pyRVEA.Population.Population import Population
+    from pyrvea.Population.Population import Population
 
 
 class BaseEA:

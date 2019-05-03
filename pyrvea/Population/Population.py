@@ -9,12 +9,12 @@ from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
-from pyRVEA.OtherTools.plotlyanimate import animate_init_, animate_next_
-from pyRVEA.OtherTools.IsNotebook import IsNotebook
+from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
+from pyrvea.OtherTools.IsNotebook import IsNotebook
 
 if TYPE_CHECKING:
-    from pyRVEA.Problem.baseProblem import baseProblem
-    from pyRVEA.EAs.baseEA import BaseEA
+    from pyrvea.Problem.baseProblem import baseProblem
+    from pyrvea.EAs.baseEA import BaseEA
 
 
 class Population:

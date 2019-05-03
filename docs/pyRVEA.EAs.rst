@@ -1,26 +1,26 @@
-pyRVEA.EAs
+pyrvea.EAs
 ==================
 
-pyRVEA.EAs.NSGAIII module
+pyrvea.EAs.NSGAIII module
 -------------------------
 
-.. automodule:: pyRVEA.EAs.NSGAIII
+.. automodule:: pyrvea.EAs.NSGAIII
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyRVEA.EAs.RVEA module
+pyrvea.EAs.RVEA module
 ----------------------
 
-.. automodule:: pyRVEA.EAs.RVEA
+.. automodule:: pyrvea.EAs.RVEA
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyRVEA.EAs.baseEA module
+pyrvea.EAs.baseEA module
 ------------------------
 
-.. automodule:: pyRVEA.EAs.baseEA
+.. automodule:: pyrvea.EAs.baseEA
     :members:
     :undoc-members:
     :show-inheritance:

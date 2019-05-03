@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyRVEA"
+name = "pyrvea"
 version = "0.1.0"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]

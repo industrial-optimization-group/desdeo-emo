@@ -1,21 +1,21 @@
-pyRVEA.Selection package
+pyrvea.Selection package
 ========================
 
 Submodules
 ----------
 
-pyRVEA.Selection.APD\_select module
+pyrvea.Selection.APD\_select module
 -----------------------------------
 
-.. automodule:: pyRVEA.Selection.APD_select
+.. automodule:: pyrvea.Selection.APD_select
     :members:
     :undoc-members:
     :show-inheritance:
 
-pyRVEA.Selection.NSGAIII\_select module
+pyrvea.Selection.NSGAIII\_select module
 ---------------------------------------
 
-.. automodule:: pyRVEA.Selection.NSGAIII_select
+.. automodule:: pyrvea.Selection.NSGAIII_select
     :members:
     :undoc-members:
     :show-inheritance:

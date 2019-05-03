@@ -1,13 +1,13 @@
-pyRVEA package
+pyrvea package
 ==============
 
 
 .. toctree::
 
-    pyRVEA.EAs
-    pyRVEA.OtherTools
-    pyRVEA.Population
-    pyRVEA.Problem
-    pyRVEA.Recombination
-    pyRVEA.Selection
+    pyrvea.EAs
+    pyrvea.OtherTools
+    pyrvea.Population
+    pyrvea.Problem
+    pyrvea.Recombination
+    pyrvea.Selection
 

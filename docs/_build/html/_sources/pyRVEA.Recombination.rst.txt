@@ -1,10 +1,10 @@
-pyRVEA.Recombination package
+pyrvea.Recombination package
 ============================
 
 Module contents
 ---------------
 
-.. automodule:: pyRVEA.Recombination
+.. automodule:: pyrvea.Recombination
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,5 +1,4 @@
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from plotlyanimate import animate_init_, animate_next_
 import numpy as np
 from itertools import product
 
@@ -115,41 +114,35 @@ def main():
     initial = np.array(list(product([0, 1, -1], [0, 1, -1])))[1:]
     initial = normalize(initial)
     initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
-    fig = plt.figure()
-    plt.ion()
-    plt.show()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(initial[:, 0], initial[:, 1], initial[:, 2], s=100)
-    plt.pause(0.0001)
+    filename = "smooth_transition.html"
+    figure = animate_init_(initial, filename)
     final = shear(initial)
-    ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-    plt.pause(0.0001)
+    generation = 1
+    figure = animate_next_(final, figure, filename, generation)
     complete = False
     while not complete:
         center = np.average(final, axis=0)
         final, complete = rotate_toward(center, np.array([1, 1, 1]), final)
-        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-        plt.pause(0.00001)
-    plt.pause(0.5)
+        figure = animate_next_(final, figure, filename, generation)
+        generation = generation + 1
     complete = False
     while not complete:
         center = np.average(final, axis=0)
         final, complete = rotate_toward(center, np.array([1, 0, 1]), final)
-        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-        plt.pause(0.00001)
+        figure = animate_next_(final, figure, filename, generation)
+        generation = generation + 1
     complete = False
     while not complete:
         center = np.average(final, axis=0)
         final, complete = rotate_toward(center, np.array([0, 0, 1]), final)
-        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-        plt.pause(0.00001)
+        figure = animate_next_(final, figure, filename, generation)
+        generation = generation + 1
     complete = False
     while not complete:
         center = np.average(final, axis=0)
         final, complete = rotate_toward(center, np.array([1, 0, 0]), final)
-        ax.scatter(final[:, 0], final[:, 1], final[:, 2], s=100)
-        plt.pause(0.00001)
-    plt.pause(20)
+        figure = animate_next_(final, figure, filename, generation)
+        generation = generation + 1
 
 
 if __name__ == "__main__":
