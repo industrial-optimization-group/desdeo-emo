@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "pyrvea"
-version = "0.1.0"
+version = "0.1.1"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]
 license = "MPL-2.0"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6"

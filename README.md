@@ -11,12 +11,14 @@ Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
 
 ### Requirements:
 * Python 3.6 or up
-* [Poetry dependency manager](https://github.com/sdispater/poetry)
+* [Poetry dependency manager](https://github.com/sdispater/poetry): Only for developers
 
-### Installation process:
+### Installation process for normal users:
+* Run: `pip install pyrvea`
+
+### Installation process for developers:
 * Download and extract the code
 * Create a new virtual environment for the project
-* Run `poetry install --no-dev` in the activated virtual environment to install the packages necessary to run the code.
 * If you want to take part in the development process, run `poetry install` instead.
 
 ## See the details of RVEA in the following paper
