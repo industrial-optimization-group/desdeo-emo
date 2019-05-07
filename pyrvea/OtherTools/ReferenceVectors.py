@@ -17,7 +17,7 @@ def normalize(vectors):
         Set of vectors of any length, except zero.
 
     """
-    if len(vectors.shape) == 1:
+    if len(np.asarray(vectors).shape) == 1:
         return vectors / np.linalg.norm(vectors)
     norm = np.linalg.norm(vectors, axis=1)
     return vectors / norm[:, np.newaxis]
@@ -52,7 +52,7 @@ def rotate(initial_vector, rotated_vector, other_vectors):
     Uses Householder reflections twice to achieve this."""
 
     init_vec_norm = normalize(initial_vector)
-    rot_vec_norm = normalize(rotated_vector)
+    rot_vec_norm = normalize(np.asarray(rotated_vector))
     middle_vec_norm = normalize(init_vec_norm + rot_vec_norm)
     first_reflector = init_vec_norm - middle_vec_norm
     second_reflector = middle_vec_norm - rot_vec_norm
@@ -117,8 +117,8 @@ class ReferenceVectors:
 
     def __init__(
         self,
-        lattice_resolution: int,
-        number_of_objectives: int,
+        lattice_resolution: int = None,
+        number_of_objectives: int = None,
         creation_type: str = "Uniform",
         vector_type: str = "Spherical",
         ref_point: list = None,
@@ -144,21 +144,16 @@ class ReferenceVectors:
         ref_point : list, optional
             User preference information for a priori methods.
         """
-        number_of_vectors = comb(
-            lattice_resolution + number_of_objectives - 1,
-            number_of_objectives - 1,
-            exact=True,
-        )
+
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
-        self.number_of_vectors = number_of_vectors
+        self.number_of_vectors = 0
         self.creation_type = creation_type
         self.vector_type = vector_type
         self.values = []
-        self.ref_point = ref_point
+        self.values_planar = []
+        self.ref_point = [1] * number_of_objectives if ref_point is None else ref_point
         self._create(creation_type)
-        self.values_planar = np.copy(self.values)
-        self.normalize()
         self.initial_values = np.copy(self.values)
         self.initial_values_planar = np.copy(self.values_planar)
         self.neighbouring_angles()
@@ -175,6 +170,12 @@ class ReferenceVectors:
             reference vector. By default 'Uniform'.
         """
         if creation_type == "Uniform":
+            number_of_vectors = comb(
+                self.lattice_resolution + self.number_of_objectives - 1,
+                self.number_of_objectives - 1,
+                exact=True,
+            )
+            self.number_of_vectors = number_of_vectors
             temp1 = range(1, self.number_of_objectives + self.lattice_resolution)
             temp1 = np.array(list(combinations(temp1, self.number_of_objectives - 1)))
             temp2 = np.array(
@@ -189,6 +190,8 @@ class ReferenceVectors:
                 weight[:, i] = temp[:, i] - temp[:, i - 1]
             weight[:, -1] = self.lattice_resolution - temp[:, -1]
             self.values = weight / self.lattice_resolution
+            self.values_planar = np.copy(self.values)
+            self.normalize()
             return
         elif creation_type == "Focused":
             point_set = [[0, 1, -1]] * (self.number_of_objectives - 1)
@@ -197,10 +200,27 @@ class ReferenceVectors:
             # First element was removed because of the error during normalization.
             initial = normalize(initial)
             initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
-            final = shear(initial)
+            final = shear(initial, degrees=5)
             # Adding the first element back
             final = np.vstack(([0] * (self.number_of_objectives - 1) + [1], final))
+            self.number_of_vectors = final.shape[0]
             self.values = rotate(final[0], self.ref_point, final)
+            self.values_planar = np.copy(self.values)
+            self.normalize()
+            self.add_edge_vectors()
+        elif creation_type == "Sparse_Focused":
+            initial = np.eye(self.number_of_objectives-1)
+            initial = np.vstack((initial, -initial))
+            initial = normalize(initial)
+            initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
+            final = shear(initial, degrees=5)
+            # Adding the first element back
+            final = np.vstack(([0] * (self.number_of_objectives - 1) + [1], final))
+            self.number_of_vectors = final.shape[0]
+            self.values = rotate(final[0], self.ref_point, final)
+            self.values_planar = np.copy(self.values)
+            self.normalize()
+            self.add_edge_vectors()
 
     def normalize(self):
         """Normalize the reference vectors to a unit hypersphere."""
@@ -213,8 +233,8 @@ class ReferenceVectors:
         norm_1 = np.repeat(norm_1, self.number_of_objectives).reshape(
             self.number_of_vectors, self.number_of_objectives
         )
-        self.values = np.divide(self.values, norm_1)
-        self.values_planar = np.divide(self.values_planar, norm_2)
+        self.values = np.divide(self.values, norm_2)
+        self.values_planar = np.divide(self.values_planar, norm_1)
 
     def neighbouring_angles(self) -> np.ndarray:
         """Calculate neighbouring angles for normalization."""
@@ -279,8 +299,14 @@ class ReferenceVectors:
         boolean
             True if ref_point has been reached. False otherwise.
         """
-        assert self.creation_type == 'Focused'
-        self.values, reached = rotate_toward(self.values[0], ref_point, self.values)
+        assert self.creation_type == "Focused" or self.creation_type == "Sparse_Focused"
+        if np.array_equal(self.values[0], ref_point):
+            return
+        self.values, reached = rotate_toward(
+            self.values[0], ref_point, self.values[0 : -self.number_of_objectives]
+        )
+        self.values_planar = self.values
+        self.add_edge_vectors()
         self.normalize()
         return reached
 

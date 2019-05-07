@@ -24,7 +24,7 @@ class Population:
     def __init__(
         self,
         problem: "baseProblem",
-        assign_type: str = "RandomAssign",
+        assign_type: str = "LHSDesign",
         plotting: bool = True,
         *args
     ):
@@ -64,7 +64,8 @@ class Population:
         self.objectives_arvhive = defaultdict(np.ndarray)
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
-        self.create_new_individuals("LHSDesign")
+        if not assign_type == "empty":
+            self.create_new_individuals(assign_type)
 
     def create_new_individuals(
         self, design: str = "LHSDesign", pop_size: int = None, decision_variables=None
@@ -210,15 +211,15 @@ class Population:
             progressbar = tqdm
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
-        ea = EA(self)
+        ea = EA(self, EA_parameters)
         iterations = ea.params["iterations"]
         if self.plotting:
-            self.plot_objectives(1)  # Figure was created in init
+            self.plot_objectives()  # Figure was created in init
         for i in progressbar(range(1, iterations), desc="Iteration"):
             ea._run_interruption(self)
             ea._next_iteration(self)
             if self.plotting:
-                self.plot_objectives(i + 1)
+                self.plot_objectives()
 
     def mate(self):
         """Conduct crossover and mutation over the population.
@@ -290,7 +291,7 @@ class Population:
         self.figure = animate_init_(obj, self.filename + ".html")
         return self.figure
 
-    def plot_objectives(self, iteration: int):
+    def plot_objectives(self, iteration: int = None):
         """Plot the objective values of individuals in notebook. This is a hack.
 
         Parameters

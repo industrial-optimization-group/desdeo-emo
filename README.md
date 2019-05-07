@@ -19,7 +19,7 @@ Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
 ### Installation process for developers:
 * Download and extract the code
 * Create a new virtual environment for the project
-* If you want to take part in the development process, run `poetry install` instead.
+* Run `poetry install` inside the virtual environment shell.
 
 ## See the details of RVEA in the following paper
 

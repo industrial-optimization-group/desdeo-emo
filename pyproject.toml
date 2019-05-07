@@ -17,6 +17,7 @@ diversipy = "^0.8.0"
 pyDOE = "^0.3.8"
 plotly = "^3.8"
 tqdm = "^4.31"
+jupyter = "^1.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"

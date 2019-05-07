@@ -40,7 +40,7 @@ def animate_next_(
     data: Union[np.ndarray, pd.DataFrame, list],
     figure: dict,
     filename: str,
-    generation: int,
+    generation: int = None,
 ) -> dict:
     """Plot the next set of individuals in an animation.
 
@@ -64,6 +64,8 @@ def animate_next_(
     """
 
     numobj = data.shape[1]
+    if generation is None:
+        generation = len(figure["frames"])
     if numobj == 2:
         figure = animate_2d_next_(data, figure, filename, generation)
     elif numobj == 3:
