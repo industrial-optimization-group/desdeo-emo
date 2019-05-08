@@ -4,6 +4,7 @@ from random import shuffle
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pandas as pd
 from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
@@ -60,8 +61,9 @@ class Population:
         self.constraint_violation = np.empty(
             (0, self.problem.num_of_constraints), float
         )
-        self.individuals_archive = defaultdict(np.ndarray)
-        self.objectives_arvhive = defaultdict(np.ndarray)
+        self.archive = pd.DataFrame(
+            columns=["generation", "decision_variables", "objective_values"]
+        )
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
         if not assign_type == "empty":
@@ -154,8 +156,19 @@ class Population:
         new_CV = self.constraint_violation[indices, :]
         self.individuals = new_pop
         self.objectives = new_obj
-        self.individuals_archive[len(self.individuals_archive) + 1] = new_pop
-        self.objectives_arvhive[len(self.objectives_arvhive) + 1] = new_obj
+        length_of_archive = len(self.archive)
+        if length_of_archive == 0:
+            gen_count = 0
+        else:
+            gen_count = self.archive["generation"].iloc[-1] + 1
+        new_entries = pd.DataFrame(
+            {
+                "generation": [gen_count] * len(new_obj),
+                "decision_variables": new_pop.tolist(),
+                "objective_values": new_obj.tolist(),
+            }
+        )
+        self.archive = self.archive.append(new_entries, ignore_index=True)
         self.fitness = new_fitness
         self.constraint_violation = new_CV
 
