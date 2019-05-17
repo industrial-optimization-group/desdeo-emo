@@ -1,13 +1,13 @@
 import numpy as np
-
+from scipy.linalg import lstsq
 
 class EvoNNProblem:
     """Creates an Artificial Neural Network (ANN) for the EvoNN algorithm."""
 
     def __init__(
         self,
-        data_input=None,
-        data_output=None,
+        training_data_input=None,
+        training_data_output=None,
         name=None,
         num_input_nodes=4,
         num_hidden_nodes=6,
@@ -19,10 +19,10 @@ class EvoNNProblem:
 
         Parameters
         ----------
-        data_input : numpy array
+        training_data_input : numpy array
             Training data input matrix
-        data_output : numpy array
-            Training data desired output
+        training_data_output : numpy array
+            Training data expected output
         name : str
             Name of the sample
         num_input_nodes : int
@@ -37,8 +37,8 @@ class EvoNNProblem:
             The upper bound for randomly generated weights
         """
 
-        self.data_input = data_input
-        self.data_output = data_output
+        self.training_data_input = training_data_input
+        self.training_data_output = training_data_output
         self.name = name
         self.num_input_nodes = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
@@ -46,10 +46,8 @@ class EvoNNProblem:
         self.w_low = w_low
         self.w_high = w_high
 
-        if len(self.data_input) > 0:
-            self.num_input_nodes = np.shape(data_input)[1]
-
-        # self.w_matrix = np.hstack((w_matrix, bias))
+        if len(self.training_data_input) > 0:
+            self.num_input_nodes = np.shape(training_data_input)[1]
 
     def objectives(self, decision_variables=None) -> list:
 
@@ -77,24 +75,35 @@ class EvoNNProblem:
             w_matrix = np.random.uniform(
                 self.w_low,
                 self.w_high,
-                size=(self.num_input_nodes, self.num_hidden_nodes),
+                size=(self.num_hidden_nodes, self.num_input_nodes),
             )
-
-            # Initialize bias with a default value of 1
 
             bias = np.full((self.num_hidden_nodes, 1), 1)
 
             return w_matrix, bias
 
-        def feed_forward(w_matrix, bias):
+        def dot_product(w_matrix, bias):
+            """ Calculate the dot product of input and weight + bias.
+                TODO: %timeit whether it's faster to keep bias in its own
+                    vector, or as a column in weight matrix
 
-            print(np.shape(w_matrix))
-            print(np.shape(self.data_input))
-            wi = np.dot(self.data_input, w_matrix) + bias
+            Parameters
+            ----------
+            w_matrix
+            bias
+
+            Returns
+            -------
+
+            """
+
+            wi = np.dot(self.training_data_input, w_matrix.transpose()) + bias
+            # biased_matrix = np.hstack((w_matrix, bias))
+            # biased_dot = np.dot(self.data_input, biased_matrix[..., :-1].transpose()) + biased_matrix[:,-1]
 
             return wi
 
-        def activation(weighted_input, a_func):
+        def activation(weighted_input, name):
             """ Activation function
 
             Returns
@@ -106,12 +115,12 @@ class EvoNNProblem:
             def sigmoid(s):
                 return 1 / (1 + np.exp(-s))
 
-            if a_func == "sigmoid":
-                hidden_layer = sigmoid(weighted_input)  # activation function
+            if name == "sigmoid":
+                activated_function = sigmoid(weighted_input)  # activation function
 
-            return hidden_layer
+            return activated_function
 
-        def minimize_error(activated_function):
+        def optimize_error(activated_function, name):
             """ Optimize the training error
 
             Parameters
@@ -122,16 +131,31 @@ class EvoNNProblem:
             Returns
             -------
             """
+            if name == "llsq":
+                w_matrix2 = lstsq(activated_function, self.training_data_output)
+                predicted_values = np.dot(activated_function, w_matrix2)
 
-            # llsq()
-            pass
 
-        def minimize_complexity():
-            pass
+            return w_matrix2, predicted_values
+
+        def calculate_error(predicted_values, name):
+
+            if name == "rmse":
+                return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
+
+        def calculate_complexity(w_matrix, w_matrix2):
+
+            k = np.nonzero(w_matrix) + np.nonzero(w_matrix2)
+
+            
 
         w_matrix, bias = init_weight_matrix()
-        weighted_input = feed_forward(w_matrix, bias)
-        hidden_layer = activation(weighted_input, "sigmoid")
-        predicted_output = minimize_error(hidden_layer)
+        weighted_input = dot_product(w_matrix, bias)
+        activated_function = activation(weighted_input, "sigmoid")
+        w_matrix2, predicted_values = optimize_error(activated_function, "llsq")
+        training_error = calculate_error(predicted_values, "rmse")
 
-        return self.obj_func(decision_variables)
+        complexity = calculate_complexity(w_matrix, w_matrix2)
+
+
+        return self.obj_func(training_error)
