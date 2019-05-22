@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.linalg import lstsq
+import timeit
+from pyrvea.Problem.baseProblem import baseProblem
 
-class EvoNNProblem:
+class EvoNNProblem():
     """Creates an Artificial Neural Network (ANN) for the EvoNN algorithm."""
 
     def __init__(
@@ -12,9 +14,11 @@ class EvoNNProblem:
         num_input_nodes=4,
         num_hidden_nodes=6,
         num_output_nodes=1,
+        num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
     ):
+
         """
 
         Parameters
@@ -43,8 +47,13 @@ class EvoNNProblem:
         self.num_input_nodes = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
         self.num_output_nodes = num_output_nodes
+        self.num_of_objectives = num_of_objectives
+        self.num_of_variables = num_input_nodes
         self.w_low = w_low
         self.w_high = w_high
+        self.lower_limits = w_low
+        self.upper_limits = w_high
+        #self.num_of_samples = np.shape(training_data_output)[0]
 
         if len(self.training_data_input) > 0:
             self.num_input_nodes = np.shape(training_data_input)[1]
@@ -65,97 +74,100 @@ class EvoNNProblem:
 
         """
 
-        def init_weight_matrix():
+        w_matrix, bias = self.init_weight_matrix()
+        weighted_input = self.dot_product(w_matrix, bias)
+        activated_function = self.activation(weighted_input, "sigmoid")
+        w_matrix2, predicted_values = self.optimize_error(activated_function, "llsq")
+        training_error = self.loss_function(predicted_values, "rmse")
 
-            # Initialize the weight matrix with random weights within boundaries
-            # Rows = hidden nodes
-            # Columns = input nodes
-            # Last column is for bias
+        complexity = self.calculate_complexity(w_matrix, w_matrix2)
+        minimized_complexity = self.minimize_complexity(predicted_values, complexity)
 
-            w_matrix = np.random.uniform(
-                self.w_low,
-                self.w_high,
-                size=(self.num_hidden_nodes, self.num_input_nodes),
-            )
+        return self.obj_func(training_error, minimized_complexity)
 
-            bias = np.full((self.num_hidden_nodes, 1), 1)
+    def init_weight_matrix(self):
 
-            return w_matrix, bias
+        # Initialize the weight matrix with random weights within boundaries
+        # Rows = hidden nodes
+        # Columns = input nodes
+        # Last column is for bias
 
-        def dot_product(w_matrix, bias):
-            """ Calculate the dot product of input and weight + bias.
-                TODO: %timeit whether it's faster to keep bias in its own
-                    vector, or as a column in weight matrix
+        w_matrix = np.random.uniform(
+            self.w_low, self.w_high, size=(self.num_hidden_nodes, self.num_input_nodes)
+        )
 
-            Parameters
-            ----------
-            w_matrix
-            bias
+        #bias = np.full((self.num_hidden_nodes, 1), 1)
+        bias = 1
+        return w_matrix, bias
 
-            Returns
-            -------
+    def dot_product(self, w_matrix, bias):
+        """ Calculate the dot product of input and weight + bias.
 
-            """
+        Parameters
+        ----------
+        w_matrix
+        bias
 
-            wi = np.dot(self.training_data_input, w_matrix.transpose()) + bias
-            # biased_matrix = np.hstack((w_matrix, bias))
-            # biased_dot = np.dot(self.data_input, biased_matrix[..., :-1].transpose()) + biased_matrix[:,-1]
+        Returns
+        -------
 
-            return wi
+        """
 
-        def activation(weighted_input, name):
-            """ Activation function
+        wi = np.dot(self.training_data_input, w_matrix.transpose()) + bias
+        #biased_matrix = np.hstack((w_matrix, bias))
+        #wi = (
+        #    np.dot(self.training_data_input, biased_matrix[..., :-1].transpose())
+        #    + biased_matrix[:, -1]
+        #)
 
-            Returns
-            -------
-            The penultimate layer Z before the output
+        return wi
 
-            """
+    def activation(self, wi, name):
+        """ Activation function
 
-            def sigmoid(s):
-                return 1 / (1 + np.exp(-s))
+        Returns
+        -------
+        The penultimate layer Z before the output
 
-            if name == "sigmoid":
-                activated_function = sigmoid(weighted_input)  # activation function
+        """
 
-            return activated_function
+        if name == "sigmoid":
+            activated_function = lambda x : 1 / (1 + np.exp(-x))
 
-        def optimize_error(activated_function, name):
-            """ Optimize the training error
+        return activated_function(wi)
 
-            Parameters
-            ----------
-            activated_function
-                Output of the activation function
+    def optimize_error(self, activated_function, name):
+        """ Optimize the training error
 
-            Returns
-            -------
-            """
-            if name == "llsq":
-                w_matrix2 = lstsq(activated_function, self.training_data_output)
-                predicted_values = np.dot(activated_function, w_matrix2)
+        Parameters
+        ----------
+        activated_function
+            Output of the activation function
 
+        Returns
+        -------
+        """
+        if name == "llsq":
+            w_matrix2 = lstsq(activated_function, self.training_data_output)
+            predicted_values = np.dot(activated_function, w_matrix2)
 
-            return w_matrix2, predicted_values
+        return w_matrix2, predicted_values
 
-        def calculate_error(predicted_values, name):
+    def loss_function(self, predicted_values, name):
 
-            if name == "rmse":
-                return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
+        if name == "rmse":
+            return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
 
-        def calculate_complexity(w_matrix, w_matrix2):
+    def calculate_complexity(self, w_matrix, w_matrix2):
 
-            k = np.nonzero(w_matrix) + np.nonzero(w_matrix2)
+        k = np.nonzero(w_matrix) + np.nonzero(w_matrix2)
 
-            
+        return k
 
-        w_matrix, bias = init_weight_matrix()
-        weighted_input = dot_product(w_matrix, bias)
-        activated_function = activation(weighted_input, "sigmoid")
-        w_matrix2, predicted_values = optimize_error(activated_function, "llsq")
-        training_error = calculate_error(predicted_values, "rmse")
+    def minimize_complexity(self, predicted_values, k):
 
-        complexity = calculate_complexity(w_matrix, w_matrix2)
+        rss = ((self.training_data_output - predicted_values) ** 2).sum()
+        aic = 2 * k + self.num_of_samples * np.log(rss/self.num_of_samples)
+        aicc = aic + (2*k*(k+1)/(self.num_of_samples-k-1))
 
-
-        return self.obj_func(training_error)
+        return aicc
