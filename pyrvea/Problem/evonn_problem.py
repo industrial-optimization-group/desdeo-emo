@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.linalg import lstsq
+#from scipy.linalg import lstsq
 import timeit
 from pyrvea.Problem.baseProblem import baseProblem
 
@@ -15,6 +15,7 @@ class EvoNNProblem():
         num_hidden_nodes=6,
         num_output_nodes=1,
         num_of_objectives=2,
+        num_of_constraints=0,
         w_low=-5.0,
         w_high=5.0,
     ):
@@ -49,16 +50,18 @@ class EvoNNProblem():
         self.num_output_nodes = num_output_nodes
         self.num_of_objectives = num_of_objectives
         self.num_of_variables = num_input_nodes
+        self.num_of_constraints = num_of_constraints
         self.w_low = w_low
         self.w_high = w_high
         self.lower_limits = w_low
         self.upper_limits = w_high
-        #self.num_of_samples = np.shape(training_data_output)[0]
+        self.bias = 1
+        self.num_of_samples = np.shape(training_data_output)[0]
 
         if len(self.training_data_input) > 0:
             self.num_input_nodes = np.shape(training_data_input)[1]
 
-    def objectives(self, decision_variables=None) -> list:
+    def objectives(self, decision_variables) -> list:
 
         """ Use this method to calculate objective functions.
 
@@ -74,16 +77,18 @@ class EvoNNProblem():
 
         """
 
-        w_matrix, bias = self.init_weight_matrix()
-        weighted_input = self.dot_product(w_matrix, bias)
+        #w_matrix, bias = self.init_weight_matrix()
+        weighted_input = self.dot_product(decision_variables)
         activated_function = self.activation(weighted_input, "sigmoid")
         w_matrix2, predicted_values = self.optimize_error(activated_function, "llsq")
         training_error = self.loss_function(predicted_values, "rmse")
 
-        complexity = self.calculate_complexity(w_matrix, w_matrix2)
+        complexity = self.calculate_complexity(decision_variables, w_matrix2)
         minimized_complexity = self.minimize_complexity(predicted_values, complexity)
+        obj_func = []
+        obj_func.extend([training_error, minimized_complexity])
 
-        return self.obj_func(training_error, minimized_complexity)
+        return obj_func
 
     def init_weight_matrix(self):
 
@@ -100,7 +105,7 @@ class EvoNNProblem():
         bias = 1
         return w_matrix, bias
 
-    def dot_product(self, w_matrix, bias):
+    def dot_product(self, w_matrix):
         """ Calculate the dot product of input and weight + bias.
 
         Parameters
@@ -113,7 +118,7 @@ class EvoNNProblem():
 
         """
 
-        wi = np.dot(self.training_data_input, w_matrix.transpose()) + bias
+        wi = np.dot(self.training_data_input, w_matrix) + self.bias
         #biased_matrix = np.hstack((w_matrix, bias))
         #wi = (
         #    np.dot(self.training_data_input, biased_matrix[..., :-1].transpose())
@@ -148,10 +153,10 @@ class EvoNNProblem():
         -------
         """
         if name == "llsq":
-            w_matrix2 = lstsq(activated_function, self.training_data_output)
-            predicted_values = np.dot(activated_function, w_matrix2)
+            w_matrix2 = np.linalg.lstsq(activated_function, self.training_data_output)
+            predicted_values = np.dot(activated_function, w_matrix2[0])
 
-        return w_matrix2, predicted_values
+        return w_matrix2[0], predicted_values
 
     def loss_function(self, predicted_values, name):
 
@@ -160,7 +165,7 @@ class EvoNNProblem():
 
     def calculate_complexity(self, w_matrix, w_matrix2):
 
-        k = np.nonzero(w_matrix) + np.nonzero(w_matrix2)
+        k = np.count_nonzero(w_matrix) + np.count_nonzero(w_matrix2)
 
         return k
 

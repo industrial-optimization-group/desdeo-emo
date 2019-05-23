@@ -1,12 +1,24 @@
 from pyrvea.Problem.evonn_problem import EvoNNProblem
+from pyrvea.Population.population_evonn import PopulationEvoNN
+from random import randint, sample
 
 import numpy as np
 
-input_nodes = 4
-hidden_nodes = 6
-training_data = np.random.uniform(0, 1, size=(hidden_nodes, input_nodes))
+input_nodes = 5
+hidden_nodes = 4
+num_of_samples = 10
+training_data = np.random.uniform(0, 1, size=(num_of_samples, input_nodes))
+preferred_output = np.ones((num_of_samples, hidden_nodes))
 
-prob = EvoNNProblem(training_data_input=training_data, num_input_nodes=4, num_hidden_nodes=6)
+prob = EvoNNProblem(
+    name="EvoNN",
+    training_data_input=training_data,
+    training_data_output=preferred_output,
+    num_input_nodes=input_nodes,
+    num_hidden_nodes=hidden_nodes,
+)
 
-obj_func = prob.objectives()
+pop = PopulationEvoNN(prob)
 
+selected = sample(range(1, 50), randint(1,50))
+pop.keep(selected)

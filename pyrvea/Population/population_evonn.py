@@ -10,25 +10,43 @@ from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
-
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
+from pyrvea.Population.Population import Population
+from scipy.stats import bernoulli as bn
 
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
     from pyrvea.EAs.baseEA import BaseEA
 
 
-class Population:
+class PopulationEvoNN():
     """Define the population."""
 
     def __init__(
         self,
-        problem: "baseProblem",
-        assign_type: str = "LHSDesign",
+        problem: "EvoNNProblem",
+        assign_type: str = "RandomDesign",
         plotting: bool = False,
         *args
     ):
+        """Initialize the population.
+
+        Parameters
+        ----------
+        problem : baseProblem
+            An object of the class Problem
+        assign_type : str, optional
+            Define the method of creation of population.
+            If 'assign_type' is 'RandomDesign' the population is generated
+            randomly. If 'assign_type' is 'LHSDesign', the population is
+            generated via Latin Hypercube Sampling. If 'assign_type' is
+            'custom', the population is imported from file. If assign_type
+            is 'empty', create blank population. (the default is "RandomAssign")
+        plotting : bool, optional
+            (the default is True, which creates the plots)
+
+        """
         """Initialize the population.
 
         Parameters
@@ -55,22 +73,22 @@ class Population:
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-        self.individuals = np.empty((0, num_var), float)
+        self.individuals = np.empty((0, self.problem.num_input_nodes, self.problem.num_hidden_nodes), float)
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
-            (0, self.problem.num_of_constraints), float
-        )
+            (0, self.problem.num_of_constraints), float)
         self.archive = pd.DataFrame(
             columns=["generation", "decision_variables", "objective_values"]
         )
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
+
         if not assign_type == "empty":
             self.create_new_individuals(assign_type)
 
     def create_new_individuals(
-        self, design: str = "LHSDesign", pop_size: int = None, decision_variables=None
+        self, design: str = "RandomDesign", pop_size: int = None, decision_variables=None
     ):
         """Create, evaluate and add new individuals to the population. Initiate Plots.
 
@@ -82,36 +100,32 @@ class Population:
         design : str, optional
             Describe the method of creation of new individuals.
             "RandomDesign" creates individuals randomly.
-            "LHSDesign" creates individuals using Latin hypercube sampling.
         pop_size : int, optional
             Number of individuals in the population. If none, some default population
             size based on number of objectives is chosen.
         decision_variables : numpy array or list, optional
             Pass decision variables to be added to the population.
         """
+        # What is this?
         if decision_variables is not None:
             pass
+
         if pop_size is None:
             pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
             pop_size = pop_size_options[self.problem.num_of_objectives - 2]
-        num_var = self.individuals.shape[1]
+        # Create new individuals
+
         if design == "RandomDesign":
-            individuals = np.random.random((pop_size, num_var))
-            # Scaling
-            individuals = (
-                individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
+            #individuals = np.random.random((pop_size, self.problem.num_hidden_nodes, self.problem.num_input_nodes+1))
+            individuals = np.random.uniform(
+                self.problem.w_low, self.problem.w_high, size=(pop_size, self.problem.num_input_nodes, self.problem.num_hidden_nodes)
             )
-        elif design == "LHSDesign":
-            individuals = lhs(num_var, samples=pop_size)
-            # Scaling
-            individuals = (
-                individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
-            )
+
         else:
             print("Design not yet supported.")
+
         self.add(individuals)
+
         if self.plotting:
             self.figure = []
             self.plot_init_()
@@ -131,11 +145,10 @@ class Population:
         new_pop: np.ndarray
             Decision variable values for new population.
         """
-        if new_pop.ndim == 1:
-            self.append_individual(new_pop)
-        elif new_pop.ndim == 2:
-            for ind in new_pop:
-                self.append_individual(ind)
+
+        if new_pop.shape[0] >= 1:
+            for i in range(0, new_pop.shape[0]):
+                self.append_individual(new_pop[i, :, :])
         else:
             print("Error while adding new individuals. Check dimensions.")
         # print(self.ideal_fitness)
@@ -150,7 +163,7 @@ class Population:
             Indices of individuals to keep
         """
 
-        new_pop = self.individuals[indices, :]
+        new_pop = self.individuals[indices, :, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
         new_CV = self.constraint_violation[indices, :]
@@ -179,7 +192,7 @@ class Population:
         ----------
         ind: np.ndarray
         """
-        self.individuals = np.vstack((self.individuals, ind))
+        self.individuals = np.concatenate((self.individuals, [ind]))
         obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
         self.constraint_violation = np.vstack((self.constraint_violation, CV))
