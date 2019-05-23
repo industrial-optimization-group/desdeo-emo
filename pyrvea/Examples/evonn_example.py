@@ -8,7 +8,7 @@ input_nodes = 5
 hidden_nodes = 4
 num_of_samples = 10
 training_data = np.random.uniform(0, 1, size=(num_of_samples, input_nodes))
-preferred_output = np.ones((num_of_samples, hidden_nodes))
+preferred_output = np.ones(num_of_samples)
 
 prob = EvoNNProblem(
     name="EvoNN",

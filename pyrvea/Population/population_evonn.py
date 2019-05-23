@@ -214,7 +214,10 @@ class PopulationEvoNN():
         ----------
         ind: np.ndarray
         """
+
+        # this method seems to work for nd arrays
         self.individuals = np.concatenate((self.individuals, [ind]))
+
         obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
         self.constraint_violation = np.vstack((self.constraint_violation, CV))
@@ -370,7 +373,7 @@ class PopulationEvoNN():
         non_dom = non_dom[np.all(non_dom < ref_point, axis=1), :]
         hyp = hv(non_dom)
         self.hyp = hyp.compute(ref_point)
-        return self.hyp
+        return self.hypnp
 
     def non_dominated(self):
         """Fix this. check if nd2 and nds mean the same thing"""

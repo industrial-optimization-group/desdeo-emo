@@ -84,11 +84,10 @@ class EvoNNProblem():
         training_error = self.loss_function(predicted_values, "rmse")
 
         complexity = self.calculate_complexity(decision_variables, w_matrix2)
-        minimized_complexity = self.minimize_complexity(predicted_values, complexity)
+        corrected_complexity = self.information_criterion(predicted_values, complexity)
         obj_func = []
-        obj_func.extend([training_error, minimized_complexity])
 
-        return obj_func
+        return obj_func[training_error, corrected_complexity]
 
     def init_weight_matrix(self):
 
@@ -127,7 +126,7 @@ class EvoNNProblem():
 
         return wi
 
-    def activation(self, wi, name):
+    def activation(self, wi, name="sigmoid"):
         """ Activation function
 
         Returns
@@ -137,11 +136,11 @@ class EvoNNProblem():
         """
 
         if name == "sigmoid":
-            activated_function = lambda x : 1 / (1 + np.exp(-x))
+            activated_function = lambda x: 1 / (1 + np.exp(-x))
 
         return activated_function(wi)
 
-    def optimize_error(self, activated_function, name):
+    def optimize_error(self, activated_function, name="llsq"):
         """ Optimize the training error
 
         Parameters
@@ -158,7 +157,7 @@ class EvoNNProblem():
 
         return w_matrix2[0], predicted_values
 
-    def loss_function(self, predicted_values, name):
+    def loss_function(self, predicted_values, name="rmse"):
 
         if name == "rmse":
             return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
@@ -169,8 +168,8 @@ class EvoNNProblem():
 
         return k
 
-    def minimize_complexity(self, predicted_values, k):
-
+    def information_criterion(self, predicted_values, k):
+        # Information criterion
         rss = ((self.training_data_output - predicted_values) ** 2).sum()
         aic = 2 * k + self.num_of_samples * np.log(rss/self.num_of_samples)
         aicc = aic + (2*k*(k+1)/(self.num_of_samples-k-1))
