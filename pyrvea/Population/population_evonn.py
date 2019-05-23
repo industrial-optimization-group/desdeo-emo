@@ -155,7 +155,7 @@ class PopulationEvoNN():
         self.update_ideal_and_nadir()
 
     def keep(self, indices: list):
-        """Remove individuals from population which are not in "indices".
+        """Remove individuals from population which are NOT in "indices".
 
         Parameters
         ----------
@@ -166,9 +166,33 @@ class PopulationEvoNN():
         new_pop = self.individuals[indices, :, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
-        new_CV = self.constraint_violation[indices, :]
+        new_cv = self.constraint_violation[indices, :]
+
         self.individuals = new_pop
         self.objectives = new_obj
+        self.fitness = new_fitness
+        self.constraint_violation = new_cv
+
+    def delete(self, indices: list):
+        """Remove individuals from population which ARE in "indices".
+
+        Parameters
+        ----------
+        indices: list
+            Indices of individuals to keep
+        """
+
+        new_pop = np.delete(self.individuals, indices, axis=0)
+        new_obj = np.delete(self.objectives, indices, axis=0)
+        new_fitness = np.delete(self.fitness, indices, axis=0)
+        new_cv = np.delete(self.constraint_violation, indices, axis=0)
+
+        self.individuals = new_pop
+        self.objectives = new_obj
+        self.fitness = new_fitness
+        self.constraint_violation = new_cv
+
+    def archive(self, new_pop, new_obj):
         length_of_archive = len(self.archive)
         if length_of_archive == 0:
             gen_count = 0
@@ -182,8 +206,6 @@ class PopulationEvoNN():
             }
         )
         self.archive = self.archive.append(new_entries, ignore_index=True)
-        self.fitness = new_fitness
-        self.constraint_violation = new_CV
 
     def append_individual(self, ind: np.ndarray):
         """Evaluate and add individual to the population.
