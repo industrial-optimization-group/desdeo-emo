@@ -77,32 +77,16 @@ class EvoNNProblem():
 
         """
 
-        #w_matrix, bias = self.init_weight_matrix()
         weighted_input = self.dot_product(decision_variables)
-        activated_function = self.activation(weighted_input, "sigmoid")
-        w_matrix2, predicted_values = self.optimize_error(activated_function, "llsq")
-        training_error = self.loss_function(predicted_values, "rmse")
+        activated_function = self.activation(weighted_input)
+        w_matrix2, predicted_values = self.optimize_error(activated_function)
+        training_error = self.loss_function(predicted_values)
 
         complexity = self.calculate_complexity(decision_variables, w_matrix2)
         corrected_complexity = self.information_criterion(predicted_values, complexity)
-        obj_func = []
+        obj_func = [training_error, corrected_complexity]
 
-        return obj_func[training_error, corrected_complexity]
-
-    def init_weight_matrix(self):
-
-        # Initialize the weight matrix with random weights within boundaries
-        # Rows = hidden nodes
-        # Columns = input nodes
-        # Last column is for bias
-
-        w_matrix = np.random.uniform(
-            self.w_low, self.w_high, size=(self.num_hidden_nodes, self.num_input_nodes)
-        )
-
-        #bias = np.full((self.num_hidden_nodes, 1), 1)
-        bias = 1
-        return w_matrix, bias
+        return obj_func
 
     def dot_product(self, w_matrix):
         """ Calculate the dot product of input and weight + bias.
@@ -110,19 +94,16 @@ class EvoNNProblem():
         Parameters
         ----------
         w_matrix
-        bias
 
         Returns
         -------
 
         """
+        # Init bias value for the first row
+        w_matrix[0] = self.bias
 
-        wi = np.dot(self.training_data_input, w_matrix) + self.bias
-        #biased_matrix = np.hstack((w_matrix, bias))
-        #wi = (
-        #    np.dot(self.training_data_input, biased_matrix[..., :-1].transpose())
-        #    + biased_matrix[:, -1]
-        #)
+        # Calculate dot product
+        wi = np.dot(self.training_data_input, w_matrix[1:, :]) + w_matrix[0]
 
         return wi
 

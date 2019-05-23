@@ -21,6 +21,6 @@ prob = EvoNNProblem(
 pop = PopulationEvoNN(prob)
 
 selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
-pop.keep(selected)
+#pop.keep(selected)
 selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
 pop.delete(selected)

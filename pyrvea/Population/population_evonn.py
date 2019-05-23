@@ -73,7 +73,7 @@ class PopulationEvoNN():
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-        self.individuals = np.empty((0, self.problem.num_input_nodes, self.problem.num_hidden_nodes), float)
+        self.individuals = np.empty((0, self.problem.num_input_nodes+1, self.problem.num_hidden_nodes), float)
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
@@ -88,7 +88,7 @@ class PopulationEvoNN():
             self.create_new_individuals(assign_type)
 
     def create_new_individuals(
-        self, design: str = "RandomDesign", pop_size: int = None, decision_variables=None
+        self, design: str = "RandomDesign", pop_size: int = 100, decision_variables=None
     ):
         """Create, evaluate and add new individuals to the population. Initiate Plots.
 
@@ -106,19 +106,17 @@ class PopulationEvoNN():
         decision_variables : numpy array or list, optional
             Pass decision variables to be added to the population.
         """
-        # What is this?
+
         if decision_variables is not None:
             pass
 
-        if pop_size is None:
-            pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
-            pop_size = pop_size_options[self.problem.num_of_objectives - 2]
         # Create new individuals
 
         if design == "RandomDesign":
-            #individuals = np.random.random((pop_size, self.problem.num_hidden_nodes, self.problem.num_input_nodes+1))
+
+            # +1 row for bias
             individuals = np.random.uniform(
-                self.problem.w_low, self.problem.w_high, size=(pop_size, self.problem.num_input_nodes, self.problem.num_hidden_nodes)
+                self.problem.w_low, self.problem.w_high, size=(pop_size, self.problem.num_input_nodes+1, self.problem.num_hidden_nodes)
             )
 
         else:
@@ -175,6 +173,8 @@ class PopulationEvoNN():
 
     def delete(self, indices: list):
         """Remove individuals from population which ARE in "indices".
+        With boolean masks deleted individuals can be obtained with
+        inverted mask (~mask)
 
         Parameters
         ----------
@@ -182,10 +182,24 @@ class PopulationEvoNN():
             Indices of individuals to keep
         """
 
-        new_pop = np.delete(self.individuals, indices, axis=0)
-        new_obj = np.delete(self.objectives, indices, axis=0)
-        new_fitness = np.delete(self.fitness, indices, axis=0)
-        new_cv = np.delete(self.constraint_violation, indices, axis=0)
+        mask = np.ones(len(self.individuals), dtype=bool)
+        mask[indices] = False
+
+        # new_pop = np.delete(self.individuals, indices, axis=0)
+        new_pop = self.individuals[mask, ...]
+        # deleted_pop = self.individuals[~mask, ...]
+
+        # new_obj = np.delete(self.objectives, indices, axis=0)
+        new_obj = self.objectives[mask, ...]
+        # deleted_obj = self.objectives[~mask, ...]
+
+        # new_fitness = np.delete(self.fitness, indices, axis=0)
+        new_fitness = self.fitness[mask, ...]
+        # deleted_fitness = self.fitness[~mask, ...]
+
+        # new_cv = np.delete(self.constraint_violation, indices, axis=0)
+        new_cv = self.constraint_violation[mask, ...]
+        # deleted_cv = self.constraint_violation[~mask, ...]
 
         self.individuals = new_pop
         self.objectives = new_obj
@@ -215,7 +229,7 @@ class PopulationEvoNN():
         ind: np.ndarray
         """
 
-        # this method seems to work for nd arrays
+        # this method seems to work for n-dimensional arrays
         self.individuals = np.concatenate((self.individuals, [ind]))
 
         obj, CV, fitness = self.evaluate_individual(ind)
