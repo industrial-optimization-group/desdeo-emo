@@ -1,4 +1,4 @@
-results/
+4results/
 Backup_results/
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -126,3 +126,10 @@ dmypy.json
 .pyre/
 
 *.json
+
+# vsCode settings
+.vscode/
+
+# Poetry files
+poetry.lock
+pyproject.toml
