@@ -1,5 +1,7 @@
 from pyrvea.Problem.evonn_problem import EvoNNProblem
 from pyrvea.Population.population_evonn import PopulationEvoNN
+from pyrvea.Recombination.self_adapting_crossover import crossover
+from pyrvea.Recombination.self_adapting_mutation import mutation
 from random import randint, sample
 
 import numpy as np
@@ -19,8 +21,11 @@ prob = EvoNNProblem(
 )
 
 pop = PopulationEvoNN(prob)
+a1 = randint(0, 49)
+a2 = randint(0, 49)
+mutation(pop, a1, a2)
 
-selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
+#selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
 #pop.keep(selected)
-selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
-pop.delete(selected)
+#selected = sample(range(1, np.shape(pop.individuals)[0]), randint(1, np.shape(pop.individuals)[0]))
+#pop.delete(selected)
