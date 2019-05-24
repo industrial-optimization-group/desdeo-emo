@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING
+import numpy as np
+from copy import deepcopy
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
@@ -89,7 +91,10 @@ class BaseDecompositionEA(BaseEA):
         offspring = population.mate()
         population.add(offspring)
         selected = self.select(population)
+        tmp = deepcopy(population)
         population.keep(selected)
+        tmp.delete_or_keep(selected, "keep")
+        print("test")
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected

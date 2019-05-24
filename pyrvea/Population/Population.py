@@ -11,6 +11,9 @@ from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
+from pyrvea.Recombination.bounded_polynomial_mutation import mutation
+from pyrvea.Recombination.simulated_binary_crossover import crossover
+
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 
@@ -46,7 +49,7 @@ class Population:
             (the default is True, which creates the plots)
 
         """
-        num_var = problem.num_of_variables
+        self.num_var = problem.num_of_variables
         self.lower_limits = np.asarray(problem.lower_limits)
         self.upper_limits = np.asarray(problem.upper_limits)
         self.hyp = 0
@@ -55,7 +58,7 @@ class Population:
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-        self.individuals = np.empty((0, num_var), float)
+        self.individuals = np.empty((0, self.num_var), float)
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
@@ -149,7 +152,7 @@ class Population:
         indices: list
             Indices of individuals to keep
         """
-
+        indices.sort()
         new_pop = self.individuals[indices, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
@@ -171,6 +174,52 @@ class Population:
         self.archive = self.archive.append(new_entries, ignore_index=True)
         self.fitness = new_fitness
         self.constraint_violation = new_CV
+
+    def delete_or_keep(self, indices: list, delete_or_keep):
+        """Remove individuals from population which ARE in "indices".
+        With boolean masks deleted individuals can be obtained with
+        inverted mask (~mask)
+
+        Parameters
+        ----------
+        indices: list
+            Indices of individuals to keep
+        """
+        indices.sort()
+        mask = np.ones(len(self.individuals), dtype=bool)
+        mask[indices] = False
+
+        # new_pop = np.delete(self.individuals, indices, axis=0)
+        new_pop = self.individuals[mask, ...]
+        deleted_pop = self.individuals[~mask, ...]
+
+        # new_obj = np.delete(self.objectives, indices, axis=0)
+        new_obj = self.objectives[mask, ...]
+        deleted_obj = self.objectives[~mask, ...]
+
+        # new_fitness = np.delete(self.fitness, indices, axis=0)
+        new_fitness = self.fitness[mask, ...]
+        deleted_fitness = self.fitness[~mask, ...]
+
+        if len(self.constraint_violation) > 0:
+            # new_cv = np.delete(self.constraint_violation, indices, axis=0)
+            new_cv = self.constraint_violation[mask, ...]
+            deleted_cv = self.constraint_violation[~mask, ...]
+        else:
+            deleted_cv = self.constraint_violation
+            new_cv = self.constraint_violation
+
+        if delete_or_keep == "delete":
+            self.individuals = new_pop
+            self.objectives = new_obj
+            self.fitness = new_fitness
+            self.constraint_violation = new_cv
+
+        elif delete_or_keep == "keep":
+            self.individuals = deleted_pop
+            self.objectives = deleted_obj
+            self.fitness = deleted_fitness
+            self.constraint_violation = deleted_cv
 
     def append_individual(self, ind: np.ndarray):
         """Evaluate and add individual to the population.
@@ -239,65 +288,11 @@ class Population:
 
         Conduct simulated binary crossover and bounded polunomial mutation.
         """
-        pop = self.individuals
-        pop_size, num_var = pop.shape
-        shuffled_ids = list(range(pop_size))
-        shuffle(shuffled_ids)
-        mating_pop = pop[shuffled_ids]
-        if pop_size % 2 == 1:
-            # Maybe it should be pop_size-1?
-            mating_pop = np.vstack((mating_pop, mating_pop[0]))
-            pop_size = pop_size + 1
-        # The rest closely follows the matlab code.
-        ProC = 1
-        ProM = 1 / num_var
-        DisC = 30
-        DisM = 20
-        offspring = np.zeros_like(mating_pop)  # empty_like() more efficient?
-        for i in range(0, pop_size, 2):
-            beta = np.zeros(num_var)
-            miu = np.random.rand(num_var)
-            beta[miu <= 0.5] = (2 * miu[miu <= 0.5]) ** (1 / (DisC + 1))
-            beta[miu > 0.5] = (2 - 2 * miu[miu > 0.5]) ** (-1 / (DisC + 1))
-            beta = beta * ((-1) ** np.random.randint(0, high=2, size=num_var))
-            beta[np.random.rand(num_var) > ProC] = 1  # It was in matlab code
-            avg = (mating_pop[i] + mating_pop[i + 1]) / 2
-            diff = (mating_pop[i] - mating_pop[i + 1]) / 2
-            offspring[i] = avg + beta * diff
-            offspring[i + 1] = avg - beta * diff
+        offspring = crossover(self)
+        p = 1 / self.num_var
+        mut_offspring = mutation(self, offspring, prob_mut=p)
 
-        min_val = np.ones_like(offspring) * self.lower_limits
-        max_val = np.ones_like(offspring) * self.upper_limits
-        k = np.random.random(offspring.shape)
-        miu = np.random.random(offspring.shape)
-        temp = np.logical_and((k <= ProM), (miu < 0.5))
-        offspring_scaled = (offspring - min_val) / (max_val - min_val)
-        offspring[temp] = offspring[temp] + (
-            (max_val[temp] - min_val[temp])
-            * (
-                (
-                    2 * miu[temp]
-                    + (1 - 2 * miu[temp]) * (1 - offspring_scaled[temp]) ** (DisM + 1)
-                )
-                ** (1 / (DisM + 1))
-                - 1
-            )
-        )
-        temp = np.logical_and((k <= ProM), (miu >= 0.5))
-        offspring[temp] = offspring[temp] + (
-            (max_val[temp] - min_val[temp])
-            * (
-                1
-                - (
-                    2 * (1 - miu[temp])
-                    + 2 * (miu[temp] - 0.5) * offspring_scaled[temp] ** (DisM + 1)
-                )
-                ** (1 / (DisM + 1))
-            )
-        )
-        offspring[offspring > max_val] = max_val[offspring > max_val]
-        offspring[offspring < min_val] = min_val[offspring < min_val]
-        return offspring
+        return mut_offspring
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""
