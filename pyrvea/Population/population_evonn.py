@@ -15,6 +15,9 @@ from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Population.Population import Population
 from scipy.stats import bernoulli as bn
 
+from pyrvea.Recombination.ppga_crossover import ppga_crossover
+from pyrvea.Recombination.ppga_mutation import ppga_mutation
+
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
     from pyrvea.EAs.baseEA import BaseEA
@@ -286,68 +289,28 @@ class PopulationEvoNN():
             if self.plotting:
                 self.plot_objectives()
 
-    def mate(self):
+    def mate(self, ind1, ind2):
         """Conduct crossover and mutation over the population.
 
-        Conduct simulated binary crossover and bounded polunomial mutation.
         """
-        pop = self.individuals
-        pop_size, num_var = pop.shape
-        shuffled_ids = list(range(pop_size))
-        shuffle(shuffled_ids)
-        mating_pop = pop[shuffled_ids]
-        if pop_size % 2 == 1:
-            # Maybe it should be pop_size-1?
-            mating_pop = np.vstack((mating_pop, mating_pop[0]))
-            pop_size = pop_size + 1
-        # The rest closely follows the matlab code.
-        ProC = 1
-        ProM = 1 / num_var
-        DisC = 30
-        DisM = 20
-        offspring = np.zeros_like(mating_pop)  # empty_like() more efficient?
-        for i in range(0, pop_size, 2):
-            beta = np.zeros(num_var)
-            miu = np.random.rand(num_var)
-            beta[miu <= 0.5] = (2 * miu[miu <= 0.5]) ** (1 / (DisC + 1))
-            beta[miu > 0.5] = (2 - 2 * miu[miu > 0.5]) ** (-1 / (DisC + 1))
-            beta = beta * ((-1) ** np.random.randint(0, high=2, size=num_var))
-            beta[np.random.rand(num_var) > ProC] = 1  # It was in matlab code
-            avg = (mating_pop[i] + mating_pop[i + 1]) / 2
-            diff = (mating_pop[i] - mating_pop[i + 1]) / 2
-            offspring[i] = avg + beta * diff
-            offspring[i + 1] = avg - beta * diff
-        min_val = np.ones_like(offspring) * self.lower_limits
-        max_val = np.ones_like(offspring) * self.upper_limits
-        k = np.random.random(offspring.shape)
-        miu = np.random.random(offspring.shape)
-        temp = np.logical_and((k <= ProM), (miu < 0.5))
-        offspring_scaled = (offspring - min_val) / (max_val - min_val)
-        offspring[temp] = offspring[temp] + (
-            (max_val[temp] - min_val[temp])
-            * (
-                (
-                    2 * miu[temp]
-                    + (1 - 2 * miu[temp]) * (1 - offspring_scaled[temp]) ** (DisM + 1)
-                )
-                ** (1 / (DisM + 1))
-                - 1
-            )
-        )
-        temp = np.logical_and((k <= ProM), (miu >= 0.5))
-        offspring[temp] = offspring[temp] + (
-            (max_val[temp] - min_val[temp])
-            * (
-                1
-                - (
-                    2 * (1 - miu[temp])
-                    + 2 * (miu[temp] - 0.5) * offspring_scaled[temp] ** (DisM + 1)
-                )
-                ** (1 / (DisM + 1))
-            )
-        )
-        offspring[offspring > max_val] = max_val[offspring > max_val]
-        offspring[offspring < min_val] = min_val[offspring < min_val]
+        # Get individuals at indices
+        w1, w2 = self.individuals[ind1], self.individuals[ind2]
+
+        # Perform crossover
+        xover_w1, xover_w2 = ppga_crossover(w1, w2)
+
+        # Find randomly two other individuals with current match active for mutation
+        indices = [xover_w1, xover_w2]
+        mask = np.ones(len(self.individuals), dtype=bool)
+        mask[indices] = False
+        alternatives = self.individuals[mask, ...]
+
+        # Mutate
+        offspring1, offspring2 = ppga_mutation(xover_w1, xover_w2, alternatives)
+
+        # Add mutated offspring to a list
+        offspring = np.vstack([offspring1], [offspring2])
+
         return offspring
 
     def plot_init_(self):

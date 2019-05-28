@@ -1,6 +1,4 @@
 from typing import TYPE_CHECKING
-import numpy as np
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
@@ -91,10 +89,89 @@ class BaseDecompositionEA(BaseEA):
         offspring = population.mate()
         population.add(offspring)
         selected = self.select(population)
-        tmp = deepcopy(population)
-        population.keep(selected)
-        tmp.delete_or_keep(selected, "keep")
-        print("test")
+        population.delete_or_keep(selected, "keep")
+
+    def select(self, population) -> list:
+        """Describe a selection mechanism. Return indices of selected
+        individuals.
+
+        Parameters
+        ----------
+        population : Population
+            Contains the current population and problem
+            information.
+
+        Returns
+        -------
+        list
+            List of indices of individuals to be selected.
+        """
+        pass
+
+    def continue_iteration(self):
+        """Checks whether the current iteration should be continued or not."""
+        return self.params["current_iteration_gen_count"] <= self.params["generations"]
+
+    def continue_evolution(self) -> bool:
+        """Checks whether the current iteration should be continued or not."""
+        pass
+
+
+class BasePPGA(BaseEA):
+    """The base class for evolutionary algorithms using neural networks."""
+
+    def __init__(self, population: "Population", EA_parameters: dict = None):
+        """Initialize the base class, call the method to set up the parameters.
+
+        Parameters
+        ----------
+        population : "Population"
+            This variable is updated as evolution takes place
+        EA_parameters : dict
+            Takes the EA parameters
+        """
+        self.params = self.set_params(population, EA_parameters)
+        # print("Using BaseDecompositionEA init")
+        self._next_iteration(population)
+
+    def initialize_lattice(self):
+        pass
+
+    def _next_iteration(self, population: "Population"):
+        """Run one iteration of EA.
+
+        One iteration consists of a constant or variable number of
+        generations. This method leaves EA.params unchanged, except the current
+        iteration count and gen count.
+
+        Parameters
+        ----------
+        population : "Population"
+            Contains current population
+        """
+        self.params["current_iteration_gen_count"] = 1
+        while self.continue_iteration():
+            self._next_gen(population)
+            self.params["current_iteration_gen_count"] += 1
+        self.params["current_iteration_count"] += 1
+
+    def _next_gen(self, population: "Population"):
+        """Run one generation of EA.
+
+        This method leaves method.params unchanged. Intended to be used by
+        next_iteration.
+
+        Parameters
+        ----------
+        population: "Population"
+            Population object
+        """
+
+        ind1, ind2 = self.move_prey()
+        offspring = population.mate(ind1, ind2)
+        population.add(offspring)
+        selected = self.select(population)
+        population.delete_or_keep(selected, "keep")
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected
