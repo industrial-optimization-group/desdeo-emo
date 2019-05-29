@@ -134,9 +134,6 @@ class BasePPGA(BaseEA):
         # print("Using BaseDecompositionEA init")
         self._next_iteration(population)
 
-    def initialize_lattice(self):
-        pass
-
     def _next_iteration(self, population: "Population"):
         """Run one iteration of EA.
 
@@ -167,7 +164,7 @@ class BasePPGA(BaseEA):
             Population object
         """
 
-        ind1, ind2 = self.move_prey()
+        ind1, ind2 = self.lattice.move_prey()
         offspring = population.mate(ind1, ind2)
         population.add(offspring)
         selected = self.select(population)

@@ -91,7 +91,7 @@ class PopulationEvoNN():
             self.create_new_individuals(assign_type)
 
     def create_new_individuals(
-        self, design: str = "RandomDesign", pop_size: int = 100, decision_variables=None
+        self, design: str = "RandomDesign", pop_size: int = 500, decision_variables=None
     ):
         """Create, evaluate and add new individuals to the population. Initiate Plots.
 

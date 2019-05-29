@@ -1,6 +1,7 @@
 from pyrvea.EAs.baseEA import BasePPGA
 from random import sample
 import numpy as np
+from random import randint
 from scipy.stats import bernoulli as bn
 
 class PPGA(BasePPGA):
@@ -85,8 +86,11 @@ class Lattice:
         self.size_x = size_x
         self.size_y = size_y
         self.arr = np.zeros((self.size_y, self.size_x))
+        self.preys = {}
+        self.predators = {}
         self.place_prey(params)
         self.place_pred(params)
+        self.move_prey()
 
     def place_prey(self, params):
         """Set some of the individual weights to zero, find an empty
@@ -99,38 +103,81 @@ class Lattice:
 
         for i in range(np.shape(params["population"].individuals)[0]):
 
-            x = np.random.randint(self.size_x)
             y = np.random.randint(self.size_y)
+            x = np.random.randint(self.size_x)
 
-            while self.arr[x][y] != 0:
-                x = np.random.randint(self.size_x)
+            while self.arr[y][x] != 0:
                 y = np.random.randint(self.size_y)
+                x = np.random.randint(self.size_x)
+
+            # Keep track of preys in a dictionary
+            self.preys[i] = [y, x]
 
             # +1 to offset zero index individual
             self.arr[y][x] = i+1
 
     def place_pred(self, params):
-
-        # Initialize Predator population
+        """Initialize the predator population, linearly distributed in [0,1]
+        and place them in the lattice randomly"""
 
         predators = np.linspace(0, 1, num=params["predator_pop_size"])
 
         for i in range(np.shape(predators)[0]):
 
-            x = np.random.randint(self.size_x)
             y = np.random.randint(self.size_y)
+            x = np.random.randint(self.size_x)
 
-            while self.arr[x][y] != 0:
-                x = np.random.randint(self.size_x)
+            while self.arr[y][x] != 0:
                 y = np.random.randint(self.size_y)
+                x = np.random.randint(self.size_x)
+
+            # Keep track of predators in a dictionary
+            self.predators[i] = [y, x]
 
             # +1 to offset zero index individual, set negative number to
             # identify predators from prey in the lattice
-
             self.arr[y][x] = -1*(i+1)
 
     def move_prey(self):
-        pass
+        """Find an empty position in the moore neighbourhood for the Prey to move in.
+        Ensure that the lattice is toroidal."""
+
+        for prey, pos in self.preys.items():
+
+            dy = randint(-1, 1)
+            dx = randint(-1, 1)
+            dest_y = dy + pos[0]
+            dest_x = dx + pos[1]
+
+            # Make the lattice toroidal
+            if dest_x >= self.size_x:
+                dest_x = 0
+            if dest_x < 0:
+                dest_x = self.size_x - 1
+            if dest_y >= self.size_y:
+                dest_y = 0
+            if dest_y < 0:
+                dest_y = self.size_y - 1
+
+            while self.arr[dest_y][dest_x] != 0:
+                dy = randint(-1, 1)
+                dx = randint(-1, 1)
+                dest_y = dy + pos[0]
+                dest_x = dx + pos[1]
+
+            # Move prey, clear previous location
+            self.arr[dest_y][dest_x] = prey+1
+            self.arr[pos[0]][pos[1]] = 0
+
+            # Update prey location in the dictionary
+            pos[0], pos[1] = dest_y, dest_x
+
+            # Find mates in the moore neighbourhood
+            moore = self.arr[pos[0]-1:pos[0]+2, pos[1]-1:pos[1]+2]
+            mates = moore[moore > prey+1]
+            mate = np.random.choice(mates, 1)
+
+            return prey
 
     def move_pred(self):
         pass
