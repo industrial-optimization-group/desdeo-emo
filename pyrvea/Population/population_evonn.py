@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from pyrvea.EAs.baseEA import BaseEA
 
 
-class PopulationEvoNN():
+class Population():
     """Define the population."""
 
     def __init__(
@@ -300,7 +300,7 @@ class PopulationEvoNN():
         xover_w1, xover_w2 = ppga_crossover(w1, w2)
 
         # Find randomly two other individuals with current match active for mutation
-        indices = [xover_w1, xover_w2]
+        indices = [ind1, ind2]
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
         alternatives = self.individuals[mask, ...]

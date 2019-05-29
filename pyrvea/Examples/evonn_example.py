@@ -1,5 +1,5 @@
 from pyrvea.Problem.evonn_problem import EvoNNProblem
-from pyrvea.Population.population_evonn import PopulationEvoNN
+from pyrvea.Population.population_evonn import Population
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
 from pyrvea.Recombination.ppga_mutation import ppga_mutation
 from pyrvea.EAs.PPGA import PPGA
@@ -23,10 +23,7 @@ prob = EvoNNProblem(
 
 arr = np.zeros((60,60))
 
-
-
-pop = PopulationEvoNN(prob)
-
+pop = Population(prob)
 
 p = PPGA(pop)
 
