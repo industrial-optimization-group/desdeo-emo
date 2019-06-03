@@ -1,3 +1,4 @@
+from math import log
 import numpy as np
 #from scipy.linalg import lstsq
 import timeit
@@ -79,11 +80,11 @@ class EvoNNProblem():
 
         weighted_input = self.dot_product(decision_variables)
         activated_function = self.activation(weighted_input)
-        w_matrix2, predicted_values = self.optimize_error(activated_function)
+        w_matrix2, rss, predicted_values = self.optimize_error(activated_function)
         training_error = self.loss_function(predicted_values)
 
         complexity = self.calculate_complexity(decision_variables, w_matrix2)
-        corrected_complexity = self.information_criterion(predicted_values, complexity)
+        corrected_complexity = self.information_criterion(rss, complexity)
         obj_func = [training_error, corrected_complexity]
 
         return obj_func
@@ -122,7 +123,9 @@ class EvoNNProblem():
         return activated_function(wi)
 
     def optimize_error(self, activated_function, name="llsq"):
-        """ Optimize the training error
+        """ Optimize the training error.
+
+        BUG: rss sometimes returned as an empty array?
 
         Parameters
         ----------
@@ -134,9 +137,10 @@ class EvoNNProblem():
         """
         if name == "llsq":
             w_matrix2 = np.linalg.lstsq(activated_function, self.training_data_output)
+            rss = w_matrix2[1]
             predicted_values = np.dot(activated_function, w_matrix2[0])
 
-        return w_matrix2[0], predicted_values
+        return w_matrix2[0], rss, predicted_values
 
     def loss_function(self, predicted_values, name="rmse"):
 
@@ -149,10 +153,9 @@ class EvoNNProblem():
 
         return k
 
-    def information_criterion(self, predicted_values, k):
+    def information_criterion(self, rss, k):
         # Information criterion
-        rss = ((self.training_data_output - predicted_values) ** 2).sum()
-        aic = 2 * k + self.num_of_samples * np.log(rss/self.num_of_samples)
+        aic = 2 * k + self.num_of_samples * log(rss/self.num_of_samples)
         aicc = aic + (2*k*(k+1)/(self.num_of_samples-k-1))
 
         return aicc

@@ -209,6 +209,54 @@ class Population():
         self.fitness = new_fitness
         self.constraint_violation = new_cv
 
+    def delete_or_keep(self, indices: list, delete_or_keep):
+        """Remove individuals from population which ARE in "indices".
+        With boolean masks deleted individuals can be obtained with
+        inverted mask (~mask)
+
+        Parameters
+        ----------
+        indices: list
+            Indices of individuals to keep
+        delete_or_keep : string
+            whether to return the deleted individuals or the ones kept
+        """
+        indices.sort()
+        mask = np.ones(len(self.individuals), dtype=bool)
+        mask[indices] = False
+
+        # new_pop = np.delete(self.individuals, indices, axis=0)
+        new_pop = self.individuals[mask, ...]
+        deleted_pop = self.individuals[~mask, ...]
+
+        # new_obj = np.delete(self.objectives, indices, axis=0)
+        new_obj = self.objectives[mask, ...]
+        deleted_obj = self.objectives[~mask, ...]
+
+        # new_fitness = np.delete(self.fitness, indices, axis=0)
+        new_fitness = self.fitness[mask, ...]
+        deleted_fitness = self.fitness[~mask, ...]
+
+        if len(self.constraint_violation) > 0:
+            # new_cv = np.delete(self.constraint_violation, indices, axis=0)
+            new_cv = self.constraint_violation[mask, ...]
+            deleted_cv = self.constraint_violation[~mask, ...]
+        else:
+            deleted_cv = self.constraint_violation
+            new_cv = self.constraint_violation
+
+        if delete_or_keep == "delete":
+            self.individuals = new_pop
+            self.objectives = new_obj
+            self.fitness = new_fitness
+            self.constraint_violation = new_cv
+
+        elif delete_or_keep == "keep":
+            self.individuals = deleted_pop
+            self.objectives = deleted_obj
+            self.fitness = deleted_fitness
+            self.constraint_violation = deleted_cv
+
     def archive(self, new_pop, new_obj):
         length_of_archive = len(self.archive)
         if length_of_archive == 0:
@@ -299,19 +347,18 @@ class Population():
         # Perform crossover
         xover_w1, xover_w2 = ppga_crossover(w1, w2)
 
-        # Find randomly two other individuals with current match active for mutation
+        # Find randomly two other individuals with current match active for mutation.
+        # Make a list of individuals suitable for mutation, exclude the ones to be mutated
+        # so that they won't mutate with themselves
         indices = [ind1, ind2]
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
         alternatives = self.individuals[mask, ...]
 
         # Mutate
-        offspring1, offspring2 = ppga_mutation(xover_w1, xover_w2, alternatives)
+        offspring1, offspring2 = ppga_mutation(alternatives, xover_w1, xover_w2)
 
-        # Add mutated offspring to a list
-        offspring = np.vstack([offspring1], [offspring2])
-
-        return offspring
+        return offspring1, offspring2
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""
