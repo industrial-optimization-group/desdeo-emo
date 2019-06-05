@@ -46,7 +46,7 @@ def ppga_mutation(
         return offspring
 
     # Iterate over both individuals at the same time to avoid nested looping
-    it = np.nditer([w1, w2], flags=["multi_index"], op_flags=["readwrite"])
+    it = np.nditer([w1[1:, :], w2[1:, :]], flags=["multi_index"], op_flags=["readwrite"])
 
     # wx = individual cells (connections) in the weight matrix
     for wx1, wx2 in it:

@@ -114,13 +114,19 @@ class Population():
             pass
 
         # Create new individuals
-
         if design == "RandomDesign":
 
             # +1 row for bias
             individuals = np.random.uniform(
                 self.problem.w_low, self.problem.w_high, size=(pop_size, self.problem.num_input_nodes+1, self.problem.num_hidden_nodes)
             )
+
+            # Eliminate some weights
+            flag = bn.rvs(p=1 - self.problem.prob_omit, size=np.shape(individuals))
+
+            random_numbers = np.zeros(np.shape(individuals))
+            individuals[flag == 0] = random_numbers[flag == 0]
+
 
         else:
             print("Design not yet supported.")
@@ -209,7 +215,7 @@ class Population():
         self.fitness = new_fitness
         self.constraint_violation = new_cv
 
-    def delete_or_keep(self, indices: list, delete_or_keep):
+    def delete_or_keep(self, indices, delete_or_keep):
         """Remove individuals from population which ARE in "indices".
         With boolean masks deleted individuals can be obtained with
         inverted mask (~mask)
@@ -221,7 +227,7 @@ class Population():
         delete_or_keep : string
             whether to return the deleted individuals or the ones kept
         """
-        indices.sort()
+
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
 
@@ -257,12 +263,17 @@ class Population():
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
 
-    def archive(self, new_pop, new_obj):
+    def create_archive(self, new_pop, new_obj):
         length_of_archive = len(self.archive)
+        new_pop = self.individuals[:, :, :]
+        #self.individuals[0].flatten().tolist()
+        new_obj = self.objectives[:, :]
         if length_of_archive == 0:
             gen_count = 0
+
         else:
             gen_count = self.archive["generation"].iloc[-1] + 1
+
         new_entries = pd.DataFrame(
             {
                 "generation": [gen_count] * len(new_obj),
@@ -328,6 +339,8 @@ class Population():
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
         ea = EA(self, EA_parameters)
+        for ind in self.individuals:
+            self.evaluate_individual(ind)
         iterations = ea.params["iterations"]
         if self.plotting:
             self.plot_objectives()  # Figure was created in init
@@ -353,7 +366,7 @@ class Population():
         indices = [ind1, ind2]
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
-        alternatives = self.individuals[mask, ...]
+        alternatives = self.individuals[mask, ...][:, 1:, :]
 
         # Mutate
         offspring1, offspring2 = ppga_mutation(alternatives, xover_w1, xover_w2)

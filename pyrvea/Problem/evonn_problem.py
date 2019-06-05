@@ -13,9 +13,7 @@ class EvoNNProblem():
         training_data_output=None,
         name=None,
         num_input_nodes=4,
-        num_hidden_nodes=6,
-        num_output_nodes=1,
-        num_of_objectives=2,
+        num_hidden_nodes=5,
         num_of_constraints=0,
         w_low=-5.0,
         w_high=5.0,
@@ -48,16 +46,16 @@ class EvoNNProblem():
         self.name = name
         self.num_input_nodes = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
-        self.num_output_nodes = num_output_nodes
-        self.num_of_objectives = num_of_objectives
-        self.num_of_variables = num_input_nodes
+        self.num_of_objectives = training_data_output.shape[1]
+        self.num_of_variables = training_data_input.shape[1]
         self.num_of_constraints = num_of_constraints
         self.w_low = w_low
         self.w_high = w_high
         self.lower_limits = w_low
         self.upper_limits = w_high
+        self.prob_omit = 0.3
         self.bias = 1
-        self.num_of_samples = np.shape(training_data_output)[0]
+        self.num_of_samples = training_data_output.shape[0]
 
         if len(self.training_data_input) > 0:
             self.num_input_nodes = np.shape(training_data_input)[1]
@@ -83,9 +81,8 @@ class EvoNNProblem():
         w_matrix2, rss, predicted_values = self.optimize_error(activated_function)
         training_error = self.loss_function(predicted_values)
 
-        complexity = self.calculate_complexity(decision_variables, w_matrix2)
-        corrected_complexity = self.information_criterion(rss, complexity)
-        obj_func = [training_error, corrected_complexity]
+        complexity = self.calculate_complexity(decision_variables)
+        obj_func = [training_error, complexity]
 
         return obj_func
 
@@ -136,7 +133,7 @@ class EvoNNProblem():
         -------
         """
         if name == "llsq":
-            w_matrix2 = np.linalg.lstsq(activated_function, self.training_data_output)
+            w_matrix2 = np.linalg.lstsq(activated_function, self.training_data_output[:, :-1])
             rss = w_matrix2[1]
             predicted_values = np.dot(activated_function, w_matrix2[0])
 
@@ -145,16 +142,19 @@ class EvoNNProblem():
     def loss_function(self, predicted_values, name="rmse"):
 
         if name == "rmse":
-            return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
+            return np.sqrt(((self.training_data_output[:, :-1] - predicted_values) ** 2).mean())
 
-    def calculate_complexity(self, w_matrix, w_matrix2):
+    def calculate_complexity(self, w_matrix):
 
-        k = np.count_nonzero(w_matrix) + np.count_nonzero(w_matrix2)
+        k = np.count_nonzero(w_matrix[1:, :])
 
         return k
 
-    def information_criterion(self, rss, k):
+    def information_criterion(self, rss, k, w_matrix2, predicted_values):
         # Information criterion
+        k = k + np.count_nonzero(w_matrix2)
+
+        rss = ((self.training_data_output[:, :-1] - predicted_values) ** 2).sum()
         aic = 2 * k + self.num_of_samples * log(rss/self.num_of_samples)
         aicc = aic + (2*k*(k+1)/(self.num_of_samples-k-1))
 

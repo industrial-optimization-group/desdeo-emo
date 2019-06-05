@@ -1,9 +1,7 @@
 from pyrvea.EAs.baseEA import BaseEA
 from pyrvea.Selection.PPGA_select import ppga_select
-from random import sample
+from random import choice, sample
 import numpy as np
-from random import choice, randint
-from scipy.stats import bernoulli as bn
 from pyrvea.Population.population_evonn import Population
 
 
@@ -24,7 +22,6 @@ class PPGA(BaseEA):
         generations_per_iteration: int = 10,
         iterations: int = 1,
         plotting: bool = True,
-        prob_omit: float = 0.3,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7,
@@ -67,7 +64,7 @@ class PPGA(BaseEA):
             "target_pop_size": target_pop_size,
             "predator_pop_size": 50,
             "prey_max_moves": 5,
-            "predator_max_moves": 5,
+            "prob_prey_move": 0.3,
             "offspring_place_attempts": 10,
             "generations": generations_per_iteration,
             "iterations": iterations,
@@ -77,8 +74,7 @@ class PPGA(BaseEA):
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
-            "prob_omit": prob_omit,
-            "kill_intrvl": 7,
+            "kill_intrvl": 5,
             "max_rank": 20,
         }
 
@@ -88,6 +84,7 @@ class PPGA(BaseEA):
         """Run one iteration of EA.
 
         One iteration consists of a constant or variable number of
+
         generations. This method leaves EA.params unchanged, except the current
         iteration count and gen count.
 
@@ -145,12 +142,23 @@ class PPGA(BaseEA):
         population.add(offspring_pop)
 
         # Kill bad individuals every n generations
-        # if self.params["current_iteration_gen_count"] >= self.params["kill_intrvl"]:
-        selected = self.select(population)
-        #    population.delete_or_keep(selected, "delete")
+        if self.params["current_iteration_gen_count"] % self.params["kill_intrvl"] == 0:
+            selected = self.select(population)
+            self.lattice.update_lattice(selected)
+            population.delete_or_keep(selected, "delete")
+
 
         # Move predators
         self.lattice.move_predator()
+
+        #population.create_archive(population, population.objectives)
+
+        # Place new prey if kill interval condition satisfied
+        if self.params["current_iteration_gen_count"] % self.params["kill_intrvl"] == 0:
+            # Create new random individuals to get to preferred population size
+            old_pop_size = population.individuals.shape[0]
+            placed_indices = self.lattice.place_offspring(self.params["target_pop_size"] - old_pop_size)
+            population.create_new_individuals(pop_size=len(placed_indices))
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected
@@ -167,7 +175,7 @@ class PPGA(BaseEA):
         list
             List of indices of individuals to be selected.
         """
-        selection = ppga_select(population.fitness)
+        selection = ppga_select(population.fitness, self.params["max_rank"])
         return selection
 
     def continue_iteration(self):
@@ -216,14 +224,6 @@ class Lattice:
         """Set some of the individual weights to zero, find an empty
         position in the lattice and place the prey"""
 
-        # Eliminate some weights
-        flag = bn.rvs(
-            p=1 - self.params["prob_omit"],
-            size=np.shape(self.params["population"].individuals),
-        )
-        random_numbers = np.zeros(np.shape(self.params["population"].individuals))
-        self.params["population"].individuals[flag == 0] = random_numbers[flag == 0]
-
         # Take random indices from free (==zero) lattice spaces
         free_space = np.transpose(np.nonzero(self.arr == 0))
         indices = sample(
@@ -244,32 +244,34 @@ class Lattice:
 
         for prey, pos in enumerate(self.preys_loc):
 
-            for i in range(self.params["prey_max_moves"]):
+            if np.random.random() < self.params["prob_prey_move"]:
 
-                neighbours = self.neighbours(self.arr, pos[0], pos[1])
+                for i in range(self.params["prey_max_moves"]):
 
-                dy = np.random.randint(neighbours.shape[0])
-                dx = np.random.randint(neighbours.shape[1])
+                    neighbours = self.neighbours(self.arr, pos[0], pos[1])
 
-                # If neighbouring cell is occupied, skip turn
-                if neighbours[dy][dx] != 0:
-                    continue
+                    dy = np.random.randint(neighbours.shape[0])
+                    dx = np.random.randint(neighbours.shape[1])
 
-                dest_y = dy - 1 + pos[0]
-                dest_x = dx - 1 + pos[1]
+                    # If neighbouring cell is occupied, skip turn
+                    if neighbours[dy][dx] != 0:
+                        continue
 
-                # Check boundaries of the lattice
-                if dest_y not in range(self.size_y) or dest_x not in range(self.size_x):
-                    dest_y, dest_x = self.lattice_wrap_idx(
-                        (dest_y, dest_x), np.shape(self.arr)
-                    )
+                    dest_y = dy - 1 + pos[0]
+                    dest_x = dx - 1 + pos[1]
 
-                # Move prey, clear previous location
-                self.arr[dest_y][dest_x] = int(prey + 1)
-                self.arr[pos[0]][pos[1]] = 0
+                    # Check boundaries of the lattice
+                    if dest_y not in range(self.size_y) or dest_x not in range(self.size_x):
+                        dest_y, dest_x = self.lattice_wrap_idx(
+                            (dest_y, dest_x), np.shape(self.arr)
+                        )
 
-                # Update prey location in the list
-                pos[0], pos[1] = dest_y, dest_x
+                    # Move prey, clear previous location
+                    self.arr[dest_y][dest_x] = int(prey + 1)
+                    self.arr[pos[0]][pos[1]] = 0
+
+                    # Update prey location in the list
+                    pos[0], pos[1] = dest_y, dest_x
 
     def choose_mate(self, ind):
         """Choose a mate from moore neighbourhood, return None if no mates
@@ -310,13 +312,15 @@ class Lattice:
                 if self.arr[y][x] != 0:
                     continue
 
-            # Keep track of offspring in a list
-            if self.arr[y][x] == 0:
-                # Append the offspring to the list of preys.
-                # len(self.preys_loc) is the index of the current last prey in the list
-                self.arr[y][x] = int(len(self.preys_loc)+1)
-                self.preys_loc.append([y, x])
-                placed_offspring.append(i)
+                else:
+
+                    # Keep track of offspring in a list
+                    if self.arr[y][x] == 0:
+                        # Append the offspring to the list of preys.
+                        # len(self.preys_loc) is the index of the current last prey in the list
+                        self.arr[y][x] = int(len(self.preys_loc)+1)
+                        self.preys_loc.append([y, x])
+                        placed_offspring.append(i)
 
         return placed_offspring
 
@@ -373,7 +377,6 @@ class Lattice:
                     # Set the killed prey as dead in the list of prey locations and end predator turn
                     to_be_killed.append(weakest_prey)
                     self.preys_loc[weakest_prey] = None
-                    break
 
                 else:
                     dy = np.random.randint(neighbours.shape[0])
@@ -404,12 +407,21 @@ class Lattice:
         self.params["population"].delete_or_keep(to_be_killed, "delete")
         self.update_lattice()
 
-    def update_lattice(self):
+    def update_lattice(self, selected=None):
+
+        # Remove selected individuals from the lattice
+        if selected is not None:
+            for i in selected:
+                self.arr[self.preys_loc[i][0]][self.preys_loc[i][1]] = 0
+                self.preys_loc[i] = None
+
+        # Update the list of prey locations
         updated_preys = [x for x in self.preys_loc if x is not None]
         self.preys_loc = updated_preys
 
+        # Update lattice
         for prey, pos in enumerate(self.preys_loc):
-            self.arr[pos[0]][pos[1]] = prey
+            self.arr[pos[0]][pos[1]] = prey+1
 
 
     @staticmethod
