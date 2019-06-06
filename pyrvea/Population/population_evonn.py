@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from pyrvea.EAs.baseEA import BaseEA
 
 
-class Population():
+class Population:
     """Define the population."""
 
     def __init__(
@@ -76,11 +76,14 @@ class Population():
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-        self.individuals = np.empty((0, self.problem.num_input_nodes+1, self.problem.num_hidden_nodes), float)
+        self.individuals = np.empty(
+            (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes), float
+        )
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
-            (0, self.problem.num_of_constraints), float)
+            (0, self.problem.num_of_constraints), float
+        )
         self.archive = pd.DataFrame(
             columns=["generation", "decision_variables", "objective_values"]
         )
@@ -89,6 +92,9 @@ class Population():
 
         if not assign_type == "empty":
             self.create_new_individuals(assign_type)
+        if self.plotting:
+            self.figure = []
+            self.plot_init_()
 
     def create_new_individuals(
         self, design: str = "RandomDesign", pop_size: int = 500, decision_variables=None
@@ -118,7 +124,13 @@ class Population():
 
             # +1 row for bias
             individuals = np.random.uniform(
-                self.problem.w_low, self.problem.w_high, size=(pop_size, self.problem.num_input_nodes+1, self.problem.num_hidden_nodes)
+                self.problem.w_low,
+                self.problem.w_high,
+                size=(
+                    pop_size,
+                    self.problem.num_input_nodes + 1,
+                    self.problem.num_hidden_nodes,
+                ),
             )
 
             # Eliminate some weights
@@ -127,15 +139,16 @@ class Population():
             random_numbers = np.zeros(np.shape(individuals))
             individuals[flag == 0] = random_numbers[flag == 0]
 
+            # Set bias
+
+            individuals[:, 0, :] = 1
 
         else:
             print("Design not yet supported.")
 
         self.add(individuals)
 
-        if self.plotting:
-            self.figure = []
-            self.plot_init_()
+
 
     def eval_fitness(self):
         """
@@ -266,7 +279,7 @@ class Population():
     def create_archive(self, new_pop, new_obj):
         length_of_archive = len(self.archive)
         new_pop = self.individuals[:, :, :]
-        #self.individuals[0].flatten().tolist()
+        # self.individuals[0].flatten().tolist()
         new_obj = self.objectives[:, :]
         if length_of_archive == 0:
             gen_count = 0
@@ -339,18 +352,26 @@ class Population():
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
         ea = EA(self, EA_parameters)
-        for ind in self.individuals:
-            self.evaluate_individual(ind)
-        iterations = ea.params["iterations"]
-        if self.plotting:
-            self.plot_objectives()  # Figure was created in init
-        for i in progressbar(range(1, iterations), desc="Iteration"):
-            ea._run_interruption(self)
-            ea._next_iteration(self)
-            if self.plotting:
-                self.plot_objectives()
 
-    def mate(self, ind1, ind2):
+        # Calculate information criterion for the first front
+        # and return the model with the lowest value
+
+        lowest_error = np.argmin(self.objectives[:, 0])
+        return self.individuals[lowest_error]
+        # non_dom_front = nds(self.objectives)
+        # fon_front = non_dom_front[0][0]
+        # info_c_rank = []
+        # for i in fon_front:
+        #
+        #     if
+        #     info_c = self.problem.information_criterion(self.individuals[i])
+        #     info_c_rank.append((info_c, i))
+        #
+        # info_c_rank.sort()
+
+        return self.individuals[info_c_rank[0][1]]
+
+    def mate(self, ind1, ind2, params):
         """Conduct crossover and mutation over the population.
 
         """
@@ -358,7 +379,7 @@ class Population():
         w1, w2 = self.individuals[ind1], self.individuals[ind2]
 
         # Perform crossover
-        xover_w1, xover_w2 = ppga_crossover(w1, w2)
+        xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
 
         # Find randomly two other individuals with current match active for mutation.
         # Make a list of individuals suitable for mutation, exclude the ones to be mutated
@@ -369,7 +390,15 @@ class Population():
         alternatives = self.individuals[mask, ...][:, 1:, :]
 
         # Mutate
-        offspring1, offspring2 = ppga_mutation(alternatives, xover_w1, xover_w2)
+        offspring1, offspring2 = ppga_mutation(
+            alternatives,
+            xover_w1,
+            xover_w2,
+            params["current_iteration_gen_count"],
+            params["generations"],
+            params["prob_mutation"],
+            params["mut_strength"]
+        )
 
         return offspring1, offspring2
 

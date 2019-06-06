@@ -19,9 +19,9 @@ class PPGA(BaseEA):
         target_pop_size: int = 300,
         interact: bool = False,
         a_priori_preference: bool = False,
-        generations_per_iteration: int = 10,
+        generations_per_iteration: int = 100,
         iterations: int = 1,
-        plotting: bool = True,
+        plotting: bool = False,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7,
@@ -63,7 +63,7 @@ class PPGA(BaseEA):
             "population_size": population_size,
             "target_pop_size": target_pop_size,
             "predator_pop_size": 50,
-            "prey_max_moves": 5,
+            "prey_max_moves": 10,
             "prob_prey_move": 0.3,
             "offspring_place_attempts": 10,
             "generations": generations_per_iteration,
@@ -74,7 +74,7 @@ class PPGA(BaseEA):
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
-            "kill_intrvl": 5,
+            "kill_interval": 7,
             "max_rank": 20,
         }
 
@@ -96,6 +96,16 @@ class PPGA(BaseEA):
         self.params["current_iteration_gen_count"] = 1
         while self.continue_iteration():
             self._next_gen(population)
+            print(
+                str(self.params["current_iteration_gen_count"])
+                + " "
+                + "population size: "
+                + str(population.individuals.shape[0])
+                + " Min Error: "
+                + str(np.amin(population.objectives[:,0]))
+                + " Avg Error: "
+                + str(np.mean(population.objectives[:, 0]))
+            )
             self.params["current_iteration_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 
@@ -127,7 +137,7 @@ class PPGA(BaseEA):
             if not mate_idx:
                 continue
             else:
-                offspring1, offspring2 = population.mate(ind, mate_idx)
+                offspring1, offspring2 = population.mate(ind, mate_idx, self.params)
                 offspring = np.concatenate((offspring, [offspring1], [offspring2]))
 
         # Try to place the offspring to lattice, add to population if successful
@@ -136,46 +146,59 @@ class PPGA(BaseEA):
         # Remove from offsprings the ones that didn't get placed
         mask = np.ones(len(offspring), dtype=bool)
         mask[placed_indices] = False
-        offspring_pop = offspring[~mask, ...]
+        offspring = offspring[~mask, ...]
 
         # Add the successfully placed offspring to the population
-        population.add(offspring_pop)
+        population.add(offspring)
 
         # Kill bad individuals every n generations
-        if self.params["current_iteration_gen_count"] % self.params["kill_intrvl"] == 0:
-            selected = self.select(population)
+        if (
+            self.params["current_iteration_gen_count"] % self.params["kill_interval"]
+            == 0
+        ):
+            selected = self.select(population, self.params["max_rank"])
             self.lattice.update_lattice(selected)
             population.delete_or_keep(selected, "delete")
-
 
         # Move predators
         self.lattice.move_predator()
 
-        #population.create_archive(population, population.objectives)
+        # population.create_archive(population, population.objectives)
 
         # Place new prey if kill interval condition satisfied
-        if self.params["current_iteration_gen_count"] % self.params["kill_intrvl"] == 0:
+        if (
+            self.params["current_iteration_gen_count"] % self.params["kill_interval"]
+            == 0
+        ):
             # Create new random individuals to get to preferred population size
             old_pop_size = population.individuals.shape[0]
-            placed_indices = self.lattice.place_offspring(self.params["target_pop_size"] - old_pop_size)
-            population.create_new_individuals(pop_size=len(placed_indices))
+            if self.params["target_pop_size"] - old_pop_size > 0:
+                placed_indices = self.lattice.place_offspring(
+                    self.params["target_pop_size"] - old_pop_size
+                )
+                population.create_new_individuals(pop_size=len(placed_indices))
 
-    def select(self, population) -> list:
-        """Describe a selection mechanism. Return indices of selected
-        individuals.
+        if self.params["ploton"]:
+            population.plot_objectives()
+
+    def select(self, population, max_rank=20) -> list:
+        """Of the population, individuals lower than max_rank are selected.
+        Return indices of selected individuals.
 
         Parameters
         ----------
         population : Population
             Contains the current population and problem
             information.
+        max_rank : int
+            Select only individuals lower than max_rank
 
         Returns
         -------
         list
             List of indices of individuals to be selected.
         """
-        selection = ppga_select(population.fitness, self.params["max_rank"])
+        selection = ppga_select(population.fitness, max_rank)
         return selection
 
     def continue_iteration(self):
@@ -261,7 +284,9 @@ class Lattice:
                     dest_x = dx - 1 + pos[1]
 
                     # Check boundaries of the lattice
-                    if dest_y not in range(self.size_y) or dest_x not in range(self.size_x):
+                    if dest_y not in range(self.size_y) or dest_x not in range(
+                        self.size_x
+                    ):
                         dest_y, dest_x = self.lattice_wrap_idx(
                             (dest_y, dest_x), np.shape(self.arr)
                         )
@@ -318,7 +343,7 @@ class Lattice:
                     if self.arr[y][x] == 0:
                         # Append the offspring to the list of preys.
                         # len(self.preys_loc) is the index of the current last prey in the list
-                        self.arr[y][x] = int(len(self.preys_loc)+1)
+                        self.arr[y][x] = int(len(self.preys_loc) + 1)
                         self.preys_loc.append([y, x])
                         placed_offspring.append(i)
 
@@ -328,10 +353,13 @@ class Lattice:
         """Find an empty position in the moore neighbourhood for the Predators to move in."""
 
         # Calculate predator moves
-        predator_max_moves = int((
-            self.params["population"].individuals.shape[0]
-            - self.params["target_pop_size"]
-        ) / self.params["predator_pop_size"])
+        predator_max_moves = int(
+            (
+                self.params["population"].individuals.shape[0]
+                - self.params["target_pop_size"]
+            )
+            / self.params["predator_pop_size"]
+        )
 
         # Track killed preys in list and remove them at the end of the function
         to_be_killed = []
@@ -348,13 +376,10 @@ class Lattice:
                     fitness = []
                     for target in targets:
 
-                        obj1 = self.params["population"].fitness[target-1][0]
-                        obj2 = self.params["population"].fitness[target-1][1]
+                        obj1 = self.params["population"].fitness[target - 1][0]
+                        obj2 = self.params["population"].fitness[target - 1][1]
 
-                        fc = (
-                            self.predator_pop[predator] * obj1
-                            + (1 - self.predator_pop[predator]) * obj2
-                        )
+                        fc = (self.predator_pop[predator] * obj1 + (1 - self.predator_pop[predator]) * obj2)
 
                         fitness.append((fc, target))
                         fitness.sort()
@@ -421,8 +446,7 @@ class Lattice:
 
         # Update lattice
         for prey, pos in enumerate(self.preys_loc):
-            self.arr[pos[0]][pos[1]] = prey+1
-
+            self.arr[pos[0]][pos[1]] = prey + 1
 
     @staticmethod
     def lattice_wrap_idx(index, lattice_shape):

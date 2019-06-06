@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+import numpy as np
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
@@ -72,6 +73,16 @@ class BaseDecompositionEA(BaseEA):
         self.params["current_iteration_gen_count"] = 1
         while self.continue_iteration():
             self._next_gen(population)
+            print(
+                str(self.params["current_iteration_gen_count"])
+                + " "
+                + "population size: "
+                + str(population.individuals.shape[0])
+                + " Min Error: "
+                + str(np.amin(population.objectives[:,0]))
+                + " Avg Error: "
+                + str(np.mean(population.objectives[:, 0]))
+            )
             self.params["current_iteration_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 

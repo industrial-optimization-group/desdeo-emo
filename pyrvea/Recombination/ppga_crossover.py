@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def ppga_crossover(w1, w2, prob_xover=0.8):
+def ppga_crossover(w1, w2, prob_crossover=0.8):
     """Randomly exchange nodes between two individuals.
 
     Parameters
@@ -10,12 +10,12 @@ def ppga_crossover(w1, w2, prob_xover=0.8):
         The first individual
     w2 : np.ndarray
         The second individual
-    prob_xover : float
+    prob_crossover : float
         The probability for the crossover
     """
 
     for i in range(np.shape(w1)[1]):
-        if np.random.random() < prob_xover:
+        if np.random.random() < prob_crossover:
             tmp = np.copy(w1[:, i])
             w1[:, i] = w2[:, i]
             w2[:, i] = tmp
