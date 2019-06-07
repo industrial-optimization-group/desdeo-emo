@@ -155,7 +155,7 @@ class EvoNNProblem():
         wi = self.dot_product(w_matrix)
         z = self.activation(wi)
         w_matrix2, rss, prediction = self.minimize_error(z)
-        rss = ((self.training_data_output - prediction) ** 2).sum()
+        #rss = ((self.training_data_output - prediction) ** 2).sum()
         k = self.calculate_complexity(w_matrix) + np.count_nonzero(w_matrix2)
 
         aic = 2 * k + self.num_of_samples * log(rss/self.num_of_samples)

@@ -37,7 +37,7 @@ f2 = EvoNNProblem(
 
 #arr = np.zeros((60,60))
 
-popf1 = Population(f1, plotting=True)
+popf1 = Population(f1, plotting=False)
 # popf2 = Population(f2)
 
 model = popf1.evolve(PPGA)

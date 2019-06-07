@@ -120,7 +120,7 @@ class Population:
             pass
 
         # Create new individuals
-        if design == "EvoNN":
+        if design == "RandomDesign":
 
             # +1 row for bias
             individuals = np.random.uniform(
@@ -353,24 +353,26 @@ class Population:
         # A basic evolution cycle. Will be updated to optimize() in future versions.
         ea = EA(self, EA_parameters)
 
-        # Calculate information criterion for the first front
+        # Return the model with the lowest error
+
+        lowest_error = np.argmin(self.objectives[:, 0])
+        return self.individuals[lowest_error]
+
+        # Calculate Akaike information criterion for the first front
         # and return the model with the lowest value
 
-        # lowest_error = np.argmin(self.objectives[:, 0])
-        # return self.individuals[lowest_error]
-
-        non_dom_front = nds(self.objectives)
-        fon_front = non_dom_front[0][0]
-        info_c_rank = []
-
-        for i in fon_front:
-
-            info_c = self.problem.information_criterion(self.individuals[i])
-            info_c_rank.append((info_c, i))
-
-        info_c_rank.sort()
-
-        return self.individuals[info_c_rank[0][1]]
+        # non_dom_front = nds(self.objectives)
+        # fon_front = non_dom_front[0][0]
+        # info_c_rank = []
+        #
+        # for i in fon_front:
+        #
+        #     info_c = self.problem.information_criterion(self.individuals[i])
+        #     info_c_rank.append((info_c, i))
+        #
+        # info_c_rank.sort()
+        #
+        # return self.individuals[info_c_rank[0][1]]
 
     def mate(self, ind1, ind2, params):
         """Conduct crossover and mutation over the population.

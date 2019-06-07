@@ -23,7 +23,7 @@ f2_training_data_output = training_data_output[:, 1]
 
 def plot(f2):
 
-    popf2 = Population(f2, plotting=True)
+    popf2 = Population(f2, plotting=False)
     model = popf2.evolve(PPGA)
     y_pred = f2.get_prediction(model)
 
@@ -54,7 +54,7 @@ def plot(f2):
 # plot(f2)
 
 f2 = EvoNNProblem(
-    name="EvoNN_nodes_15",
+    name="ZDT2_15_nodes",
     training_data_input=training_data_input,
     training_data_output=f2_training_data_output,
     num_hidden_nodes=15
