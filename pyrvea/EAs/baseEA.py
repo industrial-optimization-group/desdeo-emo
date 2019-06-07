@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 import numpy as np
+import random
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
@@ -97,7 +98,24 @@ class BaseDecompositionEA(BaseEA):
         population: "Population"
             Population object
         """
-        offspring = population.mate()
+        #offspring = population.mate()
+        offspring = np.empty(
+            (
+                0,
+                population.problem.num_input_nodes + 1,
+                population.problem.num_hidden_nodes,
+            ),
+            float,
+        )
+        for ind in range(population.individuals.shape[0]):
+
+            mate_idx = random.randint(0,population.individuals.shape[0]-1)
+            if not mate_idx:
+                continue
+            else:
+                offspring1, offspring2 = population.mate(ind, mate_idx, self.params)
+                offspring = np.concatenate((offspring, [offspring1], [offspring2]))
+
         population.add(offspring)
         selected = self.select(population)
         population.keep(selected)

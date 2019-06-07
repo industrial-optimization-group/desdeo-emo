@@ -120,7 +120,7 @@ class Population:
             pass
 
         # Create new individuals
-        if design == "RandomDesign":
+        if design == "EvoNN":
 
             # +1 row for bias
             individuals = np.random.uniform(
@@ -356,18 +356,19 @@ class Population:
         # Calculate information criterion for the first front
         # and return the model with the lowest value
 
-        lowest_error = np.argmin(self.objectives[:, 0])
-        return self.individuals[lowest_error]
-        # non_dom_front = nds(self.objectives)
-        # fon_front = non_dom_front[0][0]
-        # info_c_rank = []
-        # for i in fon_front:
-        #
-        #     if
-        #     info_c = self.problem.information_criterion(self.individuals[i])
-        #     info_c_rank.append((info_c, i))
-        #
-        # info_c_rank.sort()
+        # lowest_error = np.argmin(self.objectives[:, 0])
+        # return self.individuals[lowest_error]
+
+        non_dom_front = nds(self.objectives)
+        fon_front = non_dom_front[0][0]
+        info_c_rank = []
+
+        for i in fon_front:
+
+            info_c = self.problem.information_criterion(self.individuals[i])
+            info_c_rank.append((info_c, i))
+
+        info_c_rank.sort()
 
         return self.individuals[info_c_rank[0][1]]
 

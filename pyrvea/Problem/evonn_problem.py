@@ -78,7 +78,7 @@ class EvoNNProblem():
         """
 
         weighted_input = self.dot_product(decision_variables)
-        activated_function = self.activation(weighted_input)
+        activated_function = self.activation(weighted_input, name="sigmoid")
         w_matrix2, rss, predicted_values = self.minimize_error(activated_function)
         training_error = self.loss_function(predicted_values)
 
@@ -115,6 +115,9 @@ class EvoNNProblem():
 
         if name == "sigmoid":
             activated_function = lambda x: 1 / (1 + np.exp(-x))
+
+        if name == "relu":
+            activated_function = lambda x: np.maximum(x, 0)
 
         return activated_function(wi)
 

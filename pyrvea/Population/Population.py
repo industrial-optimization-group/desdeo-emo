@@ -9,6 +9,7 @@ from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
+from scipy.stats import bernoulli as bn
 from tqdm import tqdm, tqdm_notebook
 
 from pyrvea.Recombination.bounded_polynomial_mutation import mutation
@@ -16,6 +17,9 @@ from pyrvea.Recombination.simulated_binary_crossover import crossover
 
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
+
+from pyrvea.Recombination.ppga_crossover import ppga_crossover
+from pyrvea.Recombination.ppga_mutation import ppga_mutation
 
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
@@ -59,6 +63,10 @@ class Population:
         self.plotting = plotting
         # These attributes contain the solutions.
         self.individuals = np.empty((0, self.num_var), float)
+        if problem.name == "EvoNN":
+            self.individuals = np.empty(
+                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes), float
+            )
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
@@ -97,7 +105,9 @@ class Population:
         if pop_size is None:
             pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
             pop_size = pop_size_options[self.problem.num_of_objectives - 2]
+
         num_var = self.individuals.shape[1]
+
         if design == "RandomDesign":
             individuals = np.random.random((pop_size, num_var))
             # Scaling
@@ -112,9 +122,32 @@ class Population:
                 individuals * (self.upper_limits - self.lower_limits)
                 + self.lower_limits
             )
+        elif design == "EvoNN":
+            # +1 row for bias
+            individuals = np.random.uniform(
+                self.problem.w_low,
+                self.problem.w_high,
+                size=(
+                    pop_size,
+                    self.problem.num_input_nodes + 1,
+                    self.problem.num_hidden_nodes,
+                ),
+            )
+
+            # Eliminate some weights
+            flag = bn.rvs(p=1 - self.problem.prob_omit, size=np.shape(individuals))
+
+            random_numbers = np.zeros(np.shape(individuals))
+            individuals[flag == 0] = random_numbers[flag == 0]
+
+            # Set bias
+            individuals[:, 0, :] = 1
+
         else:
             print("Design not yet supported.")
+
         self.add(individuals)
+
         if self.plotting:
             self.figure = []
             self.plot_init_()
@@ -139,6 +172,9 @@ class Population:
         elif new_pop.ndim == 2:
             for ind in new_pop:
                 self.append_individual(ind)
+        elif new_pop.ndim == 3:
+            for i in range(0, new_pop.shape[0]):
+                self.append_individual(new_pop[i, :, :])
         else:
             print("Error while adding new individuals. Check dimensions.")
         # print(self.ideal_fitness)
@@ -152,7 +188,7 @@ class Population:
         indices: list
             Indices of individuals to keep
         """
-        indices.sort()
+
         new_pop = self.individuals[indices, :]
         new_obj = self.objectives[indices, :]
         new_fitness = self.fitness[indices, :]
@@ -228,7 +264,7 @@ class Population:
         ----------
         ind: np.ndarray
         """
-        self.individuals = np.vstack((self.individuals, ind))
+        self.individuals = np.concatenate((self.individuals, [ind]))
         obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
         self.constraint_violation = np.vstack((self.constraint_violation, CV))
@@ -267,6 +303,7 @@ class Population:
         ##################################
         # To determine whether running in console or in notebook. Used for TQDM.
         # TQDM will be removed in future generations as number of iterations can vary
+
         if IsNotebook():
             progressbar = tqdm_notebook
         else:
@@ -274,6 +311,20 @@ class Population:
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
         ea = EA(self, EA_parameters)
+            # AicC:
+            # non_dom_front = nds(self.objectives)
+            # fon_front = non_dom_front[0][0]
+            # info_c_rank = []
+            # for i in fon_front:
+            #
+            #     if
+            #     info_c = self.problem.information_criterion(self.individuals[i])
+            #     info_c_rank.append((info_c, i))
+            #
+            # info_c_rank.sort()
+
+            # return self.individuals[info_c_rank[0][1]]
+
         iterations = ea.params["iterations"]
         if self.plotting:
             self.plot_objectives()  # Figure was created in init
@@ -282,17 +333,45 @@ class Population:
             ea._next_iteration(self)
             if self.plotting:
                 self.plot_objectives()
+        lowest_error = np.argmin(self.objectives[:, 0])
+        return self.individuals[lowest_error]
 
-    def mate(self):
+    def mate(self, ind1=None, ind2=None, params=None):
         """Conduct crossover and mutation over the population.
 
         Conduct simulated binary crossover and bounded polunomial mutation.
         """
-        offspring = crossover(self)
-        p = 1 / self.num_var
-        mut_offspring = mutation(self, offspring, prob_mut=p)
 
-        return mut_offspring
+        if self.problem.name == "EvoNN":
+            # Get individuals at indices
+            w1, w2 = self.individuals[ind1], self.individuals[ind2]
+
+            # Perform crossover
+            xover_w1, xover_w2 = ppga_crossover(w1, w2)
+
+            # Find randomly two other individuals with current match active for mutation.
+            # Make a list of individuals suitable for mutation, exclude the ones to be mutated
+            # so that they won't mutate with themselves
+            indices = [ind1, ind2]
+            mask = np.ones(len(self.individuals), dtype=bool)
+            mask[indices] = False
+            alternatives = self.individuals[mask, ...][:, 1:, :]
+
+            # Mutate
+            offspring1, offspring2 = ppga_mutation(
+                alternatives,
+                xover_w1,
+                xover_w2
+            )
+
+            return offspring1, offspring2
+
+        else:
+            offspring = crossover(self)
+            p = 1 / self.num_var
+            mut_offspring = mutation(self, offspring, prob_mut=p)
+
+            return mut_offspring
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""

@@ -96,16 +96,6 @@ class PPGA(BaseEA):
         self.params["current_iteration_gen_count"] = 1
         while self.continue_iteration():
             self._next_gen(population)
-            print(
-                str(self.params["current_iteration_gen_count"])
-                + " "
-                + "population size: "
-                + str(population.individuals.shape[0])
-                + " Min Error: "
-                + str(np.amin(population.objectives[:,0]))
-                + " Avg Error: "
-                + str(np.mean(population.objectives[:, 0]))
-            )
             self.params["current_iteration_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 
@@ -120,6 +110,14 @@ class PPGA(BaseEA):
         population: "Population"
             Population object
         """
+
+        self.params["predator_max_moves"] = int(
+            (
+                self.params["population"].individuals.shape[0]
+                - self.params["target_pop_size"]
+            )
+            / self.params["predator_pop_size"]
+        )
 
         self.lattice.move_prey()
 
@@ -160,23 +158,46 @@ class PPGA(BaseEA):
             self.lattice.update_lattice(selected)
             population.delete_or_keep(selected, "delete")
 
+        print(
+            str(self.params["current_iteration_gen_count"])
+            + " "
+            + "population size: "
+            + str(population.individuals.shape[0])
+            + " Min Error: "
+            + str(np.amin(population.objectives[:, 0]))
+            + " Avg Error: "
+            + str(np.mean(population.objectives[:, 0]))
+        )
+
         # Move predators
         self.lattice.move_predator()
 
+        print(
+            "AFTER KILL "+
+            str(self.params["current_iteration_gen_count"])
+            + " "
+            + "population size: "
+            + str(population.individuals.shape[0])
+            + " Min Error: "
+            + str(np.amin(population.objectives[:, 0]))
+            + " Avg Error: "
+            + str(np.mean(population.objectives[:, 0]))
+        )
+
         # population.create_archive(population, population.objectives)
 
-        # Place new prey if kill interval condition satisfied
-        if (
-            self.params["current_iteration_gen_count"] % self.params["kill_interval"]
-            == 0
-        ):
-            # Create new random individuals to get to preferred population size
-            old_pop_size = population.individuals.shape[0]
-            if self.params["target_pop_size"] - old_pop_size > 0:
-                placed_indices = self.lattice.place_offspring(
-                    self.params["target_pop_size"] - old_pop_size
-                )
-                population.create_new_individuals(pop_size=len(placed_indices))
+        # # Place new prey if kill interval condition satisfied
+        # if (
+        #     self.params["current_iteration_gen_count"] % self.params["kill_interval"]
+        #     == 0
+        # ):
+        #     # Create new random individuals to get to preferred population size
+        #     old_pop_size = population.individuals.shape[0]
+        #     if self.params["target_pop_size"] - old_pop_size > 0:
+        #         placed_indices = self.lattice.place_offspring(
+        #             self.params["target_pop_size"] - old_pop_size
+        #         )
+        #         population.create_new_individuals(pop_size=len(placed_indices), design="EvoNN")
 
         if self.params["ploton"]:
             population.plot_objectives()
@@ -353,13 +374,15 @@ class Lattice:
         """Find an empty position in the moore neighbourhood for the Predators to move in."""
 
         # Calculate predator moves
-        predator_max_moves = int(
-            (
-                self.params["population"].individuals.shape[0]
-                - self.params["target_pop_size"]
-            )
-            / self.params["predator_pop_size"]
-        )
+        # predator_max_moves = int(
+        #     (
+        #         self.params["population"].individuals.shape[0]
+        #         - self.params["target_pop_size"]
+        #     )
+        #     / self.params["predator_pop_size"]
+        # )
+
+        predator_max_moves = self.params["predator_max_moves"]
 
         # Track killed preys in list and remove them at the end of the function
         to_be_killed = []

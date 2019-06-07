@@ -36,6 +36,9 @@ def ppga_mutation(
 
         select = sample(list(alternatives), 2)
 
+        # while select[0][it.multi_index[0], it.multi_index[1]] or select[1][it.multi_index[0], it.multi_index[1]] == 0:
+        #     select = sample(list(alternatives), 2)
+
         # [it.multi_index[0]+1 to ignore bias
         offspring[it.multi_index[0]+1, it.multi_index[1]] = wx + mut_strength * (
             1 - cur_gen / total_gen
