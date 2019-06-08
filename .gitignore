@@ -126,3 +126,7 @@ dmypy.json
 .pyre/
 
 *.json
+
+.vscode/
+.directory
+!DTLZ3_5.html
