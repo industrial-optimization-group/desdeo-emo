@@ -128,3 +128,5 @@ dmypy.json
 *.json
 
 .vscode/
+.directory
+!DTLZ3_5.html
