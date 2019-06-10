@@ -148,7 +148,7 @@ class Population:
 
         self.add(individuals)
 
-        if self.plotting:
+        if self.plotting and design == "EvoNN":
             self.figure = []
             self.plot_init_()
 
@@ -342,12 +342,12 @@ class Population:
         Conduct simulated binary crossover and bounded polunomial mutation.
         """
 
-        if self.problem.name == "EvoNN":
+        if self.individuals.ndim > 2:
             # Get individuals at indices
             w1, w2 = self.individuals[ind1], self.individuals[ind2]
 
             # Perform crossover
-            xover_w1, xover_w2 = ppga_crossover(w1, w2)
+            xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
 
             # Find randomly two other individuals with current match active for mutation.
             # Make a list of individuals suitable for mutation, exclude the ones to be mutated
@@ -361,10 +361,16 @@ class Population:
             offspring1, offspring2 = ppga_mutation(
                 alternatives,
                 xover_w1,
-                xover_w2
+                xover_w2,
+                params["current_iteration_gen_count"],
+                params["generations"],
+                params["prob_mutation"],
+                params["mut_strength"]
             )
 
             return offspring1, offspring2
+        else:
+
 
         else:
             offspring = crossover(self)

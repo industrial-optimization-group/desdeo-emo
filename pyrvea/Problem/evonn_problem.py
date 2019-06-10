@@ -4,7 +4,7 @@ import numpy as np
 import timeit
 from pyrvea.Problem.baseProblem import baseProblem
 
-class EvoNNProblem():
+class EvoNN():
     """Creates an Artificial Neural Network (ANN) for the EvoNN algorithm."""
 
     def __init__(

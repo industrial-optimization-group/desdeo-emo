@@ -5,7 +5,7 @@ from random import sample
 def ppga_mutation(
     alternatives, w1, w2, cur_gen=1, total_gen=10, prob_mut=0.3, mut_strength=0.7
 ):
-    """Randomly mutate two individuals
+    """Randomly mutate two individuals based on a probability
 
     Paremeters
     ----------
