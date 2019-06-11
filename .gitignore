@@ -131,6 +131,9 @@ dmypy.json
 # vsCode settings
 .vscode/
 
+# Pycharm files
+.idea/
+
 .tests.py
 Tests/
 *.csv
