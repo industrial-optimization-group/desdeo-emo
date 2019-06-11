@@ -7,26 +7,26 @@ class EvoNNTestProblem(baseProblem):
 
     """Test functions for testing the EvoNN/PPGA algorithm.
 
-        Parameters
+        Attributes
         ----------
-        name: str
+        name : str
             name of the test function
-        num_of_variables: int
+        num_of_variables : int
             number of decision variables
-        num_of_objectives: int
+        num_of_objectives : int
             number of objectives
-        num_of_constraints: int
+        num_of_constraints : int
             number of constraints
-        upper_limits: float
+        upper_limits : float
             upper boundaries for test data
-        lower_limits
+        lower_limits : float
             lower boundaries for test data
     """
 
     def __init__(
         self,
         name=None,
-        num_of_variables=None,
+        num_of_variables=2,
         num_of_objectives=None,
         num_of_constraints=0,
         upper_limits=1,
@@ -63,9 +63,11 @@ class EvoNNTestProblem(baseProblem):
 
         Parameters
         ----------
-        decision_variables: np.ndarray
+        decision_variables : np.ndarray
 
         """
+
+        self.num_of_variables = decision_variables.shape[0]
 
         if self.name == "Sphere":
             # Sphere function, -5 <= x <= 5
@@ -159,11 +161,11 @@ class EvoNNTestProblem(baseProblem):
 
         Parameters
         ----------
-        samples: int
+        samples : int
             number of samples
-        method: str
+        method : str
             method to use in data creation. Possible values random, lhs, linear, linear+zeros, linear+reverse.
-        seed: int
+        seed : int
             if a number is given, random data will be seeded
         """
 

@@ -131,10 +131,6 @@ dmypy.json
 # vsCode settings
 .vscode/
 
-# Poetry files
-poetry.lock
-pyproject.toml
-
 .tests.py
 Tests/
 *.csv

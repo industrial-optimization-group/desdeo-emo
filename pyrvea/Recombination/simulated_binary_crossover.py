@@ -5,7 +5,7 @@ from random import shuffle
 def crossover(population, prob_xover=1, dis_xover=30):
 
     pop = population.individuals
-    pop_size, num_var = pop.shape[0], pop.shape[1]-1
+    pop_size, num_var = pop.shape
     shuffled_ids = list(range(pop_size))
     shuffle(shuffled_ids)
     mating_pop = pop[shuffled_ids]

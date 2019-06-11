@@ -5,7 +5,9 @@ Visit the github/binder page for further information.
 """
 from pyrvea.Population.Population import Population
 from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
+from pyrvea.EAs.slowRVEA import slowRVEA
 from pyrvea.EAs.NSGAIII import NSGAIII
 from optproblems import dtlz
 
@@ -31,7 +33,7 @@ population_size = 105
 
 pop = Population(problem)
 
-pop.evolve(NSGAIII)
+pop.evolve(slowRVEA)
 
 pop.non_dominated()
 refpoint = 2

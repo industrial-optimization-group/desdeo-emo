@@ -35,7 +35,7 @@ class Population:
     ):
         """Initialize the population.
 
-        Parameters
+        Attributes
         ----------
         problem : baseProblem
             An object of the class Problem

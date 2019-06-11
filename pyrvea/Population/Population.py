@@ -33,12 +33,13 @@ class Population:
         self,
         problem: "baseProblem",
         assign_type: str = "LHSDesign",
-        plotting: bool = False,
+        plotting: bool = True,
+        pop_size = None,
         *args
     ):
         """Initialize the population.
 
-        Parameters
+        Attributes
         ----------
         problem : baseProblem
             An object of the class Problem
@@ -51,6 +52,8 @@ class Population:
             is 'empty', create blank population. (the default is "RandomAssign")
         plotting : bool, optional
             (the default is True, which creates the plots)
+        pop_size : int
+            Population size
 
         """
         self.num_var = problem.num_of_variables
@@ -58,15 +61,12 @@ class Population:
         self.upper_limits = np.asarray(problem.upper_limits)
         self.hyp = 0
         self.non_dom = 0
+        self.pop_size = pop_size
         self.problem = problem
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
         self.individuals = np.empty((0, self.num_var), float)
-        if problem.name == "EvoNN":
-            self.individuals = np.empty(
-                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes), float
-            )
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
@@ -78,7 +78,7 @@ class Population:
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
         if not assign_type == "empty":
-            self.create_new_individuals(assign_type)
+            self.create_new_individuals(assign_type, pop_size=self.pop_size)
 
     def create_new_individuals(
         self, design: str = "LHSDesign", pop_size: int = None, decision_variables=None
@@ -94,6 +94,7 @@ class Population:
             Describe the method of creation of new individuals.
             "RandomDesign" creates individuals randomly.
             "LHSDesign" creates individuals using Latin hypercube sampling.
+            "EvoNN" creates Artificial Neural Networks as individuals.
         pop_size : int, optional
             Number of individuals in the population. If none, some default population
             size based on number of objectives is chosen.
@@ -123,6 +124,9 @@ class Population:
                 + self.lower_limits
             )
         elif design == "EvoNN":
+            self.individuals = np.empty(
+                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes), float
+            )
             # +1 row for bias
             individuals = np.random.uniform(
                 self.problem.w_low,
@@ -148,7 +152,7 @@ class Population:
 
         self.add(individuals)
 
-        if self.plotting and design == "EvoNN":
+        if self.plotting:
             self.figure = []
             self.plot_init_()
 
@@ -169,12 +173,10 @@ class Population:
         """
         if new_pop.ndim == 1:
             self.append_individual(new_pop)
-        elif new_pop.ndim == 2:
-            for ind in new_pop:
-                self.append_individual(ind)
-        elif new_pop.ndim == 3:
+
+        elif new_pop.ndim >= 2:
             for i in range(0, new_pop.shape[0]):
-                self.append_individual(new_pop[i, :, :])
+                self.append_individual(new_pop[i, ...])
         else:
             print("Error while adding new individuals. Check dimensions.")
         # print(self.ideal_fitness)
@@ -282,12 +284,14 @@ class Population:
         obj = self.problem.objectives(ind)
         CV = np.empty((0, self.problem.num_of_constraints), float)
         fitness = obj
+
         if self.problem.num_of_constraints:
             CV = self.problem.constraints(ind, obj)
             fitness = self.eval_fitness(ind, obj, self.problem)
+
         return (obj, CV, fitness)
 
-    def evolve(self, EA: "BaseEA" = None, EA_parameters: dict = None) -> "Population":
+    def evolve(self, EA: "BaseEA" = None, EA_parameters: dict = {}) -> "Population":
         """Evolve the population with interruptions.
 
         Evolves the population based on the EA sent by the user.
@@ -311,21 +315,8 @@ class Population:
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
         ea = EA(self, EA_parameters)
-            # AicC:
-            # non_dom_front = nds(self.objectives)
-            # fon_front = non_dom_front[0][0]
-            # info_c_rank = []
-            # for i in fon_front:
-            #
-            #     if
-            #     info_c = self.problem.information_criterion(self.individuals[i])
-            #     info_c_rank.append((info_c, i))
-            #
-            # info_c_rank.sort()
-
-            # return self.individuals[info_c_rank[0][1]]
-
         iterations = ea.params["iterations"]
+
         if self.plotting:
             self.plot_objectives()  # Figure was created in init
         for i in progressbar(range(1, iterations), desc="Iteration"):
@@ -333,8 +324,6 @@ class Population:
             ea._next_iteration(self)
             if self.plotting:
                 self.plot_objectives()
-        lowest_error = np.argmin(self.objectives[:, 0])
-        return self.individuals[lowest_error]
 
     def mate(self, ind1=None, ind2=None, params=None):
         """Conduct crossover and mutation over the population.
@@ -369,8 +358,6 @@ class Population:
             )
 
             return offspring1, offspring2
-        else:
-
 
         else:
             offspring = crossover(self)

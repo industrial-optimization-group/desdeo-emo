@@ -6,9 +6,27 @@ from pyrvea.Population.population_evonn import Population
 
 
 class PPGA(BaseEA):
-    def __init__(self, population: "Population", ea_parameters: dict = None):
+    """Predatory-Prey algorithm
 
-        self.params = self.set_params(population, ea_parameters)
+    If you have any questions about the code, please contact:
+
+    Bhupinder Saini: bhupinder.s.saini@jyu.fi
+
+    Project researcher at University of Jyväskylä.
+
+    Parameters
+    ----------
+    population : object
+        The population object
+    ea_parameters : dict
+        PPGA specific parameters
+
+    References
+    ----------
+    """
+    def __init__(self, population: "Population", EA_parameters: dict = {}):
+
+        self.params = self.set_params(population, **EA_parameters)
         self.lattice = Lattice(60, 60, self.params)
         self._next_iteration(population)
 
@@ -17,14 +35,13 @@ class PPGA(BaseEA):
         population: "Population",
         population_size: int = None,
         target_pop_size: int = 300,
-        interact: bool = False,
-        a_priori_preference: bool = False,
-        generations_per_iteration: int = 100,
+        generations_per_iteration: int = 1,
         iterations: int = 1,
         plotting: bool = False,
+        logging: list = [False, None],
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
-        mut_strength: float = 0.7,
+        mut_strength: float = 0.7
     ):
         """Set up the parameters.
 
@@ -34,24 +51,22 @@ class PPGA(BaseEA):
             Population object
         population_size : int
             Population Size
-        interact : bool
-            bool to enable or disable interaction. Enabled if True
-        a_priori_preference : bool
-            similar to interact
+        target_pop_size : int
+            Target population size
         generations_per_iteration : int
             Number of generations per iteration.
         iterations : int
             Total Number of iterations.
         plotting : bool
             Useless really.
+        logging : list = [bool, logfile]
+            If true, append parameters to a logfile
         prob_crossover : float
             Probability of crossover occurring
         prob_mutation : float
             Probability of mutation occurring
         mut_strength : float
             Strength of the mutation
-        prob_omit : float
-            Probability of deactivating some connections
 
         Returns
         -------
@@ -60,7 +75,7 @@ class PPGA(BaseEA):
 
         ppgaparams = {
             "population": population,
-            "population_size": population_size,
+            "population_size": population.pop_size,
             "target_pop_size": target_pop_size,
             "predator_pop_size": 50,
             "prey_max_moves": 10,
@@ -69,14 +84,32 @@ class PPGA(BaseEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "ploton": plotting,
+            "logging": logging,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
             "kill_interval": 7,
-            "max_rank": 20,
+            "max_rank": 20
         }
+
+        # If logging enabled, write params to file
+        if ppgaparams["logging"][0]:
+            if ppgaparams["logging"][1] is None:
+                # Save params to log file
+                log_file = open(
+                    population.problem.name
+                    + "_var"
+                    + str(population.problem.num_of_variables)
+                    + "_nodes"
+                    + str(population.problem.num_hidden_nodes)
+                    + ".txt",
+                    "w"
+                )
+            for k, v in ppgaparams.items():
+                print(k, v, file=ppgaparams["logging"][1])
+            ppgaparams["logging"][1].close()
 
         return ppgaparams
 

@@ -1,6 +1,4 @@
 from typing import TYPE_CHECKING
-import numpy as np
-import random
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
