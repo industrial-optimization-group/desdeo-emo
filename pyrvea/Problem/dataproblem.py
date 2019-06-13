@@ -139,10 +139,3 @@ class DataProblem(baseProblem):
 
     def retrain_surrogate(self):
         pass
-
-def main():
-    test_data = pd.read_csv("178deb.csv", header=1)
-    prob = DataProblem(test_data)
-    prob.train()
-if __name__ == '__main__':
-    main()

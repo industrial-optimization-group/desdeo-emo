@@ -24,7 +24,7 @@ six = "*"
 toolz = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 name = "appdirs"
 optional = false
@@ -82,7 +82,7 @@ python-versions = "*"
 version = "0.1.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "The uncompromising code formatter."
 name = "black"
 optional = false
@@ -124,7 +124,7 @@ python-versions = "*"
 version = "3.0.4"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Composable command line interface toolkit"
 name = "click"
 optional = false
@@ -970,7 +970,7 @@ python-versions = "*"
 version = "0.4.2"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python Library for Tom's Obvious, Minimal Language"
 name = "toml"
 optional = false
@@ -1085,7 +1085,7 @@ python-versions = "*"
 version = "1.11.1"
 
 [metadata]
-content-hash = "1bb3ed42f916d52387721b4ce9e6fcb34194f1ead2e40131d20377dcc896d33f"
+content-hash = "a5559602953991f5e0af8fad0a547a857102db5daf691718fdaa9f3cc162a782"
 python-versions = "^3.6"
 
 [metadata.hashes]

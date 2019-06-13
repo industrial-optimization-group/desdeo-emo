@@ -35,9 +35,10 @@ class PPGA(BaseEA):
         population: "Population",
         population_size: int = None,
         target_pop_size: int = 300,
-        generations_per_iteration: int = 1,
+        generations_per_iteration: int = 10,
         iterations: int = 1,
-        plotting: bool = False,
+        interact: bool = False,
+        plotting: bool = True,
         logging: list = [False, None],
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
@@ -83,7 +84,8 @@ class PPGA(BaseEA):
             "offspring_place_attempts": 10,
             "generations": generations_per_iteration,
             "iterations": iterations,
-            "ploton": plotting,
+            "interact": interact,
+            "plotting": plotting,
             "logging": logging,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
@@ -233,7 +235,20 @@ class PPGA(BaseEA):
         #         )
         #         population.create_new_individuals(pop_size=len(placed_indices), design="EvoNN")
 
-        if self.params["ploton"]:
+
+    def _run_interruption(self, population: "Population"):
+        """Run the interruption phase of PPGA.
+
+        Use this phase to make changes to PPGA.params or other objects.
+
+        Parameters
+        ----------
+        population : Population
+        """
+        if self.params["interact"]:
+            pass
+
+        if self.params["plotting"]:
             population.plot_objectives()
 
     def select(self, population, max_rank=20) -> list:

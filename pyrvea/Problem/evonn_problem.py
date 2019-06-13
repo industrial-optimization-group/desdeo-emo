@@ -34,8 +34,8 @@ class EvoNN(baseProblem):
     def __init__(
         self,
         name,
-        training_data_input=None,
-        training_data_output=None,
+        X_train=None,
+        y_train=None,
         num_input_nodes=4,
         num_hidden_nodes=5,
         num_of_objectives=2,
@@ -49,8 +49,8 @@ class EvoNN(baseProblem):
         super().__init__()
 
         self.name = name
-        self.training_data_input = training_data_input
-        self.training_data_output = training_data_output
+        self.X_train = X_train
+        self.y_train = y_train
         self.num_input_nodes = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
         self.num_of_objectives = num_of_objectives
@@ -62,9 +62,9 @@ class EvoNN(baseProblem):
         self.loss_func = loss_func
         self.trained_models = []
 
-        if training_data_input is not None and training_data_output is not None:
-            self.num_of_samples = training_data_output.shape[0]
-            self.num_of_variables = training_data_input.shape[1]
+        if X_train is not None and y_train is not None:
+            self.num_of_samples = y_train.shape[0]
+            self.num_of_variables = y_train.shape[1]
             self.num_input_nodes = self.num_of_variables
 
     def fit(self, training_data, target_values):
@@ -78,12 +78,11 @@ class EvoNN(baseProblem):
             Target values
         """
 
-        self.training_data_input = training_data
-        self.training_data_output = target_values
+        self.X_train = training_data
+        self.y_train = target_values
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        if len(self.training_data_input) > 0:
-            self.num_input_nodes = np.shape(training_data)[1]
+        self.num_input_nodes = self.num_of_variables
 
     def objectives(self, decision_variables) -> list:
 
@@ -128,7 +127,7 @@ class EvoNN(baseProblem):
         w1 = decision_variables
         # Calculate the dot product
         wi = (
-            np.dot(self.training_data_input, w1[1:, :])
+            np.dot(self.X_train, w1[1:, :])
             + w1[0]
         )
 
@@ -164,18 +163,17 @@ class EvoNN(baseProblem):
         """
 
         if self.opt_func == "llsq":
-            w2 = np.linalg.lstsq(activated_layer, self.training_data_output, rcond=None)
+            w2 = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
             rss = w2[1]
             predicted_values = np.dot(activated_layer, w2[0])
-
-        return w2[0], rss, predicted_values
+            return w2[0], rss, predicted_values
 
     def loss_function(self, predicted_values):
 
         if self.loss_func == "mse":
-            return ((self.training_data_output - predicted_values) ** 2).mean()
+            return ((self.y_train - predicted_values) ** 2).mean()
         if self.loss_func == "rmse":
-            return np.sqrt(((self.training_data_output - predicted_values) ** 2).mean())
+            return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
     def calculate_complexity(self, w_matrix):
 
@@ -187,7 +185,7 @@ class EvoNN(baseProblem):
 
         z = self.activation(decision_variables)
         w_matrix2, rss, prediction = self.minimize_error(z)
-        # rss = ((self.training_data_output - prediction) ** 2).sum()
+        # rss = ((self.y_train - prediction) ** 2).sum()
         k = self.calculate_complexity(decision_variables) + np.count_nonzero(w_matrix2)
         aic = 2 * k + self.num_of_samples * np.log(rss / self.num_of_samples)
         aicc = aic + (2 * k * (k + 1) / (self.num_of_samples - k - 1))
@@ -216,7 +214,7 @@ class EvoNN(baseProblem):
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
-            model = TrainedModel(name=self.name+"_model", w1=pop.individuals[lowest_error])
+            model = EvoNNModel(name=self.name+"_model", w1=pop.individuals[lowest_error])
 
         elif criterion == "akaike_corrected":
 
@@ -232,14 +230,14 @@ class EvoNN(baseProblem):
 
             info_c_rank.sort()
 
-            model = TrainedModel(name=self.name+"_model", w1=pop.individuals[info_c_rank[0][1]])
+            model = EvoNNModel(name=self.name+"_model", w1=pop.individuals[info_c_rank[0][1]])
 
         self.trained_models.append(model)
 
         return model
 
 
-class TrainedModel(EvoNN):
+class EvoNNModel(EvoNN):
 
     def __init__(self, name, w1, w2=None, y_pred=None, svr=None):
         super().__init__(name)
@@ -265,11 +263,11 @@ class TrainedModel(EvoNN):
             Target values
         """
 
-        self.training_data_input = training_data
-        self.training_data_output = target_values
-        self.num_of_samples = target_values.shape[0]
-        self.num_of_variables = training_data.shape[1]
-        if len(self.training_data_input) > 0:
+        self.X_train = training_data.values
+        self.y_train = target_values.values
+        self.num_of_samples = self.y_train.shape[0]
+        self.num_of_variables = self.X_train.shape[1]
+        if len(self.X_train) > 0:
             self.num_input_nodes = np.shape(training_data)[1]
 
         self.init_upper_part()

@@ -19,6 +19,7 @@ plotly = "^3.8"
 tqdm = "^4.31"
 jupyter = "^1.0"
 scikit-learn = "^0.21.2"
+black = {version = "^18.3-alpha.0",allows-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"
