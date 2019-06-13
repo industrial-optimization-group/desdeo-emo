@@ -2,7 +2,7 @@ from pyrvea.EAs.baseEA import BaseEA
 from pyrvea.Selection.PPGA_select import ppga_select
 from random import choice, sample
 import numpy as np
-from pyrvea.Population.population_evonn import Population
+from pyrvea.Population.Population import Population
 
 
 class PPGA(BaseEA):
@@ -107,9 +107,10 @@ class PPGA(BaseEA):
                     + ".txt",
                     "w"
                 )
+            else:
+                log_file = ppgaparams["logging"][1]
             for k, v in ppgaparams.items():
-                print(k, v, file=ppgaparams["logging"][1])
-            ppgaparams["logging"][1].close()
+                print(k, v, file=log_file)
 
         return ppgaparams
 

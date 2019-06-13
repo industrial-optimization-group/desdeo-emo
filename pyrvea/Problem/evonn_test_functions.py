@@ -52,6 +52,8 @@ class EvoNNTestProblem(baseProblem):
             "Goldstein-Price": (-2, 2),
             "LeviN13": (-10, 10),
             "Schaffer": (-100, 100),
+            "min-ex_f1": (0, 1),
+            "min-ex_f2": (0, 5)
         }
 
         if self.name in self.test_f_limits.keys():
@@ -153,6 +155,12 @@ class EvoNNTestProblem(baseProblem):
                 + (np.sin((x ** 2 - y ** 2) ** 2) - 0.5)
                 / (1 + 0.001 * (x ** 2 + y ** 2)) ** 2
             )
+
+        elif self.name == "min-ex":
+            x1 = decision_variables[1]
+            x2 = decision_variables[2]
+
+            self.obj_func = [x1, (1 + x2) / x1]
 
         return self.obj_func
 

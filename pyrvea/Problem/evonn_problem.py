@@ -33,7 +33,9 @@ class EvoNN(baseProblem):
 
     def __init__(
         self,
-        name=None,
+        name,
+        training_data_input=None,
+        training_data_output=None,
         num_input_nodes=4,
         num_hidden_nodes=5,
         num_of_objectives=2,
@@ -47,6 +49,8 @@ class EvoNN(baseProblem):
         super().__init__()
 
         self.name = name
+        self.training_data_input = training_data_input
+        self.training_data_output = training_data_output
         self.num_input_nodes = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
         self.num_of_objectives = num_of_objectives
@@ -56,6 +60,12 @@ class EvoNN(baseProblem):
         self.activation_func = activation_func
         self.opt_func = opt_func
         self.loss_func = loss_func
+        self.trained_models = []
+
+        if training_data_input is not None and training_data_output is not None:
+            self.num_of_samples = training_data_output.shape[0]
+            self.num_of_variables = training_data_input.shape[1]
+            self.num_input_nodes = self.num_of_variables
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -92,7 +102,7 @@ class EvoNN(baseProblem):
         """
 
         activated_layer = self.activation(decision_variables)
-        w_matrix2, rss, predicted_values = self.minimize_error(activated_layer)
+        _, _, predicted_values = self.minimize_error(activated_layer)
         training_error = self.loss_function(predicted_values)
         complexity = self.calculate_complexity(decision_variables)
 
@@ -115,10 +125,11 @@ class EvoNN(baseProblem):
         The penultimate layer Z before the output
 
         """
+        w1 = decision_variables
         # Calculate the dot product
         wi = (
-            np.dot(self.training_data_input, decision_variables[1:, :])
-            + decision_variables[0]
+            np.dot(self.training_data_input, w1[1:, :])
+            + w1[0]
         )
 
         if self.activation_func == "sigmoid":
@@ -153,11 +164,11 @@ class EvoNN(baseProblem):
         """
 
         if self.opt_func == "llsq":
-            w_matrix2 = np.linalg.lstsq(activated_layer, self.training_data_output, rcond=None)
-            rss = w_matrix2[1]
-            predicted_values = np.dot(activated_layer, w_matrix2[0])
+            w2 = np.linalg.lstsq(activated_layer, self.training_data_output, rcond=None)
+            rss = w2[1]
+            predicted_values = np.dot(activated_layer, w2[0])
 
-        return w_matrix2[0], rss, predicted_values
+        return w2[0], rss, predicted_values
 
     def loss_function(self, predicted_values):
 
@@ -183,13 +194,6 @@ class EvoNN(baseProblem):
 
         return aicc
 
-    def predict(self, decision_variables):
-
-        activated_layer = self.activation(decision_variables)
-        _, _, predicted_values = self.minimize_error(activated_layer)
-
-        return predicted_values
-
     def select(self, pop, non_dom_front, criterion="min_error"):
         """ Select target model from the population.
 
@@ -207,11 +211,12 @@ class EvoNN(baseProblem):
         -------
         The selected model
         """
+        model = None
         if criterion == "min_error":
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
-            return pop.individuals[lowest_error]
+            model = TrainedModel(name=self.name+"_model", w1=pop.individuals[lowest_error])
 
         elif criterion == "akaike_corrected":
 
@@ -227,36 +232,132 @@ class EvoNN(baseProblem):
 
             info_c_rank.sort()
 
-            return pop.individuals[info_c_rank[0][1]]
+            model = TrainedModel(name=self.name+"_model", w1=pop.individuals[info_c_rank[0][1]])
 
-    def single_variance_response(self, model):
+        self.trained_models.append(model)
 
-        print("number of variables: " + str(self.num_of_variables))
-        # pref_val = float(
-        #     input("Please input a value worse than the ideal: ")
-        # )
-        activated_layer = self.activation(model)
-        _, _, predicted_values = self.minimize_error(activated_layer)
+        return model
 
-        trace0 = go.Scatter(x=predicted_values, y=self.training_data_output, mode="markers")
-        trace1 = go.Scatter(x=self.training_data_output, y=self.training_data_output)
-        data = [trace0, trace1]
-        plotly.offline.plot(
-            data,
-            filename="svr.html",
-            auto_open=True,
+
+class TrainedModel(EvoNN):
+
+    def __init__(self, name, w1, w2=None, y_pred=None, svr=None):
+        super().__init__(name)
+        self.name = name
+        self.w1 = w1
+        self.w2 = w2
+        self.y_pred = y_pred
+        self.svr = svr
+
+    def init_upper_part(self):
+
+        activated_layer = super().activation(self.w1)
+        self.w2, _, self.y_pred = self.minimize_error(activated_layer)
+
+    def fit(self, training_data, target_values):
+        """Fit data in EvoNN model.
+
+        Parameters
+        ----------
+        training_data : ndarray, shape = (numbers of samples, number of variables)
+            Training data
+        target_values : ndarray
+            Target values
+        """
+
+        self.training_data_input = training_data
+        self.training_data_output = target_values
+        self.num_of_samples = target_values.shape[0]
+        self.num_of_variables = training_data.shape[1]
+        if len(self.training_data_input) > 0:
+            self.num_input_nodes = np.shape(training_data)[1]
+
+        self.init_upper_part()
+
+    def predict(self, decision_variables):
+
+        activated_layer = self.activation(decision_variables)
+        out = np.dot(activated_layer, self.w2)
+
+        return out
+
+    def activation(self, decision_variables):
+        """ Calculates the dot product and applies the activation function.
+
+        Parameters
+        ----------
+        decision_variables : ndarray
+            Variables from the neural network
+        name : str
+            The activation function to use
+
+        Returns
+        -------
+        The penultimate layer Z before the output
+
+        """
+        wi = (
+                np.dot(decision_variables, self.w1[1:, :])
+                + self.w1[0]
         )
 
-        model[1, :] = model[1] + 1
+        if self.activation_func == "sigmoid":
+            activated_layer = lambda x: 1 / (1 + np.exp(-x))
 
-        activated_layer = self.activation(model)
-        _, _, predicted_values = self.minimize_error(activated_layer)
+        if self.activation_func == "relu":
+            activated_layer = lambda x: np.maximum(x, 0)
 
-        trace0 = go.Scatter(x=predicted_values, y=self.training_data_output, mode="markers")
-        trace1 = go.Scatter(x=self.training_data_output, y=self.training_data_output)
-        data = [trace0, trace1]
-        plotly.offline.plot(
-            data,
-            filename="svr1.html",
-            auto_open=True,
-        )
+        if self.activation_func == "tanh":
+            activated_layer = lambda x: np.tanh(x)
+
+        return activated_layer(wi)
+
+    def single_variable_response(self, ploton=False, log=None):
+
+        trend = np.loadtxt("trend")
+        trend = trend[0:self.num_of_samples]
+        avg = np.ones((1, self.num_input_nodes))*(0+1)/2
+        svr = np.empty((0, 2))
+
+        for i in range(self.num_input_nodes):
+            variables = np.ones((len(trend), 1))*avg
+            variables[:, i] = trend
+
+            out = self.predict(variables)
+
+            if min(out) == max(out):
+                out = 0.5 * np.ones(out.size)
+            else:
+                out = (out - min(out)) / (max(out) - min(out))
+
+            if ploton:
+                trace0 = go.Scatter(x=np.arange(len(variables[:, 1])), y=variables[:, i], name="input")
+                trace1 = go.Scatter(x=np.arange(len(variables[:, 1])), y=out, name="output")
+                data = [trace0, trace1]
+                plotly.offline.plot(
+                    data,
+                    filename="x"+str(i+1)+"_response.html",
+                    auto_open=True,
+                )
+
+            p = np.diff(out)
+            q = np.diff(trend)
+            r = np.multiply(p, q)
+            r_max = max(r)
+            r_min = min(r)
+            if r_max <= 0 and r_min <= 0:
+                response = -1
+                s = "inverse"
+            elif r_max >= 0 and r_min >= 0:
+                response = 1
+                s = "direct"
+            elif r_max == 0 and r_min == 0:
+                response = 0
+                s = "nil"
+            elif r_min < 0 < r_max:
+                response = 2
+                s = "mixed"
+
+            print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
+            svr = np.vstack((svr, ["x"+str(i+1), s]))
+            self.svr = svr
