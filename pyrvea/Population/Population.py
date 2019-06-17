@@ -34,7 +34,7 @@ class Population:
         problem: "baseProblem",
         assign_type: str = "LHSDesign",
         plotting: bool = True,
-        pop_size = None,
+        pop_size=None,
         *args
     ):
         """Initialize the population.
@@ -126,7 +126,8 @@ class Population:
             )
         elif design == "EvoNN":
             self.individuals = np.empty(
-                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes), float
+                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes),
+                float,
             )
             # +1 row for bias
             individuals = np.random.uniform(
@@ -147,6 +148,36 @@ class Population:
 
             # Set bias
             individuals[:, 0, :] = 1
+
+        elif design == "EvoDN2":
+            self.individuals = np.empty(
+                (
+                    self.problem.num_layers,
+                    0,
+                    self.problem.num_input_nodes + 1,
+                    self.problem.num_hidden_nodes,
+                )
+            )
+            # +1 row for bias
+            individuals = np.random.uniform(
+                self.problem.w_low,
+                self.problem.w_high,
+                size=(
+                    self.problem.num_layers,
+                    pop_size,
+                    self.problem.num_input_nodes + 1,
+                    self.problem.num_hidden_nodes,
+                ),
+            )
+
+            # Eliminate some weights
+            flag = bn.rvs(p=1 - self.problem.prob_omit, size=np.shape(individuals))
+
+            random_numbers = np.zeros(np.shape(individuals))
+            individuals[flag == 0] = random_numbers[flag == 0]
+
+            # Set bias
+            individuals[:, :, 0, :] = 1
 
         else:
             print("Design not yet supported.")
@@ -355,7 +386,7 @@ class Population:
                 params["current_iteration_gen_count"],
                 params["generations"],
                 params["prob_mutation"],
-                params["mut_strength"]
+                params["mut_strength"],
             )
 
             return offspring1, offspring2
