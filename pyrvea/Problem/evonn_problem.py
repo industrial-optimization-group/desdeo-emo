@@ -1,4 +1,6 @@
 from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Population.Population import Population
+from pyrvea.EAs.PPGA import PPGA
 import numpy as np
 import plotly
 import plotly.graph_objs as go
@@ -42,9 +44,7 @@ class EvoNN(baseProblem):
         w_low=-5.0,
         w_high=5.0,
         prob_omit=0.2,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse"
+        params=None,
     ):
         super().__init__()
 
@@ -57,15 +57,7 @@ class EvoNN(baseProblem):
         self.w_low = w_low
         self.w_high = w_high
         self.prob_omit = prob_omit
-        self.activation_func = activation_func
-        self.opt_func = opt_func
-        self.loss_func = loss_func
-        self.trained_models = []
-
-        if X_train is not None and y_train is not None:
-            self.num_of_samples = y_train.shape[0]
-            self.num_of_variables = y_train.shape[1]
-            self.num_input_nodes = self.num_of_variables
+        self.params = params
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -83,6 +75,24 @@ class EvoNN(baseProblem):
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
         self.num_input_nodes = self.num_of_variables
+        self.num_hidden_nodes = self.params["num_hidden_nodes"]
+
+    def train(self, model):
+
+        pop = Population(self, assign_type="EvoNN", pop_size=500, plotting=False)
+        pop.evolve(
+            PPGA,
+            {
+                "logging": self.params["logging"],
+                "iterations": 10,
+                "generations_per_iteration": 10
+            }
+        )
+
+        non_dom_front = pop.non_dominated()
+        model.w1 = self.select(pop, non_dom_front, self.params["criterion"])
+        activated_layer = self.activation(model.w1)
+        model.w2, _, model.y_pred = self.minimize_error(activated_layer)
 
     def objectives(self, decision_variables) -> list:
 
@@ -126,18 +136,15 @@ class EvoNN(baseProblem):
         """
         w1 = decision_variables
         # Calculate the dot product
-        wi = (
-            np.dot(self.X_train, w1[1:, :])
-            + w1[0]
-        )
+        wi = np.dot(self.X_train, w1[1:, :]) + w1[0]
 
-        if self.activation_func == "sigmoid":
+        if self.params["activation_func"] == "sigmoid":
             activated_layer = lambda x: 1 / (1 + np.exp(-x))
 
-        if self.activation_func == "relu":
+        if self.params["activation_func"] == "relu":
             activated_layer = lambda x: np.maximum(x, 0)
 
-        if self.activation_func == "tanh":
+        if self.params["activation_func"] == "tanh":
             activated_layer = lambda x: np.tanh(x)
 
         return activated_layer(wi)
@@ -162,7 +169,7 @@ class EvoNN(baseProblem):
             The prediction of the model
         """
 
-        if self.opt_func == "llsq":
+        if self.params["opt_func"] == "llsq":
             w2 = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
             rss = w2[1]
             predicted_values = np.dot(activated_layer, w2[0])
@@ -170,9 +177,9 @@ class EvoNN(baseProblem):
 
     def loss_function(self, predicted_values):
 
-        if self.loss_func == "mse":
+        if self.params["loss_func"] == "mse":
             return ((self.y_train - predicted_values) ** 2).mean()
-        if self.loss_func == "rmse":
+        if self.params["loss_func"]:
             return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
     def calculate_complexity(self, w_matrix):
@@ -214,7 +221,7 @@ class EvoNN(baseProblem):
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
-            model = EvoNNModel(name=self.name+"_model", w1=pop.individuals[lowest_error])
+            model = pop.individuals[lowest_error]
 
         elif criterion == "akaike_corrected":
 
@@ -230,27 +237,71 @@ class EvoNN(baseProblem):
 
             info_c_rank.sort()
 
-            model = EvoNNModel(name=self.name+"_model", w1=pop.individuals[info_c_rank[0][1]])
-
-        self.trained_models.append(model)
+            model = pop.individuals[info_c_rank[0][1]]
 
         return model
 
+    def create_logfile(self):
+
+        # Save params to log file
+        log_file = open(
+            self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.num_hidden_nodes)
+            + ".log",
+            "a",
+        )
+        print(
+            "samples: "
+            + str(self.num_of_samples)
+            + "\n"
+            + "variables: "
+            + str(self.num_of_variables)
+            + "\n"
+            + "nodes: "
+            + str(self.num_hidden_nodes)
+            + "\n"
+            + "activation: "
+            + self.params["activation_func"]
+            + "\n"
+            + "opt func: "
+            + self.params["opt_func"]
+            + "\n"
+            + "loss func: "
+            + self.params["loss_func"],
+            file=log_file,
+        )
+        return log_file
+
+    def create_plot(self, model):
+
+        trace0 = go.Scatter(x=model.y_pred, y=self.y_train, mode="markers")
+        trace1 = go.Scatter(x=self.y_train, y=self.y_train)
+        data = [trace0, trace1]
+        plotly.offline.plot(
+            data,
+            filename=self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.num_hidden_nodes)
+            + ".html",
+            auto_open=True,
+        )
+
 
 class EvoNNModel(EvoNN):
-
-    def __init__(self, name, w1, w2=None, y_pred=None, svr=None):
+    def __init__(self, name, w1=None, w2=None, y_pred=None, svr=None):
         super().__init__(name)
         self.name = name
         self.w1 = w1
         self.w2 = w2
         self.y_pred = y_pred
         self.svr = svr
-
-    def init_upper_part(self):
-
-        activated_layer = super().activation(self.w1)
-        self.w2, _, self.y_pred = self.minimize_error(activated_layer)
+        self.log = None
+        self.set_params()
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -262,63 +313,68 @@ class EvoNNModel(EvoNN):
         target_values : ndarray
             Target values
         """
-
-        self.X_train = training_data.values
-        self.y_train = target_values.values
-        self.num_of_samples = self.y_train.shape[0]
-        self.num_of_variables = self.X_train.shape[1]
-        if len(self.X_train) > 0:
-            self.num_input_nodes = np.shape(training_data)[1]
-
-        self.init_upper_part()
+        f1 = EvoNN(name=self.name, params=self.params)
+        f1.fit(training_data, target_values)
+        f1.train(self)
+        if f1.params["logging"]:
+            self.log = f1.create_logfile()
+        if f1.params["plotting"]:
+            f1.create_plot(self)
+        self.num_of_samples = f1.num_of_samples
+        self.single_variable_response(ploton=True, log=self.log)
 
     def predict(self, decision_variables):
 
-        activated_layer = self.activation(decision_variables)
-        out = np.dot(activated_layer, self.w2)
+        wi = np.dot(decision_variables, self.w1[1:, :]) + self.w1[0]
+
+        if self.params["activation_func"] == "sigmoid":
+            activated_layer = lambda x: 1 / (1 + np.exp(-x))
+
+        if self.params["activation_func"] == "relu":
+            activated_layer = lambda x: np.maximum(x, 0)
+
+        if self.params["activation_func"] == "tanh":
+            activated_layer = lambda x: np.tanh(x)
+
+        out = np.dot(activated_layer(wi), self.w2)
 
         return out
 
-    def activation(self, decision_variables):
-        """ Calculates the dot product and applies the activation function.
+    def set_params(
+        self,
+        name=None,
+        num_hidden_nodes=15,
+        pop_size=500,
+        activation_func="sigmoid",
+        opt_func="llsq",
+        loss_func="rmse",
+        criterion="akaike_corrected",
+        logging=False,
+        plotting=False,
+    ):
+        params = {
+            "name": name,
+            "num_hidden_nodes": num_hidden_nodes,
+            "pop_size": pop_size,
+            "activation_func": activation_func,
+            "opt_func": opt_func,
+            "loss_func": loss_func,
+            "criterion": criterion,
+            "logging": logging,
+            "plotting": plotting,
+        }
 
-        Parameters
-        ----------
-        decision_variables : ndarray
-            Variables from the neural network
-        name : str
-            The activation function to use
-
-        Returns
-        -------
-        The penultimate layer Z before the output
-
-        """
-        wi = (
-                np.dot(decision_variables, self.w1[1:, :])
-                + self.w1[0]
-        )
-
-        if self.activation_func == "sigmoid":
-            activated_layer = lambda x: 1 / (1 + np.exp(-x))
-
-        if self.activation_func == "relu":
-            activated_layer = lambda x: np.maximum(x, 0)
-
-        if self.activation_func == "tanh":
-            activated_layer = lambda x: np.tanh(x)
-
-        return activated_layer(wi)
+        self.params = params
 
     def single_variable_response(self, ploton=False, log=None):
 
         trend = np.loadtxt("trend")
-        trend = trend[0:self.num_of_samples]
-        avg = np.ones((1, self.num_input_nodes))*(0+1)/2
+        trend = trend[0: self.num_of_samples]
+        avg = np.ones((1, self.w1[1:].shape[0])) * (0 + 1) / 2
         svr = np.empty((0, 2))
 
-        for i in range(self.num_input_nodes):
-            variables = np.ones((len(trend), 1))*avg
+        for i in range(self.w1[1:].shape[0]):
+            variables = np.ones((len(trend), 1)) * avg
             variables[:, i] = trend
 
             out = self.predict(variables)
@@ -329,13 +385,15 @@ class EvoNNModel(EvoNN):
                 out = (out - min(out)) / (max(out) - min(out))
 
             if ploton:
-                trace0 = go.Scatter(x=np.arange(len(variables[:, 1])), y=variables[:, i], name="input")
-                trace1 = go.Scatter(x=np.arange(len(variables[:, 1])), y=out, name="output")
+                trace0 = go.Scatter(
+                    x=np.arange(len(variables[:, 1])), y=variables[:, i], name="input"
+                )
+                trace1 = go.Scatter(
+                    x=np.arange(len(variables[:, 1])), y=out, name="output"
+                )
                 data = [trace0, trace1]
                 plotly.offline.plot(
-                    data,
-                    filename="x"+str(i+1)+"_response.html",
-                    auto_open=True,
+                    data, filename="x" + str(i + 1) + "_response.html", auto_open=True
                 )
 
             p = np.diff(out)
@@ -357,5 +415,5 @@ class EvoNNModel(EvoNN):
                 s = "mixed"
 
             print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
-            svr = np.vstack((svr, ["x"+str(i+1), s]))
+            svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

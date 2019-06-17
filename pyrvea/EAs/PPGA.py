@@ -36,10 +36,10 @@ class PPGA(BaseEA):
         population_size: int = None,
         target_pop_size: int = 300,
         generations_per_iteration: int = 10,
-        iterations: int = 1,
+        iterations: int = 10,
         interact: bool = False,
         plotting: bool = True,
-        logging: list = [False, None],
+        logging: list = False,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7
@@ -97,20 +97,17 @@ class PPGA(BaseEA):
         }
 
         # If logging enabled, write params to file
-        if ppgaparams["logging"][0]:
-            if ppgaparams["logging"][1] is None:
-                # Save params to log file
-                log_file = open(
-                    population.problem.name
-                    + "_var"
-                    + str(population.problem.num_of_variables)
-                    + "_nodes"
-                    + str(population.problem.num_hidden_nodes)
-                    + ".txt",
-                    "w"
-                )
-            else:
-                log_file = ppgaparams["logging"][1]
+        if ppgaparams["logging"]:
+            # Save params to log file
+            log_file = open(
+                population.problem.name
+                + "_var"
+                + str(population.problem.num_of_variables)
+                + "_nodes"
+                + str(population.problem.num_hidden_nodes)
+                + ".log",
+                "w"
+            )
             for k, v in ppgaparams.items():
                 print(k, v, file=log_file)
 
@@ -248,7 +245,7 @@ class PPGA(BaseEA):
         if self.params["interact"]:
             pass
 
-        if self.params["plotting"]:
+        if population.plotting:
             population.plot_objectives()
 
     def select(self, population, max_rank=20) -> list:
