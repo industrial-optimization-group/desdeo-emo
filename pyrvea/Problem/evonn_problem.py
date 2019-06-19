@@ -1,6 +1,7 @@
 from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
+from math import ceil
 import numpy as np
 import plotly
 import plotly.graph_objs as go
@@ -76,6 +77,27 @@ class EvoNN(baseProblem):
         self.num_of_variables = training_data.shape[1]
         self.num_input_nodes = self.num_of_variables
         self.num_hidden_nodes = self.params["num_hidden_nodes"]
+
+    def create_population(self):
+
+        individuals = np.random.uniform(
+            self.w_low,
+            self.w_high,
+            size=(
+                self.params["pop_size"],
+                self.num_input_nodes,
+                self.num_hidden_nodes,
+            ),
+        )
+
+        # Randomly set some weights to zero
+        zeros = np.random.choice(np.arange(individuals.size), ceil(individuals.size * self.prob_omit))
+        individuals.ravel()[zeros] = 0
+
+        # Set bias
+        individuals = np.insert(individuals, 0, 1, axis=1)
+
+        return individuals
 
     def train(self, model):
 

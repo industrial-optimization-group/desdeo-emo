@@ -1,16 +1,14 @@
 from collections import defaultdict
 from collections.abc import Sequence
-from random import shuffle
+
 from typing import TYPE_CHECKING
-import timeit
-import random
 import numpy as np
 import pandas as pd
 from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
-from scipy.stats import bernoulli as bn
+
 from tqdm import tqdm, tqdm_notebook
 
 from pyrvea.Recombination.bounded_polynomial_mutation import mutation
@@ -127,28 +125,9 @@ class Population:
                 + self.lower_limits
             )
         elif design == "EvoNN":
-            # The population could perhaps be created inside the problem class in EvoNN cases?
-            self.individuals = np.empty(
-                (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes),
-                float,
-            )
-            # +1 row for bias
-            individuals = np.random.uniform(
-                self.problem.w_low,
-                self.problem.w_high,
-                size=(
-                    pop_size,
-                    self.problem.num_input_nodes+1,
-                    self.problem.num_hidden_nodes,
-                ),
-            )
 
-            # Randomly set some weights to zero
-            zeros = np.random.choice(np.arange(individuals.size), ceil(individuals.size * self.problem.prob_omit))
-            individuals.ravel()[zeros] = 0
-
-            # Set bias
-            individuals = np.insert(individuals, 0, 1, axis=1)
+            individuals = self.problem.create_population()
+            self.individuals = np.empty((0, individuals.shape[1], individuals.shape[2]))
 
         elif design == "EvoDN2":
             self.individuals = np.empty(
