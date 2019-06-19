@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from random import shuffle
 from typing import TYPE_CHECKING
-
+import timeit
 import random
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
 from pyrvea.Recombination.ppga_parallel_crossover import ppga_parallel_crossover
 from pyrvea.Recombination.ppga_mutation import ppga_mutation
-
+from math import ceil
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
     from pyrvea.EAs.baseEA import BaseEA
@@ -138,19 +138,17 @@ class Population:
                 self.problem.w_high,
                 size=(
                     pop_size,
-                    self.problem.num_input_nodes + 1,
+                    self.problem.num_input_nodes+1,
                     self.problem.num_hidden_nodes,
                 ),
             )
 
-            # Eliminate some weights
-            flag = bn.rvs(p=1 - self.problem.prob_omit, size=np.shape(individuals))
-
-            random_numbers = np.zeros(np.shape(individuals))
-            individuals[flag == 0] = random_numbers[flag == 0]
+            # Randomly set some weights to zero
+            zeros = np.random.choice(np.arange(individuals.size), ceil(individuals.size * self.problem.prob_omit))
+            individuals.ravel()[zeros] = 0
 
             # Set bias
-            individuals[:, 0, :] = 1
+            individuals = np.insert(individuals, 0, 1, axis=1)
 
         elif design == "EvoDN2":
             self.individuals = np.empty(

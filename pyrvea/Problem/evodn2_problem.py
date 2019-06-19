@@ -46,7 +46,6 @@ class EvoDN2(baseProblem):
         w_low=-5.0,
         w_high=5.0,
         prob_omit=0.2,
-        subnets=[],
         params=None,
     ):
         super().__init__()
@@ -61,6 +60,7 @@ class EvoDN2(baseProblem):
         self.w_high = w_high
         self.prob_omit = prob_omit
         self.params = params
+        # [num of subnets, max num of layers]
         self.subnets = [4, 4]
         self.max_nodes = 3
 
@@ -130,7 +130,7 @@ class EvoDN2(baseProblem):
 
     def train(self, model):
 
-        pop = Population(self, assign_type="EvoDN2", pop_size=500, plotting=False)
+        pop = Population(self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False)
         pop.evolve(
             PPGA,
             {

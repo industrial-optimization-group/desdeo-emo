@@ -79,7 +79,7 @@ class EvoNN(baseProblem):
 
     def train(self, model):
 
-        pop = Population(self, assign_type="EvoNN", pop_size=500, plotting=False)
+        pop = Population(self, assign_type="EvoNN", pop_size=self.params["pop_size"], plotting=False)
         pop.evolve(
             PPGA,
             {
