@@ -40,6 +40,8 @@ class PPGA(BaseEA):
         interact: bool = False,
         plotting: bool = True,
         logging: list = False,
+        crossover_type: str = None,
+        mutation_type: str = None,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7
@@ -89,6 +91,8 @@ class PPGA(BaseEA):
             "logging": logging,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
+            "crossover_type": crossover_type,
+            "mutation_type": mutation_type,
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,

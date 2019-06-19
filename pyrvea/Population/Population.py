@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from random import shuffle
 from typing import TYPE_CHECKING
 
+import random
 import numpy as np
 import pandas as pd
 from pyDOE import lhs
@@ -19,6 +20,7 @@ from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
+from pyrvea.Recombination.ppga_parallel_crossover import ppga_parallel_crossover
 from pyrvea.Recombination.ppga_mutation import ppga_mutation
 
 if TYPE_CHECKING:
@@ -125,6 +127,7 @@ class Population:
                 + self.lower_limits
             )
         elif design == "EvoNN":
+            # The population could perhaps be created inside the problem class in EvoNN cases?
             self.individuals = np.empty(
                 (0, self.problem.num_input_nodes + 1, self.problem.num_hidden_nodes),
                 float,
@@ -152,32 +155,12 @@ class Population:
         elif design == "EvoDN2":
             self.individuals = np.empty(
                 (
-                    self.problem.num_layers,
                     0,
-                    self.problem.num_input_nodes + 1,
-                    self.problem.num_hidden_nodes,
+                    self.problem.subnets[0]
                 )
             )
-            # +1 row for bias
-            individuals = np.random.uniform(
-                self.problem.w_low,
-                self.problem.w_high,
-                size=(
-                    self.problem.num_layers,
-                    pop_size,
-                    self.problem.num_input_nodes + 1,
-                    self.problem.num_hidden_nodes,
-                ),
-            )
 
-            # Eliminate some weights
-            flag = bn.rvs(p=1 - self.problem.prob_omit, size=np.shape(individuals))
-
-            random_numbers = np.zeros(np.shape(individuals))
-            individuals[flag == 0] = random_numbers[flag == 0]
-
-            # Set bias
-            individuals[:, :, 0, :] = 1
+            individuals = self.problem.create_population()
 
         else:
             print("Design not yet supported.")
@@ -363,12 +346,15 @@ class Population:
         Conduct simulated binary crossover and bounded polunomial mutation.
         """
 
-        if self.individuals.ndim > 2:
+        if self.individuals.ndim >= 2:
             # Get individuals at indices
             w1, w2 = self.individuals[ind1], self.individuals[ind2]
 
             # Perform crossover
-            xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
+            if params["crossover_type"] == "short":
+                xover_w1, xover_w2 = ppga_parallel_crossover(w1, w2, params["prob_crossover"])
+            else:
+                xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
 
             # Find randomly two other individuals with current match active for mutation.
             # Make a list of individuals suitable for mutation, exclude the ones to be mutated
