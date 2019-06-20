@@ -15,10 +15,8 @@ class EvoDN2(baseProblem):
     ----------
     name : str
         Name of the sample
-    num_input_nodes : int
-        The number of nodes in the input layer
-    num_hidden_nodes : int
-        The number of nodes in the hidden layer
+    num_nodes : int
+        The maximum number of nodes in the hidden layer
     num_of_objectives : int
         The number of objectives
     w_low : float
@@ -40,8 +38,6 @@ class EvoDN2(baseProblem):
         name,
         X_train=None,
         y_train=None,
-        num_input_nodes=4,
-        num_hidden_nodes=5,
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
@@ -53,16 +49,14 @@ class EvoDN2(baseProblem):
         self.name = name
         self.X_train = X_train
         self.y_train = y_train
-        self.num_input_nodes = num_input_nodes
-        self.num_hidden_nodes = num_hidden_nodes
         self.num_of_objectives = num_of_objectives
         self.w_low = w_low
         self.w_high = w_high
         self.prob_omit = prob_omit
         self.params = params
         # [num of subnets, max num of layers]
-        self.subnets = [4, 4]
-        self.max_nodes = 3
+        self.subnets = [3, 8]
+        self.num_nodes = 8
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -91,6 +85,8 @@ class EvoDN2(baseProblem):
             if not any(n in k for k in self.subsets):
                 self.subsets[random.randint(0, self.subnets[0]-1)].append(n)
 
+        return self.subsets
+
     def create_population(self):
 
         individuals = []
@@ -103,7 +99,7 @@ class EvoDN2(baseProblem):
                 in_nodes = len(self.subsets[j])
 
                 for k in range(num_layers):
-                    out_nodes = random.randint(1, self.max_nodes)
+                    out_nodes = random.randint(1, self.num_nodes)
                     net = np.random.uniform(
                         self.w_low,
                         self.w_high,
@@ -135,17 +131,17 @@ class EvoDN2(baseProblem):
             PPGA,
             {
                 "logging": self.params["logging"],
-                "iterations": 10,
-                "generations_per_iteration": 10,
+                "iterations": 1,
+                "generations_per_iteration": 1,
                 "crossover_type": "short",
                 "mutation_type": "short"
             }
         )
 
         non_dom_front = pop.non_dominated()
-        model.w1 = self.select(pop, non_dom_front, self.params["criterion"])
-        activated_layer = self.activation(model.w1)
-        model.w2, _, model.y_pred = self.minimize_error(activated_layer)
+        model.w1, model.fitness = self.select(pop, non_dom_front, self.params["criterion"])
+        model.end_net, complexity = self.activation(model.w1)
+        model.w2, _, model.y_pred = self.minimize_error(model.end_net)
 
     def objectives(self, decision_variables) -> list:
 
@@ -194,7 +190,7 @@ class EvoDN2(baseProblem):
         """
         subnet_cmplx = []
         end_net = np.empty((self.num_of_samples, 0))
-        for i in range(self.subnets[0]):
+        for i in range(decision_variables.shape[0]):
 
             subnet = decision_variables[i]
             in_nodes = self.X_train[:, self.subsets[i]]
@@ -256,17 +252,6 @@ class EvoDN2(baseProblem):
         if self.params["loss_func"]:
             return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
-    def information_criterion(self, decision_variables):
-
-        z = self.activation(decision_variables)
-        w_matrix2, rss, prediction = self.minimize_error(z)
-        # rss = ((self.y_train - prediction) ** 2).sum()
-        k = self.calculate_complexity(decision_variables) + np.count_nonzero(w_matrix2)
-        aic = 2 * k + self.num_of_samples * np.log(rss / self.num_of_samples)
-        aicc = aic + (2 * k * (k + 1) / (self.num_of_samples - k - 1))
-
-        return aicc
-
     def select(self, pop, non_dom_front, criterion="min_error"):
         """ Select target model from the population.
 
@@ -285,11 +270,13 @@ class EvoDN2(baseProblem):
         The selected model
         """
         model = None
+        fitness = None
         if criterion == "min_error":
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
             model = pop.individuals[lowest_error]
+            fitness = pop.fitness[lowest_error]
 
         elif criterion == "akaike_corrected":
 
@@ -306,8 +293,9 @@ class EvoDN2(baseProblem):
             info_c_rank.sort()
 
             model = pop.individuals[info_c_rank[0][1]]
+            fitness = pop.fitness[info_c_rank[0][1]]
 
-        return model
+        return model, fitness
 
     def create_logfile(self):
 
@@ -317,7 +305,7 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + ".log",
             "a",
         )
@@ -329,7 +317,7 @@ class EvoDN2(baseProblem):
             + str(self.num_of_variables)
             + "\n"
             + "nodes: "
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + "\n"
             + "activation: "
             + self.params["activation_func"]
@@ -354,7 +342,7 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + ".html",
             auto_open=True,
         )
@@ -382,7 +370,8 @@ class EvoDN2Model(EvoDN2):
             Target values
         """
         f1 = EvoDN2(name=self.name, params=self.params)
-        f1.fit(training_data, target_values)
+        self.subsets = f1.fit(training_data, target_values)
+        self.num_of_variables = f1.num_of_variables
         f1.train(self)
         if f1.params["logging"]:
             self.log = f1.create_logfile()
@@ -393,25 +382,36 @@ class EvoDN2Model(EvoDN2):
 
     def predict(self, decision_variables):
 
-        wi = np.dot(decision_variables, self.w1[1:, :]) + self.w1[0]
+        in_end = np.empty((self.num_of_samples, 0))
+        for i in range(self.w1.size):
 
-        if self.params["activation_func"] == "sigmoid":
-            activated_layer = lambda x: 1 / (1 + np.exp(-x))
+            subnet = self.w1[i]
+            in_nodes = decision_variables[:, self.subsets[i]]
 
-        if self.params["activation_func"] == "relu":
-            activated_layer = lambda x: np.maximum(x, 0)
+            for layer in range(len(subnet)):
+                # Calculate the dot product
+                out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
 
-        if self.params["activation_func"] == "tanh":
-            activated_layer = lambda x: np.tanh(x)
+                if self.params["activation_func"] == "sigmoid":
+                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
 
-        out = np.dot(activated_layer(wi), self.w2)
+                if self.params["activation_func"] == "relu":
+                    activated_layer = lambda x: np.maximum(x, 0)
 
-        return out
+                if self.params["activation_func"] == "tanh":
+                    activated_layer = lambda x: np.tanh(x)
+
+                in_nodes = activated_layer(out)
+
+            in_end = np.hstack((in_end, in_nodes))
+
+        result = np.dot(in_end, self.w2)
+
+        return result
 
     def set_params(
         self,
         name=None,
-        num_hidden_nodes=15,
         pop_size=500,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -422,7 +422,6 @@ class EvoDN2Model(EvoDN2):
     ):
         params = {
             "name": name,
-            "num_hidden_nodes": num_hidden_nodes,
             "pop_size": pop_size,
             "activation_func": activation_func,
             "opt_func": opt_func,
@@ -438,7 +437,7 @@ class EvoDN2Model(EvoDN2):
 
         trend = np.loadtxt("trend")
         trend = trend[0: self.num_of_samples]
-        avg = np.ones((1, self.w1[1:].shape[0])) * (0 + 1) / 2
+        avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
         svr = np.empty((0, 2))
 
         for i in range(self.w1[1:].shape[0]):

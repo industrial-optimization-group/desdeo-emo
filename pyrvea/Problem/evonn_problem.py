@@ -16,7 +16,7 @@ class EvoNN(baseProblem):
         Name of the sample
     num_input_nodes : int
         The number of nodes in the input layer
-    num_hidden_nodes : int
+    num_nodes : int
         The number of nodes in the hidden layer
     num_of_objectives : int
         The number of objectives
@@ -40,7 +40,7 @@ class EvoNN(baseProblem):
         X_train=None,
         y_train=None,
         num_input_nodes=4,
-        num_hidden_nodes=5,
+        num_nodes=5,
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
@@ -53,7 +53,7 @@ class EvoNN(baseProblem):
         self.X_train = X_train
         self.y_train = y_train
         self.num_input_nodes = num_input_nodes
-        self.num_hidden_nodes = num_hidden_nodes
+        self.num_nodes = num_nodes
         self.num_of_objectives = num_of_objectives
         self.w_low = w_low
         self.w_high = w_high
@@ -76,7 +76,7 @@ class EvoNN(baseProblem):
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
         self.num_input_nodes = self.num_of_variables
-        self.num_hidden_nodes = self.params["num_hidden_nodes"]
+        self.num_nodes = self.params["num_nodes"]
 
     def create_population(self):
 
@@ -86,7 +86,7 @@ class EvoNN(baseProblem):
             size=(
                 self.params["pop_size"],
                 self.num_input_nodes,
-                self.num_hidden_nodes,
+                self.num_nodes,
             ),
         )
 
@@ -112,7 +112,7 @@ class EvoNN(baseProblem):
         )
 
         non_dom_front = pop.non_dominated()
-        model.w1 = self.select(pop, non_dom_front, self.params["criterion"])
+        model.w1, model.fitness = self.select(pop, non_dom_front, self.params["criterion"])
         activated_layer = self.activation(model.w1)
         model.w2, _, model.y_pred = self.minimize_error(activated_layer)
 
@@ -239,11 +239,13 @@ class EvoNN(baseProblem):
         The selected model
         """
         model = None
+        fitness = None
         if criterion == "min_error":
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
             model = pop.individuals[lowest_error]
+            fitness = pop.fitness[lowest_error]
 
         elif criterion == "akaike_corrected":
 
@@ -260,8 +262,9 @@ class EvoNN(baseProblem):
             info_c_rank.sort()
 
             model = pop.individuals[info_c_rank[0][1]]
+            fitness = pop.fitness[info_c_rank[0][1]]
 
-        return model
+        return model, fitness
 
     def create_logfile(self):
 
@@ -271,7 +274,7 @@ class EvoNN(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + ".log",
             "a",
         )
@@ -283,7 +286,7 @@ class EvoNN(baseProblem):
             + str(self.num_of_variables)
             + "\n"
             + "nodes: "
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + "\n"
             + "activation: "
             + self.params["activation_func"]
@@ -308,7 +311,7 @@ class EvoNN(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_hidden_nodes)
+            + str(self.num_nodes)
             + ".html",
             auto_open=True,
         )
@@ -365,7 +368,7 @@ class EvoNNModel(EvoNN):
     def set_params(
         self,
         name=None,
-        num_hidden_nodes=15,
+        num_nodes=15,
         pop_size=500,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -376,7 +379,7 @@ class EvoNNModel(EvoNN):
     ):
         params = {
             "name": name,
-            "num_hidden_nodes": num_hidden_nodes,
+            "num_nodes": num_nodes,
             "pop_size": pop_size,
             "activation_func": activation_func,
             "opt_func": opt_func,

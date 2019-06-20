@@ -108,7 +108,7 @@ class PPGA(BaseEA):
                 + "_var"
                 + str(population.problem.num_of_variables)
                 + "_nodes"
-                + str(population.problem.num_hidden_nodes)
+                + str(population.problem.num_nodes)
                 + ".log",
                 "w"
             )
@@ -148,6 +148,7 @@ class PPGA(BaseEA):
             Population object
         """
 
+        # Predator max moves for gen
         self.params["predator_max_moves"] = int(
             (
                 self.params["population"].individuals.shape[0]
@@ -156,16 +157,30 @@ class PPGA(BaseEA):
             / self.params["predator_pop_size"]
         )
 
+        # Move prey
         self.lattice.move_prey()
 
-        offspring = np.empty(
-            (
-                0,
-                population.problem.num_input_nodes + 1,
-                population.problem.num_hidden_nodes,
-            ),
-            float,
-        )
+        # Choose and create offspring
+        if population.problem.__class__.__name__ == "EvoNN":
+
+            offspring = np.empty(
+                (
+                    0,
+                    population.problem.num_input_nodes + 1,
+                    population.problem.num_nodes,
+                ),
+                float,
+            )
+        elif population.problem.__class__.__name__ == "EvoDN2":
+            # # Calculate standard deviation of pop
+            # y = []
+            # for x in population.individuals.ravel():
+            #     y.append(np.concatenate(x, axis=None))
+            # std_dev = -1 ** (np.random.randint(1, 100)) * np.std(np.concatenate(np.array(y))) ** 2
+            # self.params["std_dev"] = std_dev
+
+            offspring = np.empty((0, population.problem.subnets[0]))
+
         for ind in range(population.individuals.shape[0]):
 
             mate_idx = self.lattice.choose_mate(ind)

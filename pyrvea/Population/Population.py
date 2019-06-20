@@ -18,9 +18,10 @@ from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
-from pyrvea.Recombination.ppga_parallel_crossover import ppga_parallel_crossover
+from pyrvea.Recombination.evodn2_xover_mut import evodn2_xover_mut
 from pyrvea.Recombination.ppga_mutation import ppga_mutation
 from math import ceil
+
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
     from pyrvea.EAs.baseEA import BaseEA
@@ -130,12 +131,7 @@ class Population:
             self.individuals = np.empty((0, individuals.shape[1], individuals.shape[2]))
 
         elif design == "EvoDN2":
-            self.individuals = np.empty(
-                (
-                    0,
-                    self.problem.subnets[0]
-                )
-            )
+            self.individuals = np.empty((0, self.problem.subnets[0]))
 
             individuals = self.problem.create_population()
 
@@ -329,28 +325,36 @@ class Population:
 
             # Perform crossover
             if params["crossover_type"] == "short":
-                xover_w1, xover_w2 = ppga_parallel_crossover(w1, w2, params["prob_crossover"])
+                offspring1, offspring2 = evodn2_xover_mut(
+                    w1,
+                    w2,
+                    self.individuals,
+                    params["prob_crossover"],
+                    params["prob_mutation"],
+                    params["mut_strength"],
+                    params["current_iteration_gen_count"],
+                    params["generations"]
+                )
             else:
                 xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
 
-            # Find randomly two other individuals with current match active for mutation.
-            # Make a list of individuals suitable for mutation, exclude the ones to be mutated
-            # so that they won't mutate with themselves
-            indices = [ind1, ind2]
-            mask = np.ones(len(self.individuals), dtype=bool)
-            mask[indices] = False
-            alternatives = self.individuals[mask, ...][:, 1:, :]
+                # Make a list of individuals suitable for mutation, exclude the ones to be mutated
+                # so that they won't mutate with themselves
+                indices = [ind1, ind2]
+                mask = np.ones(len(self.individuals), dtype=bool)
+                mask[indices] = False
+                alternatives = self.individuals[mask, ...][:, 1:, :]
 
-            # Mutate
-            offspring1, offspring2 = ppga_mutation(
-                alternatives,
-                xover_w1,
-                xover_w2,
-                params["current_iteration_gen_count"],
-                params["generations"],
-                params["prob_mutation"],
-                params["mut_strength"],
-            )
+                # Mutate
+                offspring1, offspring2 = ppga_mutation(
+                    alternatives,
+                    xover_w1,
+                    xover_w2,
+                    params["current_iteration_gen_count"],
+                    params["generations"],
+                    params["prob_mutation"],
+                    params["mut_strength"],
+                )
 
             return offspring1, offspring2
 
