@@ -78,7 +78,7 @@ class EvoNNTestProblem(baseProblem):
             x = np.asarray(decision_variables)
             self.obj_func = sum(x ** 2)
 
-        elif self.name == "Matyas:":
+        elif self.name == "Matyas":
 
             # Matyas function, -10 <= x, y <= 10
             # Error close to zero with random data,

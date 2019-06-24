@@ -9,14 +9,12 @@ from math import ceil
 
 
 class EvoDN2(baseProblem):
-    """Creates an Artificial Neural Network (ANN) for the EvoNN algorithm.
+    """Creates an Artificial Neural Network (ANN) for the EvoDN2 algorithm.
 
-    Attributes
+    Parameters
     ----------
     name : str
         Name of the sample
-    num_nodes : int
-        The maximum number of nodes in the hidden layer
     num_of_objectives : int
         The number of objectives
     w_low : float
@@ -25,12 +23,7 @@ class EvoDN2(baseProblem):
         The upper bound for randomly generated weights
     prob_omit : float
         The probability of setting some weights to zero initially
-    activation_func : str
-        The function to use for activating the hidden layer
-    opt_func : str
-        The function to use for optimizing the upper part of the network
-    loss_func : str
-        The loss function to use
+    params :
     """
 
     def __init__(
@@ -41,7 +34,7 @@ class EvoDN2(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.2,
+        prob_omit=0.3,
         params=None,
     ):
         super().__init__()
@@ -54,9 +47,6 @@ class EvoDN2(baseProblem):
         self.w_high = w_high
         self.prob_omit = prob_omit
         self.params = params
-        # [num of subnets, max num of layers]
-        self.subnets = [3, 8]
-        self.num_nodes = 8
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -73,6 +63,8 @@ class EvoDN2(baseProblem):
         self.y_train = target_values
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
+        self.subnets = self.params["subnets"]
+        self.num_nodes = self.params["num_nodes"]
 
         # Create random subsets of decision variables for each subnet
         self.subsets = []
@@ -131,8 +123,8 @@ class EvoDN2(baseProblem):
             PPGA,
             {
                 "logging": self.params["logging"],
-                "iterations": 1,
-                "generations_per_iteration": 1,
+                "iterations": 10,
+                "generations_per_iteration": 10,
                 "crossover_type": "short",
                 "mutation_type": "short"
             }
@@ -158,12 +150,6 @@ class EvoDN2(baseProblem):
             The objective function
 
         """
-
-        # Shuffle variables
-        # random.shuffle(x)
-        # for i in x:
-        #     random.shuffle(i)
-        # print(x)
 
         end_net, complexity = self.activation(decision_variables)
         _, _, predicted_values = self.minimize_error(end_net)
@@ -249,7 +235,7 @@ class EvoDN2(baseProblem):
 
         if self.params["loss_func"] == "mse":
             return ((self.y_train - predicted_values) ** 2).mean()
-        if self.params["loss_func"]:
+        if self.params["loss_func"] == "rmse":
             return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
     def select(self, pop, non_dom_front, criterion="min_error"):
@@ -349,6 +335,7 @@ class EvoDN2(baseProblem):
 
 
 class EvoDN2Model(EvoDN2):
+    """"""
     def __init__(self, name, w1=None, w2=None, y_pred=None, svr=None):
         super().__init__(name)
         self.name = name
@@ -358,6 +345,59 @@ class EvoDN2Model(EvoDN2):
         self.svr = svr
         self.log = None
         self.set_params()
+
+    def set_params(
+        self,
+        name=None,
+        pop_size=500,
+        subnets=(3, 8),
+        num_nodes=5,
+        activation_func="sigmoid",
+        opt_func="llsq",
+        loss_func="rmse",
+        criterion="min_error",
+        logging=False,
+        plotting=False,
+    ):
+        """ Set parameters for EvoDN2 model.
+
+        Parameters
+        ----------
+        name : str
+            Name of the problem.
+        pop_size : int
+            Population size.
+        subnets : tuple
+            Structure of the subnets for the model, shape=(num of subnets, max num of layers)
+        num_nodes : int
+            Maximum number of nodes per layer.
+        activation_func : str
+            Function to use for activation.
+        opt_func : str
+            Function to use for optimizing the final layer of the model.
+        loss_func : str
+            The loss function to use.
+        criterion : str
+            The criterion to use for selecting the model.
+        logging : bool
+            True to create a logfile, False otherwise.
+        plotting : bool
+            True to create a plot, False otherwise.
+        """
+        params = {
+            "name": name,
+            "pop_size": pop_size,
+            "subnets": subnets,
+            "num_nodes": num_nodes,
+            "activation_func": activation_func,
+            "opt_func": opt_func,
+            "loss_func": loss_func,
+            "criterion": criterion,
+            "logging": logging,
+            "plotting": plotting,
+        }
+
+        self.params = params
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -369,16 +409,16 @@ class EvoDN2Model(EvoDN2):
         target_values : ndarray
             Target values
         """
-        f1 = EvoDN2(name=self.name, params=self.params)
-        self.subsets = f1.fit(training_data, target_values)
-        self.num_of_variables = f1.num_of_variables
-        f1.train(self)
-        if f1.params["logging"]:
-            self.log = f1.create_logfile()
-        if f1.params["plotting"]:
-            f1.create_plot(self)
-        self.num_of_samples = f1.num_of_samples
-        self.single_variable_response(ploton=True, log=self.log)
+        prob = EvoDN2(name=self.name, params=self.params)
+        self.subsets = prob.fit(training_data, target_values)
+        self.num_of_variables = prob.num_of_variables
+        prob.train(self)
+        if prob.params["logging"]:
+            self.log = prob.create_logfile()
+        if prob.params["plotting"]:
+            prob.create_plot(self)
+        self.num_of_samples = prob.num_of_samples
+        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
 
@@ -409,30 +449,6 @@ class EvoDN2Model(EvoDN2):
 
         return result
 
-    def set_params(
-        self,
-        name=None,
-        pop_size=500,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="akaike_corrected",
-        logging=False,
-        plotting=False,
-    ):
-        params = {
-            "name": name,
-            "pop_size": pop_size,
-            "activation_func": activation_func,
-            "opt_func": opt_func,
-            "loss_func": loss_func,
-            "criterion": criterion,
-            "logging": logging,
-            "plotting": plotting,
-        }
-
-        self.params = params
-
     def single_variable_response(self, ploton=False, log=None):
 
         trend = np.loadtxt("trend")
@@ -440,7 +456,7 @@ class EvoDN2Model(EvoDN2):
         avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
         svr = np.empty((0, 2))
 
-        for i in range(self.w1[1:].shape[0]):
+        for i in range(self.num_of_variables):
             variables = np.ones((len(trend), 1)) * avg
             variables[:, i] = trend
 

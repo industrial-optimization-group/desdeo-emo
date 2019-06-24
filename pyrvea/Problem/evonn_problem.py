@@ -8,12 +8,20 @@ import plotly.graph_objs as go
 
 
 class EvoNN(baseProblem):
-    """Creates an Artificial Neural Network (ANN) for the EvoNN algorithm.
+    """Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.
 
-    Attributes
+    These models contain only one hidden node layer. The lower part of the network
+    is optimized by a genetic algorithm, and the upper part is optimized by Linear Least Square
+    algorithm by default.
+
+    Parameters
     ----------
     name : str
         Name of the sample
+    X_train : ndarray
+        Training data input
+    y_train : ndarray
+        Training data target values
     num_input_nodes : int
         The number of nodes in the input layer
     num_nodes : int
@@ -26,12 +34,8 @@ class EvoNN(baseProblem):
         The upper bound for randomly generated weights
     prob_omit : float
         The probability of setting some weights to zero initially
-    activation_func : str
-        The function to use for activating the hidden layer
-    opt_func : str
-        The function to use for optimizing the upper part of the network
-    loss_func : str
-        The loss function to use
+    params : dict
+        Parameters for model training
     """
 
     def __init__(
@@ -44,7 +48,7 @@ class EvoNN(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.2,
+        prob_omit=0.3,
         params=None,
     ):
         super().__init__()
@@ -79,19 +83,27 @@ class EvoNN(baseProblem):
         self.num_nodes = self.params["num_nodes"]
 
     def create_population(self):
+        """Create a population of neural networks for the EvoNN problem.
 
+        Individuals are 2d arrays representing the weight matrices of the NNs.
+        One extra row is added for bias. Individuals are then stacked together
+        to form the population.
+
+        Returns
+        -------
+        individuals : ndarray
+            The population for EvoNN
+        """
         individuals = np.random.uniform(
             self.w_low,
             self.w_high,
-            size=(
-                self.params["pop_size"],
-                self.num_input_nodes,
-                self.num_nodes,
-            ),
+            size=(self.params["pop_size"], self.num_input_nodes, self.num_nodes),
         )
 
         # Randomly set some weights to zero
-        zeros = np.random.choice(np.arange(individuals.size), ceil(individuals.size * self.prob_omit))
+        zeros = np.random.choice(
+            np.arange(individuals.size), ceil(individuals.size * self.prob_omit)
+        )
         individuals.ravel()[zeros] = 0
 
         # Set bias
@@ -100,19 +112,30 @@ class EvoNN(baseProblem):
         return individuals
 
     def train(self, model):
+        """Trains the networks and selects the best model from the non dominated front.
 
-        pop = Population(self, assign_type="EvoNN", pop_size=self.params["pop_size"], plotting=False)
+        Parameters
+        ----------
+        model : :obj:
+            The model to be chosen.
+        """
+        pop = Population(
+            self, assign_type="EvoNN", pop_size=self.params["pop_size"], plotting=False
+        )
         pop.evolve(
             PPGA,
             {
                 "logging": self.params["logging"],
                 "iterations": 10,
-                "generations_per_iteration": 10
-            }
+                "generations_per_iteration": 10,
+            },
         )
 
         non_dom_front = pop.non_dominated()
-        model.w1, model.fitness = self.select(pop, non_dom_front, self.params["criterion"])
+        model.w1, model.fitness = self.select(
+            pop, non_dom_front, self.params["criterion"]
+        )
+
         activated_layer = self.activation(model.w1)
         model.w2, _, model.y_pred = self.minimize_error(activated_layer)
 
@@ -148,16 +171,14 @@ class EvoNN(baseProblem):
         ----------
         decision_variables : ndarray
             Variables from the neural network
-        name : str
-            The activation function to use
 
         Returns
         -------
-        The penultimate layer Z before the output
+        The penultimate layer before the output
 
         """
         w1 = decision_variables
-        # Calculate the dot product
+        # Calculate the dot product + bias
         wi = np.dot(self.X_train, w1[1:, :]) + w1[0]
 
         if self.params["activation_func"] == "sigmoid":
@@ -178,15 +199,13 @@ class EvoNN(baseProblem):
         ----------
         activated_layer : ndarray
             Output of the activation function
-        name : str
-            Name of the optimizing algorithm to use
 
         Returns
         -------
-        w_matrix[0] : ndarray
+        w2[0] : ndarray
             The weight matrix of the upper part of the network
         rss : float
-            Sums of residuals
+            Sum of residuals
         predicted_values : ndarray
             The prediction of the model
         """
@@ -198,20 +217,34 @@ class EvoNN(baseProblem):
             return w2[0], rss, predicted_values
 
     def loss_function(self, predicted_values):
+        """Calculate the error between prediction and target values."""
 
         if self.params["loss_func"] == "mse":
             return ((self.y_train - predicted_values) ** 2).mean()
-        if self.params["loss_func"]:
+        if self.params["loss_func"] == "rmse":
             return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
     def calculate_complexity(self, w_matrix):
+        """Calculate the complexity of the model.
+
+        Returns
+        -------
+        The number of non-zero connections in the lower part of the network.
+        """
 
         k = np.count_nonzero(w_matrix[1:, :])
 
         return k
 
     def information_criterion(self, decision_variables):
+        """Calculate the information criterion.
 
+        Currently supports Akaike and corrected Akaike Information Criterion.
+
+        Returns
+        -------
+        Corrected Akaike Information Criterion by default
+        """
         z = self.activation(decision_variables)
         w_matrix2, rss, prediction = self.minimize_error(z)
         # rss = ((self.y_train - prediction) ** 2).sum()
@@ -232,7 +265,7 @@ class EvoNN(baseProblem):
             Indices of the models on the non-dominated front
         criterion : str
             The criterion to use for selecting the model.
-            Possible values: 'min_error', 'akaike_corrected', 'manual'
+            Possible values: 'min_error', 'akaike_corrected'
 
         Returns
         -------
@@ -267,6 +300,12 @@ class EvoNN(baseProblem):
         return model, fitness
 
     def create_logfile(self):
+        """Create a log file containing the parameters for training the model and the GA.
+
+        Returns
+        -------
+        An external log file
+        """
 
         # Save params to log file
         log_file = open(
@@ -301,6 +340,12 @@ class EvoNN(baseProblem):
         return log_file
 
     def create_plot(self, model):
+        """Creates and shows a plot for the model.
+
+        Parameters
+        ----------
+        The model to create the plot for.
+        """
 
         trace0 = go.Scatter(x=model.y_pred, y=self.y_train, mode="markers")
         trace1 = go.Scatter(x=self.y_train, y=self.y_train)
@@ -318,6 +363,16 @@ class EvoNN(baseProblem):
 
 
 class EvoNNModel(EvoNN):
+    """The class for the surrogate model.
+
+    Parameters
+    ----------
+    name : str
+        Name of the problem
+    w1 : ndarray
+        The weight matrix of the lower par
+
+    """
     def __init__(self, name, w1=None, w2=None, y_pred=None, svr=None):
         super().__init__(name)
         self.name = name
@@ -338,15 +393,15 @@ class EvoNNModel(EvoNN):
         target_values : ndarray
             Target values
         """
-        f1 = EvoNN(name=self.name, params=self.params)
-        f1.fit(training_data, target_values)
-        f1.train(self)
-        if f1.params["logging"]:
-            self.log = f1.create_logfile()
-        if f1.params["plotting"]:
-            f1.create_plot(self)
-        self.num_of_samples = f1.num_of_samples
-        self.single_variable_response(ploton=True, log=self.log)
+        prob = EvoNN(name=self.name, params=self.params)
+        prob.fit(training_data, target_values)
+        prob.train(self)
+        if prob.params["logging"]:
+            self.log = prob.create_logfile()
+        if prob.params["plotting"]:
+            prob.create_plot(self)
+        self.num_of_samples = prob.num_of_samples
+        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
 
@@ -394,7 +449,7 @@ class EvoNNModel(EvoNN):
     def single_variable_response(self, ploton=False, log=None):
 
         trend = np.loadtxt("trend")
-        trend = trend[0: self.num_of_samples]
+        trend = trend[0 : self.num_of_samples]
         avg = np.ones((1, self.w1[1:].shape[0])) * (0 + 1) / 2
         svr = np.empty((0, 2))
 
