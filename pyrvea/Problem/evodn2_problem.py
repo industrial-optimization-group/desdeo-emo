@@ -34,7 +34,7 @@ class EvoDN2(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.3,
+        prob_omit=0.2,
         params=None,
     ):
         super().__init__()
@@ -123,6 +123,7 @@ class EvoDN2(baseProblem):
             PPGA,
             {
                 "logging": self.params["logging"],
+                "logfile": model.log,
                 "iterations": 10,
                 "generations_per_iteration": 10,
                 "crossover_type": "short",
@@ -291,6 +292,8 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
+            + str(self.subnets[0]) + "_"
+            + str(self.subnets[1]) + "_"
             + str(self.num_nodes)
             + ".log",
             "a",
@@ -301,6 +304,12 @@ class EvoDN2(baseProblem):
             + "\n"
             + "variables: "
             + str(self.num_of_variables)
+            + "\n"
+            + "number of subnets: "
+            + str(self.subnets[0])
+            + "\n"
+            + "max number of layers: "
+            + str(self.subnets[1])
             + "\n"
             + "nodes: "
             + str(self.num_nodes)
@@ -328,6 +337,8 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
+            + str(self.subnets[0]) + "_"
+            + str(self.subnets[1]) + "_"
             + str(self.num_nodes)
             + ".html",
             auto_open=True,
@@ -335,14 +346,27 @@ class EvoDN2(baseProblem):
 
 
 class EvoDN2Model(EvoDN2):
-    """"""
-    def __init__(self, name, w1=None, w2=None, y_pred=None, svr=None):
+    """Class for the surrogate model.
+
+    Parameters
+    ----------
+    name : str
+        Name of the problem
+    w1 : ndarray
+        The weight matrix of the lower part of the network
+    w2 : ndarray
+        The weight matrix of the upper part of the network
+    y_pred : ndarray
+        Prediction of the model
+
+    """
+    def __init__(self, name, w1=None, w2=None, y_pred=None):
         super().__init__(name)
         self.name = name
         self.w1 = w1
         self.w2 = w2
         self.y_pred = y_pred
-        self.svr = svr
+        self.svr = None
         self.log = None
         self.set_params()
 
@@ -350,8 +374,8 @@ class EvoDN2Model(EvoDN2):
         self,
         name=None,
         pop_size=500,
-        subnets=(3, 8),
-        num_nodes=5,
+        subnets=(4, 8),
+        num_nodes=10,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -412,13 +436,32 @@ class EvoDN2Model(EvoDN2):
         prob = EvoDN2(name=self.name, params=self.params)
         self.subsets = prob.fit(training_data, target_values)
         self.num_of_variables = prob.num_of_variables
-        prob.train(self)
         if prob.params["logging"]:
             self.log = prob.create_logfile()
+        prob.train(self)
         if prob.params["plotting"]:
             prob.create_plot(self)
         self.num_of_samples = prob.num_of_samples
         self.single_variable_response(ploton=False, log=self.log)
+
+    def opt(self):
+
+        pop = Population(self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False)
+        pop.evolve(
+            PPGA,
+            {
+                "logging": self.params["logging"],
+                "iterations": 10,
+                "generations_per_iteration": 10,
+                "crossover_type": "short",
+                "mutation_type": "short"
+            }
+        )
+
+        non_dom_front = pop.non_dominated()
+        self.w1, self.fitness = self.select(pop, non_dom_front, self.params["criterion"])
+        self.end_net, complexity = self.activation(self.w1)
+        self.w2, _, self.y_pred = self.minimize_error(self.end_net)
 
     def predict(self, decision_variables):
 

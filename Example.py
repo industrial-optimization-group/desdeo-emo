@@ -33,7 +33,7 @@ population_size = 105
 
 pop = Population(problem)
 
-pop.evolve(slowRVEA)
+pop.evolve(RVEA)
 
 pop.non_dominated()
 refpoint = 2

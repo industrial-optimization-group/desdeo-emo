@@ -1,6 +1,7 @@
 import numpy as np
 from pyDOE import lhs
 from pyrvea.Problem.baseProblem import baseProblem
+from sklearn.preprocessing import minmax_scale
 
 
 class EvoNNTestProblem(baseProblem):
@@ -121,6 +122,8 @@ class EvoNNTestProblem(baseProblem):
             # with 15 nodes, min. error == 20000
             # with 20 nodes, min. error == 17000
             # with 25 nodes, min. error == 8671
+            # EvoDN2 performs better here even with
+            # lesser amount of nets/layers/nodes
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             self.obj_func = (
@@ -145,7 +148,7 @@ class EvoNNTestProblem(baseProblem):
                 + (y - 1) ** 2 * (1 + np.sin(2 * np.pi * y) ** 2)
             )
 
-        elif self.name == "Schaffer":
+        elif self.name == "SchafferN2":
             # Schaffer function N. 2, -100 <= x, y <= 100
             # Doesn't work with random data
             x = np.asarray(decision_variables[0])
@@ -155,6 +158,12 @@ class EvoNNTestProblem(baseProblem):
                 + (np.sin((x ** 2 - y ** 2) ** 2) - 0.5)
                 / (1 + 0.001 * (x ** 2 + y ** 2)) ** 2
             )
+
+        elif self.name == "McCormick":
+            # McCormick function, -1.5 <= x <= 4, -3 <= y <= 4
+            x = np.asarray(decision_variables[0])
+            y = np.asarray(decision_variables[1])
+            self.obj_func = np.sin(x + y) + (x - y)**2 - 1.5 * x + 2.5 * y + 1
 
         elif self.name == "min-ex":
             x1 = decision_variables[1]
@@ -186,6 +195,10 @@ class EvoNNTestProblem(baseProblem):
                 self.upper_limits,
                 (samples, self.num_of_variables),
             )
+
+            if self.name == "McCormick":
+                training_data_input[:, 0] = minmax_scale(training_data_input[:, 0], feature_range=(-1.5, 4))
+                training_data_input[:, 1] = minmax_scale(training_data_input[:, 1], feature_range=(-3, 4))
 
         elif method == "lhs":
 

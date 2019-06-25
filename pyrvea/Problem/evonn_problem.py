@@ -126,6 +126,7 @@ class EvoNN(baseProblem):
             PPGA,
             {
                 "logging": self.params["logging"],
+                "logfile": model.log,
                 "iterations": 10,
                 "generations_per_iteration": 10,
             },
@@ -370,16 +371,20 @@ class EvoNNModel(EvoNN):
     name : str
         Name of the problem
     w1 : ndarray
-        The weight matrix of the lower par
+        The weight matrix of the lower part of the network
+    w2 : ndarray
+        The weight matrix of the upper part of the network
+    y_pred : ndarray
+        Prediction of the model
 
     """
-    def __init__(self, name, w1=None, w2=None, y_pred=None, svr=None):
+    def __init__(self, name, w1=None, w2=None, y_pred=None):
         super().__init__(name)
         self.name = name
         self.w1 = w1
         self.w2 = w2
         self.y_pred = y_pred
-        self.svr = svr
+        self.svr = None
         self.log = None
         self.set_params()
 
@@ -395,9 +400,9 @@ class EvoNNModel(EvoNN):
         """
         prob = EvoNN(name=self.name, params=self.params)
         prob.fit(training_data, target_values)
-        prob.train(self)
         if prob.params["logging"]:
             self.log = prob.create_logfile()
+        prob.train(self)
         if prob.params["plotting"]:
             prob.create_plot(self)
         self.num_of_samples = prob.num_of_samples
@@ -423,8 +428,8 @@ class EvoNNModel(EvoNN):
     def set_params(
         self,
         name=None,
-        num_nodes=15,
         pop_size=500,
+        num_nodes=15,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -432,10 +437,34 @@ class EvoNNModel(EvoNN):
         logging=False,
         plotting=False,
     ):
+
+        """ Set parameters for EvoNN model.
+
+        Parameters
+        ----------
+        name : str
+            Name of the problem.
+        pop_size : int
+            Population size.
+        num_nodes : int
+            Maximum number of nodes per layer.
+        activation_func : str
+            Function to use for activation.
+        opt_func : str
+            Function to use for optimizing the final layer of the model.
+        loss_func : str
+            The loss function to use.
+        criterion : str
+            The criterion to use for selecting the model.
+        logging : bool
+            True to create a logfile, False otherwise.
+        plotting : bool
+            True to create a plot, False otherwise.
+        """
         params = {
             "name": name,
-            "num_nodes": num_nodes,
             "pop_size": pop_size,
+            "num_nodes": num_nodes,
             "activation_func": activation_func,
             "opt_func": opt_func,
             "loss_func": loss_func,
@@ -447,6 +476,7 @@ class EvoNNModel(EvoNN):
         self.params = params
 
     def single_variable_response(self, ploton=False, log=None):
+        """Get the model's response to a single variable."""
 
         trend = np.loadtxt("trend")
         trend = trend[0 : self.num_of_samples]

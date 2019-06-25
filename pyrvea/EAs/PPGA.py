@@ -24,6 +24,7 @@ class PPGA(BaseEA):
     References
     ----------
     """
+
     def __init__(self, population: "Population", EA_parameters: dict = {}):
 
         self.params = self.set_params(population, **EA_parameters)
@@ -40,11 +41,12 @@ class PPGA(BaseEA):
         interact: bool = False,
         plotting: bool = True,
         logging: list = False,
+        logfile = None,
         crossover_type: str = None,
         mutation_type: str = None,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
-        mut_strength: float = 0.7
+        mut_strength: float = 0.7,
     ):
         """Set up the parameters.
 
@@ -89,6 +91,7 @@ class PPGA(BaseEA):
             "interact": interact,
             "plotting": plotting,
             "logging": logging,
+            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
             "crossover_type": crossover_type,
@@ -97,23 +100,13 @@ class PPGA(BaseEA):
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
             "kill_interval": 7,
-            "max_rank": 20
+            "max_rank": 20,
         }
 
         # If logging enabled, write params to file
         if ppgaparams["logging"]:
-            # Save params to log file
-            log_file = open(
-                population.problem.name
-                + "_var"
-                + str(population.problem.num_of_variables)
-                + "_nodes"
-                + str(population.problem.num_nodes)
-                + ".log",
-                "w"
-            )
             for k, v in ppgaparams.items():
-                print(k, v, file=log_file)
+                print(k, v, file=ppgaparams["logfile"])
 
         return ppgaparams
 
@@ -225,8 +218,8 @@ class PPGA(BaseEA):
         self.lattice.move_predator()
 
         print(
-            "AFTER KILL "+
-            str(self.params["current_iteration_gen_count"])
+            "AFTER KILL "
+            + str(self.params["current_iteration_gen_count"])
             + " "
             + "population size: "
             + str(population.individuals.shape[0])
@@ -235,6 +228,19 @@ class PPGA(BaseEA):
             + " Avg Error: "
             + str(np.mean(population.objectives[:, 0]))
         )
+
+        if (
+            self.params["current_iteration_count"] == self.params["iterations"] - 1
+            and self.params["current_iteration_gen_count"]
+            == self.params["generations"]
+        ):
+            print(
+                "last gen min error: "
+                + str(np.amin(population.objectives[:, 0]))
+                + " avg error: "
+                + str(np.mean(population.objectives[:, 0])),
+                file=self.params["logfile"],
+            )
 
         # population.create_archive(population, population.objectives)
 
@@ -250,7 +256,6 @@ class PPGA(BaseEA):
         #             self.params["target_pop_size"] - old_pop_size
         #         )
         #         population.create_new_individuals(pop_size=len(placed_indices), design="EvoNN")
-
 
     def _run_interruption(self, population: "Population"):
         """Run the interruption phase of PPGA.
@@ -467,7 +472,10 @@ class Lattice:
                         obj1 = self.params["population"].fitness[target - 1][0]
                         obj2 = self.params["population"].fitness[target - 1][1]
 
-                        fc = (self.predator_pop[predator] * obj1 + (1 - self.predator_pop[predator]) * obj2)
+                        fc = (
+                            self.predator_pop[predator] * obj1
+                            + (1 - self.predator_pop[predator]) * obj2
+                        )
 
                         fitness.append((fc, target))
                         fitness.sort()
@@ -561,6 +569,22 @@ class Lattice:
 
     @staticmethod
     def neighbours(arr, x, y, n=3):
-        """Given a 2D-array, returns an nxn array whose "center" element is arr[x,y]"""
+        """Given a 2D-array, returns an nxn array whose "center" element is arr[x,y]
+
+        Parameters
+        ----------
+        arr : ndarray
+            A 2D-array where to get the neighbouring cells
+        x : int
+            X coordinate for the center element
+        y : int
+            Y coordinate for the center element
+        n : int
+            Radius of the neighbourhood
+
+        Returns
+        -------
+        The neighbouring cells of x, y in radius n. Defaults to Moore neighbourhood (n=3)
+        """
         arr = np.roll(np.roll(arr, shift=-x + 1, axis=0), shift=-y + 1, axis=1)
         return arr[:n, :n]
