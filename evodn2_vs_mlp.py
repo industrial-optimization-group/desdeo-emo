@@ -8,7 +8,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 import numpy as np
 
-test_prob = EvoNNTestProblem("Sphere", num_of_variables=5)
+test_prob = EvoNNTestProblem("Sphere", num_of_variables=3)
 training_data_input, training_data_output = test_prob.create_training_data(
     samples=250, method="random", seed=30
 )
