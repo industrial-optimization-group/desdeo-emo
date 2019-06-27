@@ -45,54 +45,49 @@ def evodn2_xover_mut(
         sub3 = individuals[np.random.randint(0, individuals.shape[0] - 1)][subnet]
         sub4 = individuals[np.random.randint(0, individuals.shape[0] - 1)][subnet]
 
-        r = min(len(sub1), len(sub2))
+        r = max(len(sub1), len(sub2))
 
         for layer in range(r):
 
-            connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
+            try:
+                connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
 
-            # Crossover
-            exchange = sample(
-                range(connections), np.random.binomial(connections, prob_crossover)
-            )
-            tmp = deepcopy(sub1[layer])
-            sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[exchange]
-            sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+                # Crossover
+                exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
+
+                tmp = deepcopy(sub1[layer])
+                sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[exchange]
+                sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+
+            except IndexError:
+                pass
 
             try:
                 # Mutate first individual
                 connections = sub1[layer][1:, :].size
-                mutate = sample(range(connections), np.random.binomial(connections, prob_mut))
+                mutate = np.random.choice(connections, np.random.binomial(connections, prob_mut), replace=False)
 
                 sub1[layer][1:, :].ravel()[mutate] = sub1[layer][1:, :].ravel()[
                     mutate
                 ] + mut_strength * (1 - cur_gen / total_gen) * (
-                    sub3[layer][1:, :].ravel()[mutate]
-                    - sub4[layer][1:, :].ravel()[mutate]
+                    np.copy(sub3[layer][1:, :].ravel()[mutate])
+                    - np.copy(sub4[layer][1:, :].ravel()[mutate])
                 )
+            except IndexError:
+                pass
 
+            try:
                 # Mutate second individual
                 connections = sub2[layer][1:, :].size
-                mutate = sample(range(connections), np.random.binomial(connections, prob_mut))
+                mutate = np.random.choice(connections, np.random.binomial(connections, prob_mut), replace=False)
 
                 sub2[layer][1:, :].ravel()[mutate] = sub2[layer][1:, :].ravel()[
                     mutate
                 ] + mut_strength * (1 - cur_gen / total_gen) * (
-                    sub3[layer][1:, :].ravel()[mutate]
-                    - sub4[layer][1:, :].ravel()[mutate]
+                    np.copy(sub3[layer][1:, :].ravel()[mutate])
+                    - np.copy(sub4[layer][1:, :].ravel()[mutate])
                 )
             except IndexError:
-
-                # If mutation partner had less layers than the offspring, randomly mutate the rest of the layers
-                # for l in range(layer, r):
-                #     mutate = sample(
-                #         range(connections), np.random.binomial(connections, prob_mut)
-                #     )
-                #     sub1[layer][1:, :].ravel()[mutate] = sub1[layer][1:, :].ravel()[
-                #         mutate
-                #     ] * np.random.uniform(
-                #         0.9, 1.0, sub1[layer][1:, :].ravel()[mutate].shape
-                #    )
-                break
+                continue
 
     return offspring1, offspring2

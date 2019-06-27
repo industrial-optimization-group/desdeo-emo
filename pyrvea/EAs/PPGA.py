@@ -168,7 +168,7 @@ class PPGA(BaseEA):
                 float,
             )
         elif population.problem.__class__.__name__ == "EvoDN2":
-            self.params["std_dev"] = (population.problem.w_high / 3) * (
+            self.params["std_dev"] = (5 / 3) * (
                 1
                 - self.params["current_total_gen_count"]
                 / self.params["total_generations"]
@@ -214,6 +214,8 @@ class PPGA(BaseEA):
             + str(np.amin(population.objectives[:, 0]))
             + " Avg Error: "
             + str(np.mean(population.objectives[:, 0]))
+            + " Str dev: "
+            + str(self.params["std_dev"])
         )
 
         # Move predators

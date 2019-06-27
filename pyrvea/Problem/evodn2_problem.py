@@ -81,6 +81,41 @@ class EvoDN2(baseProblem):
 
     def create_population(self):
 
+        # Random num of nodes & layers
+        # individuals = []
+        # for i in range(self.params["pop_size"]):
+        #     nets = []
+        #     for j in range(self.subnets[0]):
+        #
+        #         layers = []
+        #         num_layers = np.random.randint(1, self.subnets[1])
+        #         in_nodes = len(self.subsets[j])
+        #
+        #         for k in range(num_layers):
+        #             out_nodes = random.randint(1, self.num_nodes)
+        #             net = np.random.uniform(
+        #                 self.w_low,
+        #                 self.w_high,
+        #                 size=(
+        #                     in_nodes,
+        #                     out_nodes
+        #                 )
+        #             )
+        #             # Randomly set some weights to zero
+        #             zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit))
+        #             net.ravel()[zeros] = 0
+        #
+        #             # Add bias
+        #             net = np.insert(net, 0, 1, axis=0)
+        #             in_nodes = out_nodes
+        #             layers.append(net)
+        #         nets.append(layers)
+        #
+        #     individuals.append(nets)
+        #
+        # individuals = np.asarray(individuals)
+        # Fixed connections
+
         no_nodes = []
         for i in range(self.subnets[1]):
             n = random.randint(1, self.num_nodes)
@@ -182,19 +217,18 @@ class EvoDN2(baseProblem):
         """
         subnet_cmplx = []
         end_net = np.empty((self.num_of_samples, 0))
-        for i in range(decision_variables.shape[0]):
+        for i, subnet in enumerate(decision_variables):
 
-            subnet = decision_variables[i]
             in_nodes = self.X_train[:, self.subsets[i]]
             cnet = np.abs(subnet[0][1:, :])
-            for layer in range(len(subnet)):
+            for j, layer in enumerate(subnet):
                 # Calculate the dot product
-                out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
-                if layer > 0:
-                    cnet = np.dot(cnet, np.abs(subnet[layer][1:, :]))
+                out = np.dot(in_nodes, layer[1:, :] + layer[0])
+                if j > 0:
+                    cnet = np.dot(cnet, np.abs(layer[1:, :]))
 
                 if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
+                    activated_layer = lambda x: 1.0 / (1.0 + np.exp(-x))
 
                 if self.params["activation_func"] == "relu":
                     activated_layer = lambda x: np.maximum(x, 0)
@@ -349,7 +383,6 @@ class EvoDN2(baseProblem):
             auto_open=True,
         )
 
-
 class EvoDN2Model(EvoDN2):
     """Class for the surrogate model.
 
@@ -481,7 +514,7 @@ class EvoDN2Model(EvoDN2):
                 out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
 
                 if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
+                    activated_layer = lambda x: 1.0 / (1.0 + np.exp(-x))
 
                 if self.params["activation_func"] == "relu":
                     activated_layer = lambda x: np.maximum(x, 0)

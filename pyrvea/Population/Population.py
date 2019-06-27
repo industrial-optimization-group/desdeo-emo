@@ -331,7 +331,7 @@ class Population:
                     w2,
                     self.individuals,
                     params["prob_crossover"],
-                    0.3,
+                    params["prob_mutation"],
                     0.7,
                     params["current_total_gen_count"],
                     params["total_generations"],

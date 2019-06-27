@@ -13,7 +13,7 @@ import numpy as np
 # training_data_input = np.random.rand(150,30)
 # training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
 
-test_prob = EvoNNTestProblem("Sphere", num_of_variables=3)
+test_prob = EvoNNTestProblem("Matyas")
 training_data_input, training_data_output = test_prob.create_training_data(
     samples=250, method="random"
 )
@@ -188,9 +188,7 @@ model_evodn2.set_params(
         plotting=True)
 
 model_evodn2.fit(training_data_input, training_data_output)
-# model_evodn2.fit(training_data_input, training_data_output)
-# model_evonn.fit(training_data_input, training_data_output)
-#
+
 # # ZDT 1 & 2
 test_prob = testProblem('ZDT2', 30, 2, 0, 1, 0)
 training_data_input = np.random.rand(250, 30)
