@@ -52,7 +52,7 @@ class EvoNNTestProblem(baseProblem):
             "Three-hump camel": (-5, 5),
             "Goldstein-Price": (-2, 2),
             "LeviN13": (-10, 10),
-            "Schaffer": (-100, 100),
+            "SchafferN2": (-100, 100),
             "min-ex_f1": (0, 1),
             "min-ex_f2": (0, 5)
         }

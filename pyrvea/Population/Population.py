@@ -19,6 +19,7 @@ from pyrvea.OtherTools.IsNotebook import IsNotebook
 
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
 from pyrvea.Recombination.evodn2_xover_mut import evodn2_xover_mut
+from pyrvea.Recombination.evodn2_xover_mut_gaussian import evodn2_xover_mut_gaussian
 from pyrvea.Recombination.ppga_mutation import ppga_mutation
 from math import ceil
 
@@ -316,7 +317,7 @@ class Population:
     def mate(self, ind1=None, ind2=None, params=None):
         """Conduct crossover and mutation over the population.
 
-        Conduct simulated binary crossover and bounded polunomial mutation.
+        Conduct simulated binary crossover and bounded polynomial mutation.
         """
 
         if self.individuals.ndim >= 2:
@@ -325,15 +326,16 @@ class Population:
 
             # Perform crossover
             if params["crossover_type"] == "short":
-                offspring1, offspring2 = evodn2_xover_mut(
+                offspring1, offspring2 = evodn2_xover_mut_gaussian(
                     w1,
                     w2,
                     self.individuals,
                     params["prob_crossover"],
-                    params["prob_mutation"],
-                    params["mut_strength"],
-                    params["current_iteration_gen_count"],
-                    params["generations"]
+                    0.3,
+                    0.7,
+                    params["current_total_gen_count"],
+                    params["total_generations"],
+                    params["std_dev"]
                 )
             else:
                 xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
@@ -350,8 +352,8 @@ class Population:
                     alternatives,
                     xover_w1,
                     xover_w2,
-                    params["current_iteration_gen_count"],
-                    params["generations"],
+                    params["current_total_gen_count"],
+                    params["total_generations"],
                     params["prob_mutation"],
                     params["mut_strength"],
                 )

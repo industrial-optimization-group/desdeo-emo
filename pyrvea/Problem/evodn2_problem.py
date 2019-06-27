@@ -81,6 +81,11 @@ class EvoDN2(baseProblem):
 
     def create_population(self):
 
+        no_nodes = []
+        for i in range(self.subnets[1]):
+            n = random.randint(1, self.num_nodes)
+            no_nodes.append(n)
+
         individuals = []
         for i in range(self.params["pop_size"]):
             nets = []
@@ -91,7 +96,7 @@ class EvoDN2(baseProblem):
                 in_nodes = len(self.subsets[j])
 
                 for k in range(num_layers):
-                    out_nodes = random.randint(1, self.num_nodes)
+                    out_nodes = no_nodes[k]
                     net = np.random.uniform(
                         self.w_low,
                         self.w_high,
@@ -101,7 +106,7 @@ class EvoDN2(baseProblem):
                         )
                     )
                     # Randomly set some weights to zero
-                    zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit))
+                    zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit), replace=False)
                     net.ravel()[zeros] = 0
 
                     # Add bias

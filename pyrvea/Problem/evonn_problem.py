@@ -48,7 +48,7 @@ class EvoNN(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.3,
+        prob_omit=0.2,
         params=None,
     ):
         super().__init__()

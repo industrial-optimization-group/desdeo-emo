@@ -41,7 +41,7 @@ class PPGA(BaseEA):
         interact: bool = False,
         plotting: bool = True,
         logging: list = False,
-        logfile = None,
+        logfile=None,
         crossover_type: str = None,
         mutation_type: str = None,
         prob_crossover: float = 0.8,
@@ -88,11 +88,13 @@ class PPGA(BaseEA):
             "offspring_place_attempts": 10,
             "generations": generations_per_iteration,
             "iterations": iterations,
+            "total_generations": iterations * generations_per_iteration,
             "interact": interact,
             "plotting": plotting,
             "logging": logging,
             "logfile": logfile,
             "current_iteration_gen_count": 0,
+            "current_total_gen_count": 1,
             "current_iteration_count": 0,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
@@ -127,6 +129,7 @@ class PPGA(BaseEA):
         while self.continue_iteration():
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
+            self.params["current_total_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 
     def _next_gen(self, population: "Population"):
@@ -165,12 +168,11 @@ class PPGA(BaseEA):
                 float,
             )
         elif population.problem.__class__.__name__ == "EvoDN2":
-            # # Calculate standard deviation of pop
-            # y = []
-            # for x in population.individuals.ravel():
-            #     y.append(np.concatenate(x, axis=None))
-            # std_dev = -1 ** (np.random.randint(1, 100)) * np.std(np.concatenate(np.array(y))) ** 2
-            # self.params["std_dev"] = std_dev
+            self.params["std_dev"] = (population.problem.w_high / 3) * (
+                1
+                - self.params["current_total_gen_count"]
+                / self.params["total_generations"]
+            )
 
             offspring = np.empty((0, population.problem.subnets[0]))
 
@@ -231,8 +233,7 @@ class PPGA(BaseEA):
 
         if (
             self.params["current_iteration_count"] == self.params["iterations"] - 1
-            and self.params["current_iteration_gen_count"]
-            == self.params["generations"]
+            and self.params["current_iteration_gen_count"] == self.params["generations"]
         ):
             print(
                 "last gen min error: "

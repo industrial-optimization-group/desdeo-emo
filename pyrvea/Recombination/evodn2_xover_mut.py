@@ -10,9 +10,8 @@ def evodn2_xover_mut(
     prob_crossover=0.8,
     prob_mut=0.3,
     mut_strength=0.7,
-    std_dev=1,
     cur_gen=1,
-    total_gen=10
+    total_gen=10,
 ):
     """ Perform simultaneous crossover and mutation over two individuals.
 
@@ -30,8 +29,6 @@ def evodn2_xover_mut(
         The probability for mutation
     mut_strength : float
         Mutation alfa parameter
-    std_dev : float
-        Standard deviation of population
     cur_gen : int
         Current generation
     total_gen : int
@@ -64,33 +61,38 @@ def evodn2_xover_mut(
 
             try:
                 # Mutate first individual
-                connections = min(
-                    sub1[layer][1:, :].size,
-                    sub2[layer][1:, :].size,
-                    sub3[layer][1:, :].size,
-                    sub4[layer][1:, :].size,
-                )
-                mutate = sample(
-                    range(connections), np.random.binomial(connections, prob_mut)
-                )
+                connections = sub1[layer][1:, :].size
+                mutate = sample(range(connections), np.random.binomial(connections, prob_mut))
+
                 sub1[layer][1:, :].ravel()[mutate] = sub1[layer][1:, :].ravel()[
                     mutate
-                ] + mut_strength * std_dev * (1 - cur_gen / total_gen) * (
+                ] + mut_strength * (1 - cur_gen / total_gen) * (
                     sub3[layer][1:, :].ravel()[mutate]
                     - sub4[layer][1:, :].ravel()[mutate]
                 )
 
                 # Mutate second individual
-                mutate = sample(
-                    range(connections), np.random.binomial(connections, prob_mut)
-                )
+                connections = sub2[layer][1:, :].size
+                mutate = sample(range(connections), np.random.binomial(connections, prob_mut))
+
                 sub2[layer][1:, :].ravel()[mutate] = sub2[layer][1:, :].ravel()[
                     mutate
-                ] + mut_strength * std_dev * (1 - cur_gen / total_gen) * (
+                ] + mut_strength * (1 - cur_gen / total_gen) * (
                     sub3[layer][1:, :].ravel()[mutate]
                     - sub4[layer][1:, :].ravel()[mutate]
                 )
             except IndexError:
+
+                # If mutation partner had less layers than the offspring, randomly mutate the rest of the layers
+                # for l in range(layer, r):
+                #     mutate = sample(
+                #         range(connections), np.random.binomial(connections, prob_mut)
+                #     )
+                #     sub1[layer][1:, :].ravel()[mutate] = sub1[layer][1:, :].ravel()[
+                #         mutate
+                #     ] * np.random.uniform(
+                #         0.9, 1.0, sub1[layer][1:, :].ravel()[mutate].shape
+                #    )
                 break
 
     return offspring1, offspring2
