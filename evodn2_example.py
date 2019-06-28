@@ -13,16 +13,16 @@ import numpy as np
 # training_data_input = np.random.rand(150,30)
 # training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
 
-test_prob = EvoNNTestProblem("Sphere")
-training_data_input, training_data_output = test_prob.create_training_data(
-    samples=250, method="random", seed=31
-)
-
+# test_prob = EvoNNTestProblem("Matyas")
+# training_data_input, training_data_output = test_prob.create_training_data(
+#     samples=250, method="random", seed=31
+# )
+#
 # model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 # model_evodn2.set_params(
 #         pop_size=500,
-#         subnet_struct=(6, 10),
-#         num_nodes=10,
+#         subnet_struct=(4, 4),
+#         num_nodes=4,
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
@@ -32,21 +32,22 @@ training_data_input, training_data_output = test_prob.create_training_data(
 #
 # model_evodn2.fit(training_data_input, training_data_output)
 # y = model_evodn2.predict(training_data_input)
-# model_evodn2.plot(y)
-# model_evodn2.single_variable_response()
-
-model_evonn = EvoNNModel(name="EvoNN_" + test_prob.name)
-model_evonn.set_params(
-        num_nodes=20,
-        pop_size=500,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="akaike_corrected",
-        logging=True,
-        plotting=True)
-
-model_evonn.fit(training_data_input, training_data_output)
+# model_evodn2.plot(y, training_data_output)
+#
+# model_evonn = EvoNNModel(name="EvoNN_" + test_prob.name)
+# model_evonn.set_params(
+#         num_nodes=20,
+#         pop_size=500,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="akaike_corrected",
+#         logging=True,
+#         plotting=True)
+#
+# model_evonn.fit(training_data_input, training_data_output)
+# y = model_evonn.predict(training_data_input)
+# model_evonn.plot(y, training_data_output)
 
 #
 # test_prob = EvoNNTestProblem("Matyas")
@@ -228,7 +229,7 @@ model_evonn.fit(training_data_input, training_data_output)
 # model_evodn_f1.fit(training_data_input, f1_training_data_output)
 # model_evodn_f2.fit(training_data_input, f2_training_data_output)
 
-test_prob = testProblem('ZDT2', 30, 2, 0, 1, 0)
+test_prob = testProblem('ZDT1', 30, 2, 0, 1, 0)
 training_data_input = np.random.rand(250, 30)
 training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
 
@@ -238,8 +239,8 @@ f2_training_data_output = training_data_output[:, 1]
 model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
 model_evodn_f1.set_params(
         pop_size=500,
-        subnet_struct=(8, 10),
-        num_nodes=10,
+        subnet_struct=(6, 8),
+        num_nodes=8,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -250,13 +251,30 @@ model_evodn_f1.set_params(
 model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
 model_evodn_f2.set_params(
         pop_size=500,
-        subnet_struct=(8, 10),
-        num_nodes=10,
+        subnet_struct=(6, 8),
+        num_nodes=8,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
         criterion="min_error",
         logging=True,
         plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
+#model_evodn_f1.fit(training_data_input, f1_training_data_output)
 model_evodn_f2.fit(training_data_input, f2_training_data_output)
+y = model_evodn_f2.predict(training_data_input)
+model_evodn_f2.plot(y, f2_training_data_output)
+
+model_evonn_f2 = EvoNNModel(name="EvoNN_" + test_prob.name)
+model_evonn_f2.set_params(
+        num_nodes=20,
+        pop_size=500,
+        activation_func="sigmoid",
+        opt_func="llsq",
+        loss_func="rmse",
+        criterion="akaike_corrected",
+        logging=True,
+        plotting=True)
+
+model_evonn_f2.fit(training_data_input, training_data_output)
+y = model_evonn_f2.predict(training_data_input)
+model_evonn_f2.plot(y, f2_training_data_output)

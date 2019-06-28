@@ -401,10 +401,12 @@ class EvoDN2Model(EvoDN2):
 
         prob.train(self)
 
-    def plot(self, prediction):
+        self.single_variable_response(ploton=False, log=self.log)
 
-        trace0 = go.Scatter(x=prediction, y=self.y_train, mode="markers")
-        trace1 = go.Scatter(x=self.y_train, y=self.y_train)
+    def plot(self, prediction, target):
+
+        trace0 = go.Scatter(x=prediction, y=target, mode="markers")
+        trace1 = go.Scatter(x=target, y=target)
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
@@ -423,7 +425,7 @@ class EvoDN2Model(EvoDN2):
 
     def predict(self, decision_variables):
 
-        in_end = np.empty((decision_variables.shape[0], 0))
+        non_linear_layer = np.empty((decision_variables.shape[0], 0))
 
         for i, subnet in enumerate(self.subnets):
 
@@ -435,9 +437,9 @@ class EvoDN2Model(EvoDN2):
 
                 in_nodes = self.activate(self.params["activation_func"], out)
 
-            in_end = np.hstack((in_end, in_nodes))
+            non_linear_layer = np.hstack((non_linear_layer, in_nodes))
 
-        y = np.dot(in_end, self.linear_layer)
+        y = np.dot(non_linear_layer, self.linear_layer)
 
         return y
 
