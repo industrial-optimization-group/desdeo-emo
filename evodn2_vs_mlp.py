@@ -429,7 +429,7 @@ training_data_input, training_data_output = test_prob.create_training_data(
 model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 model_evodn2.set_params(
         pop_size=500,
-        subnets=(6, 10),
+        subnet_struct=(6, 10),
         num_nodes=10,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -488,7 +488,7 @@ training_data_input, training_data_output = test_prob.create_training_data(
 model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 model_evodn2.set_params(
         pop_size=500,
-        subnets=(6, 10),
+        subnet_struct=(6, 10),
         num_nodes=10,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -542,39 +542,39 @@ model_evodn2.fit(training_data_input, training_data_output)
 # ---------------------------------------------------------------
 #
 # ZDT 1
-test_prob = testProblem('ZDT1', 30, 2, 0, 1, 0)
-np.random.seed(1)
-training_data_input = np.random.rand(250, 30)
-training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
-
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
-
-model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
-model_evodn_f1.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-
-model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
-model_evodn_f2.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
-model_evodn_f2.fit(training_data_input, f2_training_data_output)
+# test_prob = testProblem('ZDT1', 30, 2, 0, 1, 0)
+# np.random.seed(1)
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
+#
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
+#
+# model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
+# model_evodn_f1.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+#
+# model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
+# model_evodn_f2.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+# model_evodn_f1.fit(training_data_input, f1_training_data_output)
+# model_evodn_f2.fit(training_data_input, f2_training_data_output)
 #
 # mlp_reg = MLPRegressor(max_iter=10000, n_iter_no_change=100)
 # mlp_reg.fit(training_data_input, f1_training_data_output)
@@ -632,39 +632,39 @@ model_evodn_f2.fit(training_data_input, f2_training_data_output)
 
 # ZDT2
 
-test_prob = testProblem('ZDT2', 30, 2, 0, 1, 0)
-np.random.seed(2)
-training_data_input = np.random.rand(250, 30)
-training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
-
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
-
-model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
-model_evodn_f1.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-
-model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
-model_evodn_f2.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
-model_evodn_f2.fit(training_data_input, f2_training_data_output)
+# test_prob = testProblem('ZDT2', 30, 2, 0, 1, 0)
+# np.random.seed(2)
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
+#
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
+#
+# model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
+# model_evodn_f1.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+#
+# model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
+# model_evodn_f2.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+# model_evodn_f1.fit(training_data_input, f1_training_data_output)
+# model_evodn_f2.fit(training_data_input, f2_training_data_output)
 #
 # mlp_reg = MLPRegressor(max_iter=10000, n_iter_no_change=100)
 # mlp_reg.fit(training_data_input, f1_training_data_output)
@@ -722,39 +722,39 @@ model_evodn_f2.fit(training_data_input, f2_training_data_output)
 
 # ZDT3
 
-test_prob = testProblem('ZDT3', 30, 2, 0, 1, 0)
-np.random.seed(3)
-training_data_input = np.random.rand(250, 30)
-training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
-
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
-
-model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
-model_evodn_f1.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-
-model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
-model_evodn_f2.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
-model_evodn_f2.fit(training_data_input, f2_training_data_output)
+# test_prob = testProblem('ZDT3', 30, 2, 0, 1, 0)
+# np.random.seed(3)
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
+#
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
+#
+# model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
+# model_evodn_f1.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+#
+# model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
+# model_evodn_f2.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+# model_evodn_f1.fit(training_data_input, f1_training_data_output)
+# model_evodn_f2.fit(training_data_input, f2_training_data_output)
 #
 # mlp_reg = MLPRegressor(max_iter=10000, n_iter_no_change=100)
 # mlp_reg.fit(training_data_input, f1_training_data_output)
@@ -812,39 +812,39 @@ model_evodn_f2.fit(training_data_input, f2_training_data_output)
 
 # ZDT 4
 
-test_prob = testProblem('ZDT4', 10, 2, 0, 1, 0)
-np.random.seed(4)
-training_data_input = np.random.rand(250, 10)
-training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
-
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
-
-model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
-model_evodn_f1.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-
-model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
-model_evodn_f2.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
-model_evodn_f2.fit(training_data_input, f2_training_data_output)
+# test_prob = testProblem('ZDT4', 10, 2, 0, 1, 0)
+# np.random.seed(4)
+# training_data_input = np.random.rand(250, 10)
+# training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
+#
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
+#
+# model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
+# model_evodn_f1.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+#
+# model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
+# model_evodn_f2.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+# model_evodn_f1.fit(training_data_input, f1_training_data_output)
+# model_evodn_f2.fit(training_data_input, f2_training_data_output)
 #
 # mlp_reg = MLPRegressor(max_iter=10000, n_iter_no_change=100)
 # mlp_reg.fit(training_data_input, f1_training_data_output)
@@ -902,39 +902,39 @@ model_evodn_f2.fit(training_data_input, f2_training_data_output)
 
 # ZDT 6
 
-test_prob = testProblem('ZDT6', 10, 2, 0, 1, 0)
-np.random.seed(6)
-training_data_input = np.random.rand(250, 10)
-training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
-
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
-
-model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
-model_evodn_f1.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-
-model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
-model_evodn_f2.set_params(
-        pop_size=500,
-        subnets=(6, 10),
-        num_nodes=10,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="rmse",
-        criterion="min_error",
-        logging=True,
-        plotting=True)
-model_evodn_f1.fit(training_data_input, f1_training_data_output)
-model_evodn_f2.fit(training_data_input, f2_training_data_output)
+# test_prob = testProblem('ZDT6', 10, 2, 0, 1, 0)
+# np.random.seed(6)
+# training_data_input = np.random.rand(250, 10)
+# training_data_output = np.asarray([test_prob.objectives(x) for x in training_data_input])
+#
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
+#
+# model_evodn_f1 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f1")
+# model_evodn_f1.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+#
+# model_evodn_f2 = EvoDN2Model(name="EvoDN2_" + test_prob.name + "_f2")
+# model_evodn_f2.set_params(
+#         pop_size=500,
+#         subnets=(6, 10),
+#         num_nodes=10,
+#         activation_func="sigmoid",
+#         opt_func="llsq",
+#         loss_func="rmse",
+#         criterion="min_error",
+#         logging=True,
+#         plotting=True)
+# model_evodn_f1.fit(training_data_input, f1_training_data_output)
+# model_evodn_f2.fit(training_data_input, f2_training_data_output)
 #
 # mlp_reg = MLPRegressor(max_iter=10000, n_iter_no_change=100)
 # mlp_reg.fit(training_data_input, f1_training_data_output)

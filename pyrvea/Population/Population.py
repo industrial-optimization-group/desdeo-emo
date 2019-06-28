@@ -132,7 +132,7 @@ class Population:
             self.individuals = np.empty((0, individuals.shape[1], individuals.shape[2]))
 
         elif design == "EvoDN2":
-            self.individuals = np.empty((0, self.problem.subnets[0]))
+            self.individuals = np.empty((0, self.problem.subnet_struct[0]))
 
             individuals = self.problem.create_population()
 

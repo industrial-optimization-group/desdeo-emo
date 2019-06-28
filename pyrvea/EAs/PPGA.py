@@ -174,7 +174,7 @@ class PPGA(BaseEA):
                 / self.params["total_generations"]
             )
 
-            offspring = np.empty((0, population.problem.subnets[0]))
+            offspring = np.empty((0, population.problem.subnet_struct[0]))
 
         for ind in range(population.individuals.shape[0]):
 
@@ -214,8 +214,6 @@ class PPGA(BaseEA):
             + str(np.amin(population.objectives[:, 0]))
             + " Avg Error: "
             + str(np.mean(population.objectives[:, 0]))
-            + " Str dev: "
-            + str(self.params["std_dev"])
         )
 
         # Move predators

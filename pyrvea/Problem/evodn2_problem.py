@@ -1,6 +1,7 @@
 from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
+from scipy.special import expit
 import numpy as np
 import plotly
 import plotly.graph_objs as go
@@ -20,8 +21,6 @@ class EvoDN2(baseProblem):
         The lower bound for randomly generated weights
     w_high : float
         The upper bound for randomly generated weights
-    prob_omit : float
-        The probability of setting some weights to zero initially
     params :
     """
 
@@ -33,7 +32,6 @@ class EvoDN2(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.2,
         params=None,
     ):
         super().__init__()
@@ -44,7 +42,6 @@ class EvoDN2(baseProblem):
         self.num_of_objectives = num_of_objectives
         self.w_low = w_low
         self.w_high = w_high
-        self.prob_omit = prob_omit
         self.params = params
 
     def fit(self, training_data, target_values):
@@ -61,45 +58,66 @@ class EvoDN2(baseProblem):
         self.y_train = target_values
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        self.subnets = self.params["subnets"]
+        self.subnet_struct = self.params["subnet_struct"]
         self.num_nodes = self.params["num_nodes"]
 
         # Create random subsets of decision variables for each subnet
         self.subsets = []
-        for i in range(self.subnets[0]):
+        for i in range(self.subnet_struct[0]):
             n = random.randint(1, self.X_train.shape[1])
             self.subsets.append(random.sample(range(self.X_train.shape[1]), n))
 
         # Ensure that each decision variable is used as an input in at least one subnet
         for n in list(range(self.X_train.shape[1])):
             if not any(n in k for k in self.subsets):
-                self.subsets[random.randint(0, self.subnets[0]-1)].append(n)
+                self.subsets[random.randint(0, self.subnet_struct[0] - 1)].append(n)
 
         return self.subsets
+
+    def train(self, model):
+
+        pop = Population(
+            self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False
+        )
+        pop.evolve(
+            PPGA,
+            {
+                "logging": self.params["logging"],
+                "logfile": model.log,
+                "iterations": 10,
+                "generations_per_iteration": 10,
+                "crossover_type": "short",
+                "mutation_type": "short",
+            },
+        )
+
+        non_dom_front = pop.non_dominated()
+        model.subnets, model.fitness = self.select(
+            pop, non_dom_front, self.params["criterion"]
+        )
+        model.non_linear_layer, _ = self.activation(model.subnets)
+        model.linear_layer, _ = self.minimize_error(model.non_linear_layer)
 
     def create_population(self):
 
         individuals = []
         for i in range(self.params["pop_size"]):
             nets = []
-            for j in range(self.subnets[0]):
+            for j in range(self.subnet_struct[0]):
 
                 layers = []
-                num_layers = np.random.randint(1, self.subnets[1])
+                num_layers = np.random.randint(1, self.subnet_struct[1])
                 in_nodes = len(self.subsets[j])
 
                 for k in range(num_layers):
                     out_nodes = random.randint(1, self.num_nodes)
                     net = np.random.uniform(
-                        self.w_low,
-                        self.w_high,
-                        size=(
-                            in_nodes,
-                            out_nodes
-                        )
+                        self.w_low, self.w_high, size=(in_nodes, out_nodes)
                     )
                     # Randomly set some weights to zero
-                    zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit))
+                    zeros = np.random.choice(
+                        np.arange(net.size), ceil(net.size * self.params["prob_omit"])
+                    )
                     net.ravel()[zeros] = 0
 
                     # Add bias
@@ -114,26 +132,6 @@ class EvoDN2(baseProblem):
 
         return individuals
 
-    def train(self, model):
-
-        pop = Population(self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False)
-        pop.evolve(
-            PPGA,
-            {
-                "logging": self.params["logging"],
-                "logfile": model.log,
-                "iterations": 10,
-                "generations_per_iteration": 10,
-                "crossover_type": "short",
-                "mutation_type": "short"
-            }
-        )
-
-        non_dom_front = pop.non_dominated()
-        model.w1, model.fitness = self.select(pop, non_dom_front, self.params["criterion"])
-        model.end_net, complexity = self.activation(model.w1)
-        model.w2, _, model.y_pred = self.minimize_error(model.end_net)
-
     def objectives(self, decision_variables) -> list:
 
         """ Use this method to calculate objective functions.
@@ -147,8 +145,8 @@ class EvoDN2(baseProblem):
             The objective function
         """
 
-        end_net, complexity = self.activation(decision_variables)
-        _, _, predicted_values = self.minimize_error(end_net)
+        non_linear_layer, complexity = self.activation(decision_variables)
+        _, predicted_values = self.minimize_error(non_linear_layer)
         training_error = self.loss_function(predicted_values)
 
         obj_func = [training_error, complexity]
@@ -160,43 +158,38 @@ class EvoDN2(baseProblem):
         Parameters
         ----------
         decision_variables : ndarray
-            Variables from the neural network
-        name : str
-            The activation function to use
+            Array of all subnets in the current neural network
+
         Returns
         -------
-        The penultimate layer Z before the output
+        non_linear_layer : ndarray
+            The final non-linear layer before the output
+        complexity : float
+            The complexity of the neural network
         """
-        subnet_cmplx = []
-        end_net = np.empty((self.num_of_samples, 0))
-        for i in range(decision_variables.shape[0]):
+        network_complexity = []
+        non_linear_layer = np.empty((self.num_of_samples, 0))
 
-            subnet = decision_variables[i]
+        for i, subnet in enumerate(decision_variables):
+
+            # Get the input variables for the first layer
             in_nodes = self.X_train[:, self.subsets[i]]
-            cnet = np.abs(subnet[0][1:, :])
-            for layer in range(len(subnet)):
-                # Calculate the dot product
-                out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
-                if layer > 0:
-                    cnet = np.dot(cnet, np.abs(subnet[layer][1:, :]))
+            subnet_complexity = 1
 
-                if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
+            for layer in subnet:
+                # Calculate the dot product + bias
+                out = np.dot(in_nodes, layer[1:, :]) + layer[0]
 
-                if self.params["activation_func"] == "relu":
-                    activated_layer = lambda x: np.maximum(x, 0)
+                subnet_complexity = np.dot(subnet_complexity, np.abs(layer[1:, :]))
 
-                if self.params["activation_func"] == "tanh":
-                    activated_layer = lambda x: np.tanh(x)
+                in_nodes = self.activate(self.params["activation_func"], out)
 
-                in_nodes = activated_layer(out)
+            network_complexity.append(np.sum(subnet_complexity))
+            non_linear_layer = np.hstack((non_linear_layer, in_nodes))
 
-            subnet_cmplx.append(cnet)
-            end_net = np.hstack((end_net, in_nodes))
+        complexity = np.sum(network_complexity)
 
-        complexity = np.sum([np.sum(x) for x in subnet_cmplx])
-
-        return end_net, complexity
+        return non_linear_layer, complexity
 
     def minimize_error(self, activated_layer):
         """ Minimize the training error.
@@ -204,8 +197,6 @@ class EvoDN2(baseProblem):
         ----------
         activated_layer : ndarray
             Output of the activation function
-        name : str
-            Name of the optimizing algorithm to use
         Returns
         -------
         w_matrix[0] : ndarray
@@ -218,9 +209,8 @@ class EvoDN2(baseProblem):
 
         if self.params["opt_func"] == "llsq":
             w2 = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
-            rss = w2[1]
             predicted_values = np.dot(activated_layer, w2[0])
-            return w2[0], rss, predicted_values
+            return w2[0], predicted_values
 
     def loss_function(self, predicted_values):
 
@@ -253,23 +243,6 @@ class EvoDN2(baseProblem):
             model = pop.individuals[lowest_error]
             fitness = pop.fitness[lowest_error]
 
-        elif criterion == "akaike_corrected":
-
-            # Calculate Akaike information criterion for the non-dominated front
-            # and return the model with the lowest value
-
-            info_c_rank = []
-
-            for i in non_dom_front:
-
-                info_c = self.information_criterion(pop.individuals[i])
-                info_c_rank.append((info_c, i))
-
-            info_c_rank.sort()
-
-            model = pop.individuals[info_c_rank[0][1]]
-            fitness = pop.fitness[info_c_rank[0][1]]
-
         return model, fitness
 
     def create_logfile(self):
@@ -280,8 +253,10 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.subnets[0]) + "_"
-            + str(self.subnets[1]) + "_"
+            + str(self.subnet_struct[0])
+            + "_"
+            + str(self.subnet_struct[1])
+            + "_"
             + str(self.num_nodes)
             + ".log",
             "a",
@@ -294,12 +269,12 @@ class EvoDN2(baseProblem):
             + str(self.num_of_variables)
             + "\n"
             + "number of subnets: "
-            + str(self.subnets[0])
+            + str(self.subnet_struct[0])
             + "\n"
             + "max number of layers: "
-            + str(self.subnets[1])
+            + str(self.subnet_struct[1])
             + "\n"
-            + "nodes: "
+            + "max nodes: "
             + str(self.num_nodes)
             + "\n"
             + "activation: "
@@ -314,23 +289,16 @@ class EvoDN2(baseProblem):
         )
         return log_file
 
-    def create_plot(self, model):
+    @staticmethod
+    def activate(name, x):
+        if name == "sigmoid":
+            return expit(x)
 
-        trace0 = go.Scatter(x=model.y_pred, y=self.y_train, mode="markers")
-        trace1 = go.Scatter(x=self.y_train, y=self.y_train)
-        data = [trace0, trace1]
-        plotly.offline.plot(
-            data,
-            filename=self.name
-            + "_var"
-            + str(self.num_of_variables)
-            + "_nodes"
-            + str(self.subnets[0]) + "_"
-            + str(self.subnets[1]) + "_"
-            + str(self.num_nodes)
-            + ".html",
-            auto_open=True,
-        )
+        if name == "relu":
+            return np.maximum(x, 0)
+
+        if name == "tanh":
+            return np.tanh(x)
 
 
 class EvoDN2Model(EvoDN2):
@@ -339,18 +307,22 @@ class EvoDN2Model(EvoDN2):
     ----------
     name : str
         Name of the problem
-    w1 : ndarray
-        The weight matrix of the lower part of the network
-    w2 : ndarray
-        The weight matrix of the upper part of the network
+    subnets : ndarray
+        The subnets of the model
+    linear_layer : ndarray
+        The final optimized layer of the network
     y_pred : ndarray
         Prediction of the model
     """
-    def __init__(self, name, w1=None, w2=None, y_pred=None):
+
+    def __init__(self, name, subnets=None, linear_layer=None, y_pred=None):
         super().__init__(name)
         self.name = name
-        self.w1 = w1
-        self.w2 = w2
+        self.subnets = subnets
+        self.subsets = None
+        self.fitness = None
+        self.non_linear_layer = None
+        self.linear_layer = linear_layer
         self.y_pred = y_pred
         self.svr = None
         self.log = None
@@ -360,8 +332,9 @@ class EvoDN2Model(EvoDN2):
         self,
         name=None,
         pop_size=500,
-        subnets=(4, 8),
+        subnet_struct=(4, 8),
         num_nodes=10,
+        prob_omit=0.2,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -376,10 +349,12 @@ class EvoDN2Model(EvoDN2):
             Name of the problem.
         pop_size : int
             Population size.
-        subnets : tuple
+        subnet_struct : tuple
             Structure of the subnets for the model, shape=(num of subnets, max num of layers)
         num_nodes : int
             Maximum number of nodes per layer.
+        prob_omit : float
+            Probability of setting some weights to zero initially.
         activation_func : str
             Function to use for activation.
         opt_func : str
@@ -396,8 +371,9 @@ class EvoDN2Model(EvoDN2):
         params = {
             "name": name,
             "pop_size": pop_size,
-            "subnets": subnets,
+            "subnet_struct": subnet_struct,
             "num_nodes": num_nodes,
+            "prob_omit": prob_omit,
             "activation_func": activation_func,
             "opt_func": opt_func,
             "loss_func": loss_func,
@@ -420,66 +396,54 @@ class EvoDN2Model(EvoDN2):
         prob = EvoDN2(name=self.name, params=self.params)
         self.subsets = prob.fit(training_data, target_values)
         self.num_of_variables = prob.num_of_variables
-        if prob.params["logging"]:
+        if self.params["logging"]:
             self.log = prob.create_logfile()
+
         prob.train(self)
-        if prob.params["plotting"]:
-            prob.create_plot(self)
-        self.num_of_samples = prob.num_of_samples
-        self.single_variable_response(ploton=False, log=self.log)
 
-    def opt(self):
+    def plot(self, prediction):
 
-        pop = Population(self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False)
-        pop.evolve(
-            PPGA,
-            {
-                "logging": self.params["logging"],
-                "iterations": 10,
-                "generations_per_iteration": 10,
-                "crossover_type": "short",
-                "mutation_type": "short"
-            }
+        trace0 = go.Scatter(x=prediction, y=self.y_train, mode="markers")
+        trace1 = go.Scatter(x=self.y_train, y=self.y_train)
+        data = [trace0, trace1]
+        plotly.offline.plot(
+            data,
+            filename=self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.params["subnet_struct"][0])
+            + "_"
+            + str(self.params["subnet_struct"][1])
+            + "_"
+            + str(self.params["num_nodes"])
+            + ".html",
+            auto_open=True,
         )
-
-        non_dom_front = pop.non_dominated()
-        self.w1, self.fitness = self.select(pop, non_dom_front, self.params["criterion"])
-        self.end_net, complexity = self.activation(self.w1)
-        self.w2, _, self.y_pred = self.minimize_error(self.end_net)
 
     def predict(self, decision_variables):
 
-        in_end = np.empty((self.num_of_samples, 0))
-        for i in range(self.w1.size):
+        in_end = np.empty((decision_variables.shape[0], 0))
 
-            subnet = self.w1[i]
+        for i, subnet in enumerate(self.subnets):
+
             in_nodes = decision_variables[:, self.subsets[i]]
 
-            for layer in range(len(subnet)):
-                # Calculate the dot product
-                out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
+            for layer in subnet:
 
-                if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
+                out = np.dot(in_nodes, layer[1:, :]) + layer[0]
 
-                if self.params["activation_func"] == "relu":
-                    activated_layer = lambda x: np.maximum(x, 0)
-
-                if self.params["activation_func"] == "tanh":
-                    activated_layer = lambda x: np.tanh(x)
-
-                in_nodes = activated_layer(out)
+                in_nodes = self.activate(self.params["activation_func"], out)
 
             in_end = np.hstack((in_end, in_nodes))
 
-        result = np.dot(in_end, self.w2)
+        y = np.dot(in_end, self.linear_layer)
 
-        return result
+        return y
 
     def single_variable_response(self, ploton=False, log=None):
 
         trend = np.loadtxt("trend")
-        trend = trend[0: self.num_of_samples]
         avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
         svr = np.empty((0, 2))
 
@@ -511,6 +475,8 @@ class EvoDN2Model(EvoDN2):
             r = np.multiply(p, q)
             r_max = max(r)
             r_min = min(r)
+            response = None
+            s = None
             if r_max <= 0 and r_min <= 0:
                 response = -1
                 s = "inverse"
