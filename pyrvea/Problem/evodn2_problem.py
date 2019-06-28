@@ -10,7 +10,6 @@ from math import ceil
 
 class EvoDN2(baseProblem):
     """Creates an Artificial Neural Network (ANN) for the EvoDN2 algorithm.
-
     Parameters
     ----------
     name : str
@@ -34,7 +33,7 @@ class EvoDN2(baseProblem):
         num_of_objectives=2,
         w_low=-5.0,
         w_high=5.0,
-        prob_omit=0.3,
+        prob_omit=0.2,
         params=None,
     ):
         super().__init__()
@@ -50,7 +49,6 @@ class EvoDN2(baseProblem):
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
-
         Parameters
         ----------
         training_data : ndarray, shape = (numbers of samples, number of variables)
@@ -81,46 +79,6 @@ class EvoDN2(baseProblem):
 
     def create_population(self):
 
-        # Random num of nodes & layers
-        # individuals = []
-        # for i in range(self.params["pop_size"]):
-        #     nets = []
-        #     for j in range(self.subnets[0]):
-        #
-        #         layers = []
-        #         num_layers = np.random.randint(1, self.subnets[1])
-        #         in_nodes = len(self.subsets[j])
-        #
-        #         for k in range(num_layers):
-        #             out_nodes = random.randint(1, self.num_nodes)
-        #             net = np.random.uniform(
-        #                 self.w_low,
-        #                 self.w_high,
-        #                 size=(
-        #                     in_nodes,
-        #                     out_nodes
-        #                 )
-        #             )
-        #             # Randomly set some weights to zero
-        #             zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit))
-        #             net.ravel()[zeros] = 0
-        #
-        #             # Add bias
-        #             net = np.insert(net, 0, 1, axis=0)
-        #             in_nodes = out_nodes
-        #             layers.append(net)
-        #         nets.append(layers)
-        #
-        #     individuals.append(nets)
-        #
-        # individuals = np.asarray(individuals)
-        # Fixed connections
-
-        no_nodes = []
-        for i in range(self.subnets[1]):
-            n = random.randint(1, self.num_nodes)
-            no_nodes.append(n)
-
         individuals = []
         for i in range(self.params["pop_size"]):
             nets = []
@@ -131,7 +89,7 @@ class EvoDN2(baseProblem):
                 in_nodes = len(self.subsets[j])
 
                 for k in range(num_layers):
-                    out_nodes = no_nodes[k]
+                    out_nodes = random.randint(1, self.num_nodes)
                     net = np.random.uniform(
                         self.w_low,
                         self.w_high,
@@ -141,7 +99,7 @@ class EvoDN2(baseProblem):
                         )
                     )
                     # Randomly set some weights to zero
-                    zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit), replace=False)
+                    zeros = np.random.choice(np.arange(net.size), ceil(net.size * self.prob_omit))
                     net.ravel()[zeros] = 0
 
                     # Add bias
@@ -179,17 +137,14 @@ class EvoDN2(baseProblem):
     def objectives(self, decision_variables) -> list:
 
         """ Use this method to calculate objective functions.
-
         Parameters
         ----------
         decision_variables : ndarray
             Variables from the neural network
-
         Returns
         -------
         obj_func : list
             The objective function
-
         """
 
         end_net, complexity = self.activation(decision_variables)
@@ -202,33 +157,31 @@ class EvoDN2(baseProblem):
 
     def activation(self, decision_variables):
         """ Calculates the dot product and applies the activation function.
-
         Parameters
         ----------
         decision_variables : ndarray
             Variables from the neural network
         name : str
             The activation function to use
-
         Returns
         -------
         The penultimate layer Z before the output
-
         """
         subnet_cmplx = []
         end_net = np.empty((self.num_of_samples, 0))
-        for i, subnet in enumerate(decision_variables):
+        for i in range(decision_variables.shape[0]):
 
+            subnet = decision_variables[i]
             in_nodes = self.X_train[:, self.subsets[i]]
             cnet = np.abs(subnet[0][1:, :])
-            for j, layer in enumerate(subnet):
+            for layer in range(len(subnet)):
                 # Calculate the dot product
-                out = np.dot(in_nodes, layer[1:, :] + layer[0])
-                if j > 0:
-                    cnet = np.dot(cnet, np.abs(layer[1:, :]))
+                out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
+                if layer > 0:
+                    cnet = np.dot(cnet, np.abs(subnet[layer][1:, :]))
 
                 if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1.0 / (1.0 + np.exp(-x))
+                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
 
                 if self.params["activation_func"] == "relu":
                     activated_layer = lambda x: np.maximum(x, 0)
@@ -247,14 +200,12 @@ class EvoDN2(baseProblem):
 
     def minimize_error(self, activated_layer):
         """ Minimize the training error.
-
         Parameters
         ----------
         activated_layer : ndarray
             Output of the activation function
         name : str
             Name of the optimizing algorithm to use
-
         Returns
         -------
         w_matrix[0] : ndarray
@@ -280,7 +231,6 @@ class EvoDN2(baseProblem):
 
     def select(self, pop, non_dom_front, criterion="min_error"):
         """ Select target model from the population.
-
         Parameters
         ----------
         pop : obj
@@ -290,7 +240,6 @@ class EvoDN2(baseProblem):
         criterion : str
             The criterion to use for selecting the model.
             Possible values: 'min_error', 'akaike_corrected', 'manual'
-
         Returns
         -------
         The selected model
@@ -383,9 +332,9 @@ class EvoDN2(baseProblem):
             auto_open=True,
         )
 
+
 class EvoDN2Model(EvoDN2):
     """Class for the surrogate model.
-
     Parameters
     ----------
     name : str
@@ -396,7 +345,6 @@ class EvoDN2Model(EvoDN2):
         The weight matrix of the upper part of the network
     y_pred : ndarray
         Prediction of the model
-
     """
     def __init__(self, name, w1=None, w2=None, y_pred=None):
         super().__init__(name)
@@ -422,7 +370,6 @@ class EvoDN2Model(EvoDN2):
         plotting=False,
     ):
         """ Set parameters for EvoDN2 model.
-
         Parameters
         ----------
         name : str
@@ -463,7 +410,6 @@ class EvoDN2Model(EvoDN2):
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
-
         Parameters
         ----------
         training_data : ndarray, shape = (numbers of samples, number of variables)
@@ -514,7 +460,7 @@ class EvoDN2Model(EvoDN2):
                 out = np.dot(in_nodes, subnet[layer][1:, :]) + subnet[layer][0]
 
                 if self.params["activation_func"] == "sigmoid":
-                    activated_layer = lambda x: 1.0 / (1.0 + np.exp(-x))
+                    activated_layer = lambda x: 1 / (1 + np.exp(-x))
 
                 if self.params["activation_func"] == "relu":
                     activated_layer = lambda x: np.maximum(x, 0)

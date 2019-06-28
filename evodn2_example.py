@@ -15,7 +15,7 @@ import numpy as np
 
 test_prob = EvoNNTestProblem("Matyas")
 training_data_input, training_data_output = test_prob.create_training_data(
-    samples=250, method="random"
+    samples=250, method="random", seed=31
 )
 
 model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
