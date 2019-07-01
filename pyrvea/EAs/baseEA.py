@@ -87,11 +87,10 @@ class BaseDecompositionEA(BaseEA):
             Population object
         """
 
-        offspring = population.mate()
+        offspring = population.mate(params=self.params)
         population.add(offspring)
         selected = self.select(population)
-        population.keep(selected)
-        #population.delete_or_keep(selected, "keep")
+        population.delete_or_keep(selected, "keep")
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected

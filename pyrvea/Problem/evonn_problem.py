@@ -99,7 +99,8 @@ class EvoNN(baseProblem):
 
         # Randomly set some weights to zero
         zeros = np.random.choice(
-            np.arange(individuals.size), ceil(individuals.size * self.params["prob_omit"])
+            np.arange(individuals.size),
+            ceil(individuals.size * self.params["prob_omit"]),
         )
         individuals.ravel()[zeros] = 0
 
@@ -117,7 +118,12 @@ class EvoNN(baseProblem):
             The model to be chosen.
         """
         pop = Population(
-            self, assign_type="EvoNN", pop_size=self.params["pop_size"], plotting=False
+            self,
+            assign_type="EvoNN",
+            pop_size=self.params["pop_size"],
+            plotting=False,
+            crossover_type="EvoNN_xover",
+            mutation_type="evonn_gaussian",
         )
         pop.evolve(
             PPGA,
@@ -199,7 +205,9 @@ class EvoNN(baseProblem):
         """
 
         if self.params["opt_func"] == "llsq":
-            linear_solution = np.linalg.lstsq(non_linear_layer, self.y_train, rcond=None)
+            linear_solution = np.linalg.lstsq(
+                non_linear_layer, self.y_train, rcond=None
+            )
             linear_layer = linear_solution[0]
             rss = linear_solution[1]
             predicted_values = np.dot(non_linear_layer, linear_layer)
@@ -237,7 +245,9 @@ class EvoNN(baseProblem):
         non_linear_layer = self.activation(decision_variables)
         linear_layer, rss, _ = self.minimize_error(non_linear_layer)
         # rss = ((self.y_train - prediction) ** 2).sum()
-        k = self.calculate_complexity(decision_variables) + np.count_nonzero(linear_layer)
+        k = self.calculate_complexity(decision_variables) + np.count_nonzero(
+            linear_layer
+        )
         aic = 2 * k + self.num_of_samples * np.log(rss / self.num_of_samples)
         aicc = aic + (2 * k * (k + 1) / (self.num_of_samples - k - 1))
 
@@ -353,6 +363,7 @@ class EvoNNModel(EvoNN):
         The linear layer of the upper part of the network
 
     """
+
     def __init__(self, name, w_matrix=None, linear_layer=None):
         super().__init__(name)
         self.name = name

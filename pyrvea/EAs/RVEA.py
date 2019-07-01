@@ -98,6 +98,10 @@ class RVEA(BaseDecompositionEA):
             "reference_vectors": ReferenceVectors(
                 lattice_resolution, population.problem.num_of_objectives
             ),
+            "prob_mut": 1 / population.num_var,
+            "dis_mut": 20,
+            "prob_xover": 1,
+            "dis_xover": 30
         }
         return rveaparams
 

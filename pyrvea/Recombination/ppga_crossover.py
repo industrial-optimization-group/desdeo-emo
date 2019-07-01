@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def ppga_crossover(w1, w2, prob_crossover=0.8):
+def mate(mating_pop, individuals, params):
     """Randomly exchange nodes between two individuals.
 
     Parameters
@@ -13,13 +13,38 @@ def ppga_crossover(w1, w2, prob_crossover=0.8):
     prob_crossover : float
         The probability for the crossover
     """
-    offspring1 = np.copy(w1)
-    offspring2 = np.copy(w2)
 
-    for i in range(np.shape(w1)[1]):
+    prob_crossover = params["prob_crossover"]
+    offspring1 = np.copy(individuals[mating_pop[0]])
+    offspring2 = np.copy(individuals[mating_pop[1]])
+    offspring = np.empty(
+        (
+            0,
+            offspring1.shape[0],
+            offspring1.shape[1],
+        ),
+        float,
+    )
+
+    # Crossover
+
+    # Method 1
+    # Take a random number of connections based on probability and swap them
+    #
+    # connections = offspring1[1:, :].size
+    # exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
+    # tmp = np.copy(offspring1)
+    # offspring1[1:, :].ravel()[exchange] = offspring2[1:, :].ravel()[exchange]
+    # offspring2[1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+
+    # Method 2
+    # Take random nodes based on probability and swap them
+    #
+    for i in range(offspring1.shape[1]):
         if np.random.random() < prob_crossover:
             tmp = np.copy(offspring1[:, i])
             offspring1[:, i] = offspring2[:, i]
             offspring2[:, i] = tmp
 
-    return offspring1, offspring2
+    offspring = np.concatenate((offspring, [offspring1], [offspring2]))
+    return offspring

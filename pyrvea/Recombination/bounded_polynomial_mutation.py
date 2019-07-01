@@ -1,10 +1,16 @@
 import numpy as np
 
 
-def mutation(population, offspring, prob_mut=0.3, dis_mut=20):
+def mutate(offspring, individuals, params, lower_limits, upper_limits, prob_mut=0.3, dis_mut=20):
 
-    min_val = np.ones_like(offspring) * population.lower_limits
-    max_val = np.ones_like(offspring) * population.upper_limits
+    try:
+        prob_mut = params["prob_mut"]
+        dis_mut = params["dis_mut"]
+    except:
+        pass
+
+    min_val = np.ones_like(offspring) * lower_limits
+    max_val = np.ones_like(offspring) * upper_limits
     k = np.random.random(offspring.shape)
     miu = np.random.random(offspring.shape)
     temp = np.logical_and((k <= prob_mut), (miu < 0.5))

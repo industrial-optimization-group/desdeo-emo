@@ -29,7 +29,7 @@ class PPGA(BaseEA):
 
         self.params = self.set_params(population, **EA_parameters)
         self.lattice = Lattice(60, 60, self.params)
-        self._next_iteration(population)
+        #self._next_iteration(population)
 
     def set_params(
         self,
@@ -94,10 +94,8 @@ class PPGA(BaseEA):
             "logging": logging,
             "logfile": logfile,
             "current_iteration_gen_count": 0,
-            "current_total_gen_count": 1,
+            "current_total_gen_count": 0,
             "current_iteration_count": 0,
-            "crossover_type": crossover_type,
-            "mutation_type": mutation_type,
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
@@ -158,7 +156,11 @@ class PPGA(BaseEA):
 
         # Choose and create offspring
         if population.problem.__class__.__name__ == "EvoNN":
-
+            self.params["std_dev"] = (5 / 3) * (
+                1
+                - self.params["current_total_gen_count"]
+                / self.params["total_generations"]
+            )
             offspring = np.empty(
                 (
                     0,
@@ -173,17 +175,17 @@ class PPGA(BaseEA):
                 - self.params["current_total_gen_count"]
                 / self.params["total_generations"]
             )
-
             offspring = np.empty((0, population.problem.subnet_struct[0]))
-
         for ind in range(population.individuals.shape[0]):
 
             mate_idx = self.lattice.choose_mate(ind)
             if not mate_idx:
                 continue
             else:
-                offspring1, offspring2 = population.mate(ind, mate_idx, self.params)
-                offspring = np.concatenate((offspring, [offspring1], [offspring2]))
+                mating_pop = [ind, mate_idx]
+                offspring = np.concatenate((offspring, population.mate(mating_pop, self.params)))
+
+                #offspring = np.concatenate((offspring, [offspring1], [offspring2]))
 
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(offspring.shape[0])
@@ -206,7 +208,7 @@ class PPGA(BaseEA):
             population.delete_or_keep(selected, "delete")
 
         print(
-            str(self.params["current_iteration_gen_count"])
+            str(self.params["current_total_gen_count"])
             + " "
             + "population size: "
             + str(population.individuals.shape[0])
@@ -221,7 +223,7 @@ class PPGA(BaseEA):
 
         print(
             "AFTER KILL "
-            + str(self.params["current_iteration_gen_count"])
+            + str(self.params["current_total_gen_count"])
             + " "
             + "population size: "
             + str(population.individuals.shape[0])

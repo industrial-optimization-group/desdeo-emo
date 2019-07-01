@@ -77,7 +77,12 @@ class EvoDN2(baseProblem):
     def train(self, model):
 
         pop = Population(
-            self, assign_type="EvoDN2", pop_size=self.params["pop_size"], plotting=False
+            self,
+            assign_type="EvoDN2",
+            pop_size=self.params["pop_size"],
+            crossover_type="DNN_gaussian_xover+mut",
+            mutation_type="DNN_gaussian_xover+mut",
+            plotting=False,
         )
         pop.evolve(
             PPGA,
@@ -85,10 +90,8 @@ class EvoDN2(baseProblem):
                 "logging": self.params["logging"],
                 "logfile": model.log,
                 "iterations": 10,
-                "generations_per_iteration": 10,
-                "crossover_type": "short",
-                "mutation_type": "short",
-            },
+                "generations_per_iteration": 10
+            }
         )
 
         non_dom_front = pop.non_dominated()
@@ -127,8 +130,6 @@ class EvoDN2(baseProblem):
                 nets.append(layers)
 
             individuals.append(nets)
-
-        individuals = np.asarray(individuals)
 
         return individuals
 

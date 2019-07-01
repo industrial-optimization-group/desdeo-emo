@@ -31,7 +31,11 @@ problem = newProblem(name, numvar, numobj, numconst)
 lattice_resolution = 4
 population_size = 105
 
-pop = Population(problem)
+pop = Population(
+    problem,
+    crossover_type="simulated_binary_crossover",
+    mutation_type="bounded_polynomial_mutation",
+)
 
 pop.evolve(RVEA)
 

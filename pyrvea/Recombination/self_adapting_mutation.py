@@ -2,8 +2,8 @@ import numpy as np
 from random import sample
 
 
-def ppga_mutation(
-    alternatives, w1, w2, cur_gen=1, total_gen=10, prob_mut=0.3, mut_strength=0.7
+def mutate(
+    offspring, individuals, params, lower_limits=None, upper_limits=None
 ):
     """Randomly mutate two individuals based on a probability
 
@@ -25,9 +25,19 @@ def ppga_mutation(
         the strength of the mutation constant
     """
 
+    cur_gen = params["current_iteration_gen_count"]
+    total_gen = params["generations"]
+    prob_mut = params["prob_mutation"]
+    mut_strength = params["mut_strength"]
+
+    alternatives = individuals[:, 1:, :]
+
+    mut_offspring1 = offspring[0]
+    mut_offspring2 = offspring[1]
+
     # Iterate over both individuals at the same time to avoid nested looping
     it = np.nditer(
-        [w1[1:, :], w2[1:, :]], flags=["multi_index"], op_flags=["readwrite"]
+        [mut_offspring1[1:, :], mut_offspring2[1:, :]], flags=["multi_index"], op_flags=["readwrite"]
     )
 
     # wx = individual cells (connections) in the weight matrix
@@ -52,7 +62,7 @@ def ppga_mutation(
             ]
 
             # Mutation function, +1 in w1[it.multi_index[0]+1 is to ignore bias row
-            w1[it.multi_index[0] + 1, it.multi_index[1]] = wx1 + mut_strength * (
+            mut_offspring1[it.multi_index[0] + 1, it.multi_index[1]] = wx1 + mut_strength * (
                 1 - cur_gen / total_gen
             ) * (
                 select[0][it.multi_index[0], it.multi_index[1]]
@@ -79,11 +89,11 @@ def ppga_mutation(
             ]
 
             # Mutation function, +1 in w2[it.multi_index[0]+1 is to ignore bias row
-            w2[it.multi_index[0] + 1, it.multi_index[1]] = wx2 + mut_strength * (
+            mut_offspring2[it.multi_index[0] + 1, it.multi_index[1]] = wx2 + mut_strength * (
                 1 - cur_gen / total_gen
             ) * (
                 select[0][it.multi_index[0], it.multi_index[1]]
                 - select[1][it.multi_index[0], it.multi_index[1]]
             )
 
-    return w1, w2
+    return mut_offspring1, mut_offspring2

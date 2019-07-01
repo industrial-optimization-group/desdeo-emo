@@ -16,7 +16,7 @@ from pyrvea.Population.Population import Population
 from scipy.stats import bernoulli as bn
 
 from pyrvea.Recombination.ppga_crossover import ppga_crossover
-from pyrvea.Recombination.ppga_mutation import ppga_mutation
+from pyrvea.Recombination.self_adapting_mutation import ppga_mutation
 
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem

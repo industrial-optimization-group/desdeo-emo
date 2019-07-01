@@ -2,9 +2,14 @@ import numpy as np
 from random import shuffle
 
 
-def crossover(population, prob_xover=1, dis_xover=30):
+def mate(mating_pop, pop, params, prob_xover=1, dis_xover=30):
 
-    pop = population.individuals
+    try:
+        prob_xover = params["prob_xover"]
+        dis_xover = params["dis_xover"]
+    except:
+        pass
+
     pop_size, num_var = pop.shape
     shuffled_ids = list(range(pop_size))
     shuffle(shuffled_ids)

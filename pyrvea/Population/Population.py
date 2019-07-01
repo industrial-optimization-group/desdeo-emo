@@ -11,16 +11,25 @@ from pygmo import non_dominated_front_2d as nd2
 
 from tqdm import tqdm, tqdm_notebook
 
-from pyrvea.Recombination.bounded_polynomial_mutation import mutation
-from pyrvea.Recombination.simulated_binary_crossover import crossover
+# from pyrvea.Recombination.bounded_polynomial_mutation import mutation as rvea_mutation
+# from pyrvea.Recombination.simulated_binary_crossover import crossover as rvea_crossover
 
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
+from pyrvea.Recombination import (
+    evodn2_xover_mut_gaussian,
+    evonn_mut_gaussian,
+    ppga_crossover,
+    self_adapting_mutation,
+    bounded_polynomial_mutation,
+    simulated_binary_crossover,
+)
 
-from pyrvea.Recombination.ppga_crossover import ppga_crossover
+# from pyrvea.Recombination.ppga_crossover import ppga_crossover
 from pyrvea.Recombination.evodn2_xover_mut import evodn2_xover_mut
-from pyrvea.Recombination.evodn2_xover_mut_gaussian import evodn2_xover_mut_gaussian
-from pyrvea.Recombination.ppga_mutation import ppga_mutation
+
+# from pyrvea.Recombination.evodn2_xover_mut_gaussian import evodn2_xover_mut_gaussian
+# from pyrvea.Recombination.ppga_mutation import ppga_mutation
 from math import ceil
 
 if TYPE_CHECKING:
@@ -37,6 +46,8 @@ class Population:
         assign_type: str = "LHSDesign",
         plotting: bool = True,
         pop_size=None,
+        crossover_type=None,
+        mutation_type=None,
         *args
     ):
         """Initialize the population.
@@ -64,11 +75,22 @@ class Population:
         self.hyp = 0
         self.non_dom = 0
         self.pop_size = pop_size
+        self.recombination_funcs = {
+            "DNN_gaussian_xover+mut": evodn2_xover_mut_gaussian,
+            "evonn_gaussian" : evonn_mut_gaussian,
+            "EvoNN_xover": ppga_crossover,
+            "EvoNN_mut": self_adapting_mutation,
+            "bounded_polynomial_mutation": bounded_polynomial_mutation,
+            "simulated_binary_crossover": simulated_binary_crossover,
+        }
+        self.crossover_type = crossover_type
+        self.mutation_type = mutation_type
+        self.crossover = self.recombination_funcs[crossover_type]
+        self.mutation = self.recombination_funcs[mutation_type]
         self.problem = problem
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-
         self.individuals = np.empty((0, self.num_var), float)
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
@@ -160,14 +182,9 @@ class Population:
         new_pop: np.ndarray
             Decision variable values for new population.
         """
-        if new_pop.ndim == 1:
-            self.append_individual(new_pop)
+        for i in range(len(new_pop)):
+            self.append_individual(new_pop[i])
 
-        elif new_pop.ndim >= 2:
-            for i in range(0, new_pop.shape[0]):
-                self.append_individual(new_pop[i, ...])
-        else:
-            print("Error while adding new individuals. Check dimensions.")
         # print(self.ideal_fitness)
         self.update_ideal_and_nadir()
 
@@ -308,64 +325,25 @@ class Population:
 
         if self.plotting:
             self.plot_objectives()  # Figure was created in init
-        for i in progressbar(range(1, iterations), desc="Iteration"):
+        for i in progressbar(range(0, iterations), desc="Iteration"):
             ea._run_interruption(self)
             ea._next_iteration(self)
             if self.plotting:
                 self.plot_objectives()
 
-    def mate(self, ind1=None, ind2=None, params=None):
+    def mate(self, mating_pop=None, params=None):
         """Conduct crossover and mutation over the population.
 
-        Conduct simulated binary crossover and bounded polynomial mutation.
         """
 
-        if self.individuals.ndim >= 2:
-            # Get individuals at indices
-            w1, w2 = self.individuals[ind1], self.individuals[ind2]
+        offspring = self.crossover.mate(mating_pop, self.individuals, params)
+        if (
+            not self.crossover_type == self.mutation_type
+            and self.mutation_type is not None
+        ):
+            self.mutation.mutate(offspring, self.individuals, params, self.lower_limits, self.upper_limits)
 
-            # Perform crossover
-            if params["crossover_type"] == "short":
-                offspring1, offspring2 = evodn2_xover_mut_gaussian(
-                    w1,
-                    w2,
-                    self.individuals,
-                    params["prob_crossover"],
-                    params["prob_mutation"],
-                    0.7,
-                    params["current_total_gen_count"],
-                    params["total_generations"],
-                    params["std_dev"]
-                )
-            else:
-                xover_w1, xover_w2 = ppga_crossover(w1, w2, params["prob_crossover"])
-
-                # Make a list of individuals suitable for mutation, exclude the ones to be mutated
-                # so that they won't mutate with themselves
-                indices = [ind1, ind2]
-                mask = np.ones(len(self.individuals), dtype=bool)
-                mask[indices] = False
-                alternatives = self.individuals[mask, ...][:, 1:, :]
-
-                # Mutate
-                offspring1, offspring2 = ppga_mutation(
-                    alternatives,
-                    xover_w1,
-                    xover_w2,
-                    params["current_total_gen_count"],
-                    params["total_generations"],
-                    params["prob_mutation"],
-                    params["mut_strength"],
-                )
-
-            return offspring1, offspring2
-
-        else:
-            offspring = crossover(self)
-            p = 1 / self.num_var
-            mut_offspring = mutation(self, offspring, prob_mut=p)
-
-            return mut_offspring
+        return offspring
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""
