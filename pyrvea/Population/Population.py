@@ -77,9 +77,9 @@ class Population:
         self.pop_size = pop_size
         self.recombination_funcs = {
             "DNN_gaussian_xover+mut": evodn2_xover_mut_gaussian,
-            "evonn_gaussian" : evonn_mut_gaussian,
+            "2d_gaussian" : evonn_mut_gaussian,
             "EvoNN_xover": ppga_crossover,
-            "EvoNN_mut": self_adapting_mutation,
+            "self_adapting": self_adapting_mutation,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
             "simulated_binary_crossover": simulated_binary_crossover,
         }
@@ -91,7 +91,7 @@ class Population:
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
         # These attributes contain the solutions.
-        self.individuals = np.empty((0, self.num_var), float)
+        self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
         self.constraint_violation = np.empty(
@@ -132,7 +132,7 @@ class Population:
             pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
             pop_size = pop_size_options[self.problem.num_of_objectives - 2]
 
-        num_var = self.individuals.shape[1]
+        num_var = self.num_var
 
         if design == "RandomDesign":
             individuals = np.random.random((pop_size, num_var))
@@ -150,12 +150,13 @@ class Population:
             )
         elif design == "EvoNN":
 
+            self.individuals = []
             individuals = self.problem.create_population()
-            self.individuals = np.empty((0, individuals.shape[1], individuals.shape[2]))
+
 
         elif design == "EvoDN2":
-            self.individuals = np.empty((0, self.problem.subnet_struct[0]))
-
+            #self.individuals = np.empty((0, self.problem.subnet_struct[0]))
+            self.individuals = []
             individuals = self.problem.create_population()
 
         else:
@@ -219,48 +220,49 @@ class Population:
         self.fitness = new_fitness
         self.constraint_violation = new_CV
 
-    def delete_or_keep(self, indices: list, delete_or_keep):
-        """Remove individuals from population which ARE in "indices".
-        With boolean masks deleted individuals can be obtained with
-        inverted mask (~mask)
+    def delete_or_keep(self, indices, delete_or_keep="delete"):
+        """Remove from population individuals which are in indices, or
+        keep them and remove all others.
 
         Parameters
         ----------
-        indices: list
+        indices: list or ndarray
             Indices of individuals to keep
+        delete_or_keep: str
+            Whether to delete indices from current population, or keep them and delete others
         """
-        indices.sort()
+
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
 
         # new_pop = np.delete(self.individuals, indices, axis=0)
-        new_pop = self.individuals[mask, ...]
-        deleted_pop = self.individuals[~mask, ...]
+        new_pop = np.array(self.individuals)[mask]
+        deleted_pop = np.array(self.individuals)[~mask]
 
         # new_obj = np.delete(self.objectives, indices, axis=0)
-        new_obj = self.objectives[mask, ...]
-        deleted_obj = self.objectives[~mask, ...]
+        new_obj = self.objectives[mask]
+        deleted_obj = self.objectives[~mask]
 
         # new_fitness = np.delete(self.fitness, indices, axis=0)
-        new_fitness = self.fitness[mask, ...]
-        deleted_fitness = self.fitness[~mask, ...]
+        new_fitness = self.fitness[mask]
+        deleted_fitness = self.fitness[~mask]
 
         if len(self.constraint_violation) > 0:
             # new_cv = np.delete(self.constraint_violation, indices, axis=0)
-            new_cv = self.constraint_violation[mask, ...]
-            deleted_cv = self.constraint_violation[~mask, ...]
+            new_cv = self.constraint_violation[mask]
+            deleted_cv = self.constraint_violation[~mask]
         else:
             deleted_cv = self.constraint_violation
             new_cv = self.constraint_violation
 
         if delete_or_keep == "delete":
-            self.individuals = new_pop
+            self.individuals = new_pop.tolist()
             self.objectives = new_obj
             self.fitness = new_fitness
             self.constraint_violation = new_cv
 
         elif delete_or_keep == "keep":
-            self.individuals = deleted_pop
+            self.individuals = deleted_pop.tolist()
             self.objectives = deleted_obj
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
@@ -272,7 +274,8 @@ class Population:
         ----------
         ind: np.ndarray
         """
-        self.individuals = np.concatenate((self.individuals, [ind]))
+
+        self.individuals.append(ind)
         obj, CV, fitness = self.evaluate_individual(ind)
         self.objectives = np.vstack((self.objectives, obj))
         self.constraint_violation = np.vstack((self.constraint_violation, CV))

@@ -123,7 +123,7 @@ class EvoNN(baseProblem):
             pop_size=self.params["pop_size"],
             plotting=False,
             crossover_type="EvoNN_xover",
-            mutation_type="evonn_gaussian",
+            mutation_type="2d_gaussian",
         )
         pop.evolve(
             PPGA,

@@ -17,14 +17,6 @@ def mate(mating_pop, individuals, params):
     prob_crossover = params["prob_crossover"]
     offspring1 = np.copy(individuals[mating_pop[0]])
     offspring2 = np.copy(individuals[mating_pop[1]])
-    offspring = np.empty(
-        (
-            0,
-            offspring1.shape[0],
-            offspring1.shape[1],
-        ),
-        float,
-    )
 
     # Crossover
 
@@ -46,5 +38,5 @@ def mate(mating_pop, individuals, params):
             offspring1[:, i] = offspring2[:, i]
             offspring2[:, i] = tmp
 
-    offspring = np.concatenate((offspring, [offspring1], [offspring2]))
+    offspring = [offspring1, offspring2]
     return offspring

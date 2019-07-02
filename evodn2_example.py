@@ -13,8 +13,8 @@ training_data_input, training_data_output = test_prob.create_training_data(
 model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 model_evodn2.set_params(
         pop_size=500,
-        subnet_struct=(6, 10),
-        num_nodes=10,
+        subnet_struct=(4, 6),
+        num_nodes=6,
         prob_omit=0.2,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -23,9 +23,9 @@ model_evodn2.set_params(
         logging=True,
         plotting=True)
 
-model_evodn2.fit(training_data_input, training_data_output)
-y = model_evodn2.predict(training_data_input)
-model_evodn2.plot(y, training_data_output)
+# model_evodn2.fit(training_data_input, training_data_output)
+# y = model_evodn2.predict(training_data_input)
+# model_evodn2.plot(y, training_data_output)
 
 model_evonn = EvoNNModel(name="EvoNN_" + test_prob.name)
 model_evonn.set_params(

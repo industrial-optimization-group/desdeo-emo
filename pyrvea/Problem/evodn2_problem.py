@@ -113,7 +113,7 @@ class EvoDN2(baseProblem):
                 in_nodes = len(self.subsets[j])
 
                 for k in range(num_layers):
-                    out_nodes = random.randint(1, self.num_nodes)
+                    out_nodes = random.randint(2, self.num_nodes)
                     net = np.random.uniform(
                         self.w_low, self.w_high, size=(in_nodes, out_nodes)
                     )

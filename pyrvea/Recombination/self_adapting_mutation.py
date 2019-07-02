@@ -30,8 +30,7 @@ def mutate(
     prob_mut = params["prob_mutation"]
     mut_strength = params["mut_strength"]
 
-    alternatives = individuals[:, 1:, :]
-
+    alternatives = np.array(individuals)[:, 1:, :]
     mut_offspring1 = offspring[0]
     mut_offspring2 = offspring[1]
 
@@ -95,5 +94,3 @@ def mutate(
                 select[0][it.multi_index[0], it.multi_index[1]]
                 - select[1][it.multi_index[0], it.multi_index[1]]
             )
-
-    return mut_offspring1, mut_offspring2

@@ -39,14 +39,6 @@ def mutate(
     parent1, parent2 = mating_pop[0], mating_pop[1]
     offspring1 = np.copy(parent1)
     offspring2 = np.copy(parent2)
-    offspring = np.empty(
-        (
-            0,
-            offspring1.shape[0],
-            offspring1.shape[1],
-        ),
-        float,
-    )
 
     cur_gen = params["current_total_gen_count"]
     total_gen = params["total_generations"]
@@ -105,7 +97,3 @@ def mutate(
     # offspring2[1:, :].ravel()[mut] = offspring2[1:, :].ravel()[mut] + params["mut_strength"] * (
     #             1 - cur_gen / total_gen
     #         ) * (select[1].ravel()[mut] - select[0].ravel()[mut])
-
-
-    offspring = np.concatenate((offspring, [offspring1], [offspring2]))
-    return offspring

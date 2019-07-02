@@ -7,9 +7,10 @@ def mate(mating_pop, pop, params, prob_xover=1, dis_xover=30):
     try:
         prob_xover = params["prob_xover"]
         dis_xover = params["dis_xover"]
-    except:
+    except ValueError:
         pass
 
+    pop = np.array(pop)
     pop_size, num_var = pop.shape
     shuffled_ids = list(range(pop_size))
     shuffle(shuffled_ids)

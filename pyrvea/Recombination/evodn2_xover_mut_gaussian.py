@@ -37,7 +37,6 @@ def mate(
     parent1, parent2 = individuals[mating_pop[0]], individuals[mating_pop[1]]
     offspring1 = deepcopy(parent1)
     offspring2 = deepcopy(parent2)
-    offspring = np.empty((0, len(offspring1)))
 
     prob_crossover = params["prob_crossover"]
     prob_mutation = params["prob_mutation"]
@@ -84,5 +83,5 @@ def mate(
             except IndexError:
                 continue
 
-    offspring = np.concatenate((offspring, [offspring1], [offspring2]))
+    offspring = [offspring1, offspring2]
     return offspring
