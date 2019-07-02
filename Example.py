@@ -37,7 +37,7 @@ pop = Population(
     mutation_type="bounded_polynomial_mutation",
 )
 
-pop.evolve(NSGAIII)
+pop.evolve(RVEA)
 
 pop.non_dominated()
 refpoint = 2

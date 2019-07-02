@@ -101,38 +101,6 @@ class EvoDN2(baseProblem):
         model.non_linear_layer, _ = self.activation(model.subnets)
         model.linear_layer, _ = self.minimize_error(model.non_linear_layer)
 
-    def create_population(self):
-
-        individuals = []
-        for i in range(self.params["pop_size"]):
-            nets = []
-            for j in range(self.subnet_struct[0]):
-
-                layers = []
-                num_layers = np.random.randint(1, self.subnet_struct[1])
-                in_nodes = len(self.subsets[j])
-
-                for k in range(num_layers):
-                    out_nodes = random.randint(2, self.num_nodes)
-                    net = np.random.uniform(
-                        self.w_low, self.w_high, size=(in_nodes, out_nodes)
-                    )
-                    # Randomly set some weights to zero
-                    zeros = np.random.choice(
-                        np.arange(net.size), ceil(net.size * self.params["prob_omit"])
-                    )
-                    net.ravel()[zeros] = 0
-
-                    # Add bias
-                    net = np.insert(net, 0, 1, axis=0)
-                    in_nodes = out_nodes
-                    layers.append(net)
-                nets.append(layers)
-
-            individuals.append(nets)
-
-        return individuals
-
     def objectives(self, decision_variables) -> list:
 
         """ Use this method to calculate objective functions.

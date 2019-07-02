@@ -67,7 +67,7 @@ def mutate(
     # Choose two random individuals and a random number of connections,
     # mutate offspring based on current gen and connections of two randomly chosen individuals
     #
-    # alternatives = individuals[:, 1:, :]
+    # alternatives = np.array(individuals)[:, 1:, :]
     #
     # # Randomly select two individuals with current match active (=non-zero)
     # select = alternatives[

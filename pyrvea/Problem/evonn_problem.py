@@ -79,36 +79,6 @@ class EvoNN(baseProblem):
         self.num_input_nodes = self.num_of_variables
         self.num_nodes = self.params["num_nodes"]
 
-    def create_population(self):
-        """Create a population of neural networks for the EvoNN problem.
-
-        Individuals are 2d arrays representing the weight matrices of the NNs.
-        One extra row is added for bias. Individuals are then stacked together
-        to form the population.
-
-        Returns
-        -------
-        individuals : ndarray
-            The population for EvoNN
-        """
-        individuals = np.random.uniform(
-            self.w_low,
-            self.w_high,
-            size=(self.params["pop_size"], self.num_input_nodes, self.num_nodes),
-        )
-
-        # Randomly set some weights to zero
-        zeros = np.random.choice(
-            np.arange(individuals.size),
-            ceil(individuals.size * self.params["prob_omit"]),
-        )
-        individuals.ravel()[zeros] = 0
-
-        # Set bias
-        individuals = np.insert(individuals, 0, 1, axis=1)
-
-        return individuals
-
     def train(self, model):
         """Trains the networks and selects the best model from the non dominated front.
 

@@ -11,8 +11,7 @@ from pygmo import non_dominated_front_2d as nd2
 
 from tqdm import tqdm, tqdm_notebook
 
-# from pyrvea.Recombination.bounded_polynomial_mutation import mutation as rvea_mutation
-# from pyrvea.Recombination.simulated_binary_crossover import crossover as rvea_crossover
+from pyrvea.Population.create_individuals import create_new_individuals
 
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
@@ -24,13 +23,6 @@ from pyrvea.Recombination import (
     bounded_polynomial_mutation,
     simulated_binary_crossover,
 )
-
-# from pyrvea.Recombination.ppga_crossover import ppga_crossover
-from pyrvea.Recombination.evodn2_xover_mut import evodn2_xover_mut
-
-# from pyrvea.Recombination.evodn2_xover_mut_gaussian import evodn2_xover_mut_gaussian
-# from pyrvea.Recombination.ppga_mutation import ppga_mutation
-from math import ceil
 
 if TYPE_CHECKING:
     from pyrvea.Problem.baseProblem import baseProblem
@@ -77,7 +69,7 @@ class Population:
         self.pop_size = pop_size
         self.recombination_funcs = {
             "DNN_gaussian_xover+mut": evodn2_xover_mut_gaussian,
-            "2d_gaussian" : evonn_mut_gaussian,
+            "2d_gaussian": evonn_mut_gaussian,
             "EvoNN_xover": ppga_crossover,
             "self_adapting": self_adapting_mutation,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
@@ -103,66 +95,8 @@ class Population:
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
         if not assign_type == "empty":
-            self.create_new_individuals(assign_type, pop_size=self.pop_size)
-
-    def create_new_individuals(
-        self, design: str = "LHSDesign", pop_size: int = None, decision_variables=None
-    ):
-        """Create, evaluate and add new individuals to the population. Initiate Plots.
-
-        The individuals can be created randomly, by LHS design, or can be passed by the
-        user.
-
-        Parameters
-        ----------
-        design : str, optional
-            Describe the method of creation of new individuals.
-            "RandomDesign" creates individuals randomly.
-            "LHSDesign" creates individuals using Latin hypercube sampling.
-            "EvoNN" creates Artificial Neural Networks as individuals.
-        pop_size : int, optional
-            Number of individuals in the population. If none, some default population
-            size based on number of objectives is chosen.
-        decision_variables : numpy array or list, optional
-            Pass decision variables to be added to the population.
-        """
-        if decision_variables is not None:
-            pass
-        if pop_size is None:
-            pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
-            pop_size = pop_size_options[self.problem.num_of_objectives - 2]
-
-        num_var = self.num_var
-
-        if design == "RandomDesign":
-            individuals = np.random.random((pop_size, num_var))
-            # Scaling
-            individuals = (
-                individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
-            )
-        elif design == "LHSDesign":
-            individuals = lhs(num_var, samples=pop_size)
-            # Scaling
-            individuals = (
-                individuals * (self.upper_limits - self.lower_limits)
-                + self.lower_limits
-            )
-        elif design == "EvoNN":
-
-            self.individuals = []
-            individuals = self.problem.create_population()
-
-
-        elif design == "EvoDN2":
-            #self.individuals = np.empty((0, self.problem.subnet_struct[0]))
-            self.individuals = []
-            individuals = self.problem.create_population()
-
-        else:
-            print("Design not yet supported.")
-
-        self.add(individuals)
+            individuals = create_new_individuals(assign_type, problem, pop_size=self.pop_size)
+            self.add(individuals)
 
         if self.plotting:
             self.figure = []
