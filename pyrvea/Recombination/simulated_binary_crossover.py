@@ -7,7 +7,7 @@ def mate(mating_pop, pop, params, prob_xover=1, dis_xover=30):
     try:
         prob_xover = params["prob_xover"]
         dis_xover = params["dis_xover"]
-    except ValueError:
+    except KeyError:
         pass
 
     pop = np.array(pop)

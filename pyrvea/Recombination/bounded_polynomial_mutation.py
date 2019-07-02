@@ -6,7 +6,7 @@ def mutate(offspring, individuals, params, lower_limits, upper_limits, prob_mut=
     try:
         prob_mut = params["prob_mut"]
         dis_mut = params["dis_mut"]
-    except ValueError:
+    except KeyError:
         pass
 
     min_val = np.ones_like(offspring) * lower_limits
