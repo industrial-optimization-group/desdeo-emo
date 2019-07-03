@@ -6,22 +6,30 @@ import numpy as np
 import plotly
 import plotly.graph_objs as go
 import random
-from math import ceil
 
 
 class EvoDN2(baseProblem):
-    """Creates an Artificial Neural Network (ANN) for the EvoDN2 algorithm.
+    """Creates Deep Neural Networks (DNN) for the EvoDN2 algorithm.
+
+    DNNs have a fixed number of subnets, each of which has random number of
+    layers and nodes in each layer, dependant on max layers and max nodes set by user.
+
     Parameters
     ----------
     name : str
         Name of the sample
+    X_train : ndarray
+        Training data input
+    y_train : ndarray
+        Training data target values
     num_of_objectives : int
         The number of objectives
     w_low : float
         The lower bound for randomly generated weights
     w_high : float
         The upper bound for randomly generated weights
-    params :
+    params : dict
+        Parameters for the models
     """
 
     def __init__(
@@ -75,13 +83,14 @@ class EvoDN2(baseProblem):
         return self.subsets
 
     def train(self, model):
-
+        """Create a random population, evolve it and select a model based on criterion."""
         pop = Population(
             self,
             assign_type="EvoDN2",
             pop_size=self.params["pop_size"],
-            crossover_type="DNN_gaussian_xover+mut",
-            mutation_type="DNN_gaussian_xover+mut",
+            recombination_type=self.params["recombination_type"],
+            crossover_type=self.params["crossover_type"],
+            mutation_type=self.params["mutation_type"],
             plotting=False,
         )
         pop.evolve(
@@ -102,8 +111,8 @@ class EvoDN2(baseProblem):
         model.linear_layer, _ = self.minimize_error(model.non_linear_layer)
 
     def objectives(self, decision_variables) -> list:
-
         """ Use this method to calculate objective functions.
+
         Parameters
         ----------
         decision_variables : ndarray
@@ -168,21 +177,29 @@ class EvoDN2(baseProblem):
             Output of the activation function
         Returns
         -------
-        w_matrix[0] : ndarray
-            The weight matrix of the upper part of the network
-        rss : float
-            Sums of residuals
+        linear_solution[0] : ndarray
+            The linear layer of the network
         predicted_values : ndarray
             The prediction of the model
         """
 
         if self.params["opt_func"] == "llsq":
-            w2 = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
-            predicted_values = np.dot(activated_layer, w2[0])
-            return w2[0], predicted_values
+            linear_solution = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
+            predicted_values = np.dot(activated_layer, linear_solution[0])
+            return linear_solution[0], predicted_values
 
     def loss_function(self, predicted_values):
+        """Calculate the final training error.
 
+        Parameters
+        ----------
+        predicted_values : ndarray
+            Output of the model.
+
+        Returns
+        -------
+        Training error : float
+        """
         if self.params["loss_func"] == "mse":
             return ((self.y_train - predicted_values) ** 2).mean()
         if self.params["loss_func"] == "rmse":
@@ -308,6 +325,9 @@ class EvoDN2Model(EvoDN2):
         opt_func="llsq",
         loss_func="rmse",
         criterion="min_error",
+        crossover_type=None,
+        mutation_type=None,
+        recombination_type="DNN_gaussian_xover+mut",
         logging=False,
         plotting=False,
     ):
@@ -332,6 +352,12 @@ class EvoDN2Model(EvoDN2):
             The loss function to use.
         criterion : str
             The criterion to use for selecting the model.
+        crossover_type : str
+            Crossover method.
+        mutation_type : str
+            Mutation method.
+        recombination_type : str
+            Combined crossover+mutation method.
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -347,6 +373,9 @@ class EvoDN2Model(EvoDN2):
             "opt_func": opt_func,
             "loss_func": loss_func,
             "criterion": criterion,
+            "crossover_type": crossover_type,
+            "mutation_type": mutation_type,
+            "recombination_type": recombination_type,
             "logging": logging,
             "plotting": plotting,
         }
@@ -370,7 +399,7 @@ class EvoDN2Model(EvoDN2):
 
         prob.train(self)
 
-        self.single_variable_response(ploton=False, log=self.log)
+        #self.single_variable_response(ploton=False, log=self.log)
 
     def plot(self, prediction, target):
 

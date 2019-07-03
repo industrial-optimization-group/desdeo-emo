@@ -166,8 +166,8 @@ class EvoNNTestProblem(baseProblem):
             self.obj_func = np.sin(x + y) + (x - y)**2 - 1.5 * x + 2.5 * y + 1
 
         elif self.name == "min-ex":
-            x1 = decision_variables[1]
-            x2 = decision_variables[2]
+            x1 = decision_variables[0]
+            x2 = decision_variables[1]
 
             self.obj_func = [x1, (1 + x2) / x1]
 

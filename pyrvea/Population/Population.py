@@ -40,6 +40,7 @@ class Population:
         pop_size=None,
         crossover_type=None,
         mutation_type=None,
+        recombination_type=None,
         *args
     ):
         """Initialize the population.
@@ -77,12 +78,14 @@ class Population:
         }
         self.crossover_type = crossover_type
         self.mutation_type = mutation_type
-        self.crossover = self.recombination_funcs[crossover_type]
-        self.mutation = self.recombination_funcs[mutation_type]
+        self.recombination_type = recombination_type
+        if recombination_type is None:
+            self.crossover = self.recombination_funcs[crossover_type]
+            self.mutation = self.recombination_funcs[mutation_type]
+        self.recombination = self.recombination_funcs[recombination_type]
         self.problem = problem
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
-        # These attributes contain the solutions.
         self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
         self.fitness = np.empty((0, self.problem.num_of_objectives), float)
@@ -118,41 +121,43 @@ class Population:
             Decision variable values for new population.
         """
         for i in range(len(new_pop)):
-            self.append_individual(new_pop[i])
+             self.append_individual(new_pop[i])
 
         # print(self.ideal_fitness)
         self.update_ideal_and_nadir()
 
-    def keep(self, indices: list):
-        """Remove individuals from population which are not in "indices".
+    def append_individual(self, ind: np.ndarray):
+        """Evaluate and add individual to the population.
 
         Parameters
         ----------
-        indices: list
-            Indices of individuals to keep
+        ind: np.ndarray
         """
 
-        new_pop = self.individuals[indices, :]
-        new_obj = self.objectives[indices, :]
-        new_fitness = self.fitness[indices, :]
-        new_CV = self.constraint_violation[indices, :]
-        self.individuals = new_pop
-        self.objectives = new_obj
-        length_of_archive = len(self.archive)
-        if length_of_archive == 0:
-            gen_count = 0
-        else:
-            gen_count = self.archive["generation"].iloc[-1] + 1
-        new_entries = pd.DataFrame(
-            {
-                "generation": [gen_count] * len(new_obj),
-                "decision_variables": new_pop.tolist(),
-                "objective_values": new_obj.tolist(),
-            }
-        )
-        self.archive = self.archive.append(new_entries, ignore_index=True)
-        self.fitness = new_fitness
-        self.constraint_violation = new_CV
+        self.individuals.append(ind)
+        obj, CV, fitness = self.evaluate_individual(ind)
+        self.objectives = np.vstack((self.objectives, obj))
+        self.constraint_violation = np.vstack((self.constraint_violation, CV))
+        self.fitness = np.vstack((self.fitness, fitness))
+
+    def evaluate_individual(self, ind: np.ndarray):
+        """Evaluate individual.
+
+        Returns objective values, constraint violation, and fitness.
+
+        Parameters
+        ----------
+        ind: np.ndarray
+        """
+        obj = self.problem.objectives(ind)
+        CV = np.empty((0, self.problem.num_of_constraints), float)
+        fitness = obj
+
+        if self.problem.num_of_constraints:
+            CV = self.problem.constraints(ind, obj)
+            fitness = self.eval_fitness(ind, obj, self.problem)
+
+        return (obj, CV, fitness)
 
     def delete_or_keep(self, indices, delete_or_keep="delete"):
         """Remove from population individuals which are in indices, or
@@ -190,49 +195,16 @@ class Population:
             new_cv = self.constraint_violation
 
         if delete_or_keep == "delete":
-            self.individuals = new_pop.tolist()
+            self.individuals = list(new_pop)
             self.objectives = new_obj
             self.fitness = new_fitness
             self.constraint_violation = new_cv
 
         elif delete_or_keep == "keep":
-            self.individuals = deleted_pop.tolist()
+            self.individuals = list(deleted_pop)
             self.objectives = deleted_obj
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
-
-    def append_individual(self, ind: np.ndarray):
-        """Evaluate and add individual to the population.
-
-        Parameters
-        ----------
-        ind: np.ndarray
-        """
-
-        self.individuals.append(ind)
-        obj, CV, fitness = self.evaluate_individual(ind)
-        self.objectives = np.vstack((self.objectives, obj))
-        self.constraint_violation = np.vstack((self.constraint_violation, CV))
-        self.fitness = np.vstack((self.fitness, fitness))
-
-    def evaluate_individual(self, ind: np.ndarray):
-        """Evaluate individual.
-
-        Returns objective values, constraint violation, and fitness.
-
-        Parameters
-        ----------
-        ind: np.ndarray
-        """
-        obj = self.problem.objectives(ind)
-        CV = np.empty((0, self.problem.num_of_constraints), float)
-        fitness = obj
-
-        if self.problem.num_of_constraints:
-            CV = self.problem.constraints(ind, obj)
-            fitness = self.eval_fitness(ind, obj, self.problem)
-
-        return (obj, CV, fitness)
 
     def evolve(self, EA: "BaseEA" = None, EA_parameters: dict = {}) -> "Population":
         """Evolve the population with interruptions.
@@ -268,16 +240,16 @@ class Population:
             if self.plotting:
                 self.plot_objectives()
 
+
     def mate(self, mating_pop=None, params=None):
         """Conduct crossover and mutation over the population.
 
         """
 
-        offspring = self.crossover.mate(mating_pop, self.individuals, params)
-        if (
-            not self.crossover_type == self.mutation_type
-            and self.mutation_type is not None
-        ):
+        if self.recombination_type is not None:
+            offspring = self.recombination.mate(mating_pop, self.individuals, params)
+        else:
+            offspring = self.crossover.mate(mating_pop, self.individuals, params)
             self.mutation.mutate(offspring, self.individuals, params, self.lower_limits, self.upper_limits)
 
         return offspring

@@ -42,10 +42,13 @@ class PPGA(BaseEA):
         plotting: bool = True,
         logging: list = False,
         logfile=None,
+        opt: bool = False,
         crossover_type: str = None,
         mutation_type: str = None,
+        kill_interval: int = 7,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
+        prob_prey_move: float = 0.3,
         mut_strength: float = 0.7,
     ):
         """Set up the parameters.
@@ -84,7 +87,7 @@ class PPGA(BaseEA):
             "target_pop_size": target_pop_size,
             "predator_pop_size": 50,
             "prey_max_moves": 10,
-            "prob_prey_move": 0.3,
+            "prob_prey_move": prob_prey_move,
             "offspring_place_attempts": 10,
             "generations": generations_per_iteration,
             "iterations": iterations,
@@ -92,6 +95,7 @@ class PPGA(BaseEA):
             "interact": interact,
             "plotting": plotting,
             "logging": logging,
+            "opt": opt,
             "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_total_gen_count": 0,
@@ -99,7 +103,7 @@ class PPGA(BaseEA):
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
             "mut_strength": mut_strength,
-            "kill_interval": 7,
+            "kill_interval": kill_interval,
             "max_rank": 20,
         }
 
@@ -123,6 +127,7 @@ class PPGA(BaseEA):
         population : "Population"
             Contains current population
         """
+
         self.params["current_iteration_gen_count"] = 1
         while self.continue_iteration():
             self._next_gen(population)
@@ -164,14 +169,20 @@ class PPGA(BaseEA):
                 / self.params["total_generations"]
         )
 
-        for ind in range(len(population.individuals)):
+        # If optimizing instead of training, perform crossover over the entire pop at once
+        if self.params["opt"]:
+            offspring = population.mate(params=self.params)
+        else:
+            for ind in range(len(population.individuals)):
 
-            mate_idx = self.lattice.choose_mate(ind)
-            if not mate_idx:
-                continue
-            else:
-                mating_pop = [ind, mate_idx]
-                offspring += population.mate(mating_pop, self.params)
+                mate_idx = self.lattice.choose_mate(ind)
+                if not mate_idx:
+                    continue
+                else:
+                    mating_pop = [ind, mate_idx]
+                    offsprings = population.mate(mating_pop, self.params)
+                    for n in offsprings:
+                        offspring.append(n)
 
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
@@ -193,58 +204,8 @@ class PPGA(BaseEA):
             self.lattice.update_lattice(selected)
             population.delete_or_keep(selected, "delete")
 
-        print(
-            str(self.params["current_total_gen_count"])
-            + " "
-            + "population size: "
-            + str(len(population.individuals))
-            + " Min Error: "
-            + str(np.amin(population.objectives[:, 0]))
-            + " Avg Error: "
-            + str(np.mean(population.objectives[:, 0]))
-        )
-
         # Move predators
         self.lattice.move_predator()
-
-        print(
-            "AFTER KILL "
-            + str(self.params["current_total_gen_count"])
-            + " "
-            + "population size: "
-            + str(len(population.individuals))
-            + " Min Error: "
-            + str(np.amin(population.objectives[:, 0]))
-            + " Avg Error: "
-            + str(np.mean(population.objectives[:, 0]))
-        )
-
-        if (
-            self.params["current_iteration_count"] == self.params["iterations"] - 1
-            and self.params["current_iteration_gen_count"] == self.params["generations"]
-        ):
-            print(
-                "last gen min error: "
-                + str(np.amin(population.objectives[:, 0]))
-                + " avg error: "
-                + str(np.mean(population.objectives[:, 0])),
-                file=self.params["logfile"],
-            )
-
-        # population.create_archive(population, population.objectives)
-
-        # # Place new prey if kill interval condition satisfied
-        # if (
-        #     self.params["current_iteration_gen_count"] % self.params["kill_interval"]
-        #     == 0
-        # ):
-        #     # Create new random individuals to get to preferred population size
-        #     old_pop_size = population.individuals.shape[0]
-        #     if self.params["target_pop_size"] - old_pop_size > 0:
-        #         placed_indices = self.lattice.place_offspring(
-        #             self.params["target_pop_size"] - old_pop_size
-        #         )
-        #         population.create_new_individuals(pop_size=len(placed_indices), design="EvoNN")
 
     def _run_interruption(self, population: "Population"):
         """Run the interruption phase of PPGA.
@@ -258,8 +219,8 @@ class PPGA(BaseEA):
         if self.params["interact"]:
             pass
 
-        if population.plotting:
-            population.plot_objectives()
+        #if population.plotting:
+        #    population.plot_objectives()
 
     def select(self, population, max_rank=20) -> list:
         """Of the population, individuals lower than max_rank are selected.

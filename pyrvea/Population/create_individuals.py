@@ -63,16 +63,30 @@ def create_new_individuals(design, problem, pop_size=None):
         One extra row is added for bias. 
 
         """
+        try:
+            w_low = problem.w_low
+            w_high = problem.w_high
+            in_nodes = problem.num_of_variables
+            num_nodes = problem.num_nodes
+            prob_omit = problem.prob_omit
+
+        except AttributeError:
+            w_low = -5
+            w_high = 5
+            in_nodes = problem.num_of_variables
+            num_nodes = 20
+            prob_omit = 0.2
+
         individuals = np.random.uniform(
-            problem.w_low,
-            problem.w_high,
-            size=(problem.params["pop_size"], problem.num_input_nodes, problem.num_nodes),
+            w_low,
+            w_high,
+            size=(pop_size, in_nodes, num_nodes),
         )
 
         # Randomly set some weights to zero
         zeros = np.random.choice(
             np.arange(individuals.size),
-            ceil(individuals.size * problem.params["prob_omit"]),
+            ceil(individuals.size * prob_omit),
         )
         individuals.ravel()[zeros] = 0
 

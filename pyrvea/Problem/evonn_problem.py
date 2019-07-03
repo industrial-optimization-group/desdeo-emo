@@ -92,8 +92,9 @@ class EvoNN(baseProblem):
             assign_type="EvoNN",
             pop_size=self.params["pop_size"],
             plotting=False,
-            crossover_type="EvoNN_xover",
-            mutation_type="2d_gaussian",
+            recombination_type=self.params["recombination_type"],
+            crossover_type=self.params["crossover_type"],
+            mutation_type=self.params["mutation_type"]
         )
         pop.evolve(
             PPGA,
@@ -101,7 +102,7 @@ class EvoNN(baseProblem):
                 "logging": self.params["logging"],
                 "logfile": model.log,
                 "iterations": 10,
-                "generations_per_iteration": 10,
+                "generations_per_iteration": 5,
             },
         )
 
@@ -334,7 +335,7 @@ class EvoNNModel(EvoNN):
 
     """
 
-    def __init__(self, name, w_matrix=None, linear_layer=None):
+    def __init__(self, name="EvoNN", w_matrix=None, linear_layer=None):
         super().__init__(name)
         self.name = name
         self.w_matrix = w_matrix
@@ -353,13 +354,15 @@ class EvoNNModel(EvoNN):
         target_values : ndarray
             Target values
         """
+        self.X_train = training_data
+        self.y_train = target_values
         prob = EvoNN(name=self.name, params=self.params)
         prob.fit(training_data, target_values)
         if prob.params["logging"]:
             self.log = prob.create_logfile()
         prob.train(self)
 
-        self.single_variable_response(ploton=False, log=self.log)
+        #self.single_variable_response(ploton=False, log=None)
 
     def predict(self, decision_variables):
 
@@ -375,12 +378,15 @@ class EvoNNModel(EvoNN):
         self,
         name=None,
         pop_size=500,
-        num_nodes=15,
+        num_nodes=20,
         prob_omit=0.2,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
         criterion="akaike_corrected",
+        crossover_type="EvoNN_xover",
+        mutation_type="2d_gaussian",
+        recombination_type=None,
         logging=False,
         plotting=False,
     ):
@@ -405,6 +411,12 @@ class EvoNNModel(EvoNN):
             The loss function to use.
         criterion : str
             The criterion to use for selecting the model.
+        crossover_type : str
+            Crossover method.
+        mutation_type : str
+            Mutation method.
+        recombination_type : str
+            Combined crossover+mutation method.
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -419,6 +431,9 @@ class EvoNNModel(EvoNN):
             "opt_func": opt_func,
             "loss_func": loss_func,
             "criterion": criterion,
+            "crossover_type": crossover_type,
+            "mutation_type": mutation_type,
+            "recombination_type": recombination_type,
             "logging": logging,
             "plotting": plotting,
         }

@@ -40,11 +40,15 @@ def mutate(
     offspring1 = np.copy(parent1)
     offspring2 = np.copy(parent2)
 
-    cur_gen = params["current_total_gen_count"]
-    total_gen = params["total_generations"]
-    prob_crossover = params["prob_crossover"]
-    prob_mutation = params["prob_mutation"]
-    std_dev = params["std_dev"]
+    try:
+        cur_gen = params["current_iteration_gen_count"]
+        total_gen = params["generations"]
+        prob_crossover = params["prob_crossover"]
+        prob_mutation = params["prob_mutation"]
+        std_dev = params["std_dev"]
+    except KeyError:
+        prob_mutation = 0.3
+        std_dev = 1
 
     connections = offspring1[1:, :].size
 
