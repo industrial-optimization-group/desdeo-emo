@@ -25,7 +25,7 @@ class DataProblem(baseProblem):
         num_of_constraints=0,
         lower_limits: List[float] = None,
         upper_limits: List[float] = None,
-        name=None,
+        name="data_problem",
     ):
         self.raw_data = data
         self.data = data
@@ -36,8 +36,6 @@ class DataProblem(baseProblem):
         self.num_of_constraints = num_of_constraints
         self.number_of_samples = self.data.shape[0]
         self.name = name
-        if name is None:
-            self.name = "dataproblem"
         if minimize is None:
             self.minimize = [True] * self.num_of_objectives
         else:

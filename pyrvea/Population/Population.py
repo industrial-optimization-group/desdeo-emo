@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
-from pyDOE import lhs
 from pygmo import fast_non_dominated_sorting as nds
 from pygmo import hypervolume as hv
 from pygmo import non_dominated_front_2d as nd2
@@ -35,12 +34,12 @@ class Population:
     def __init__(
         self,
         problem: "baseProblem",
-        assign_type: str = "LHSDesign",
+        assign_type: str = "RandomDesign",
         plotting: bool = True,
         pop_size=None,
+        recombination_type=None,
         crossover_type=None,
         mutation_type=None,
-        recombination_type=None,
         *args
     ):
         """Initialize the population.
@@ -55,11 +54,16 @@ class Population:
             randomly. If 'assign_type' is 'LHSDesign', the population is
             generated via Latin Hypercube Sampling. If 'assign_type' is
             'custom', the population is imported from file. If assign_type
-            is 'empty', create blank population. (the default is "RandomAssign")
+            is 'empty', create blank population.
+            'EvoNN' and 'EvoDN2' will create neural networks or deep neural networks, respectively,
+             for population .
         plotting : bool, optional
             (the default is True, which creates the plots)
         pop_size : int
             Population size
+        recombination_type, crossover_type, mutation_type : str
+            Recombination functions. If recombination_type is specified, crossover and mutation
+            will be handled by the same function. If None, they are done separately.
 
         """
         self.num_var = problem.num_of_variables
@@ -85,7 +89,9 @@ class Population:
         else:
             self.recombination = self.recombination_funcs[recombination_type]
         self.problem = problem
-        self.filename = problem.name + "_" + str(problem.num_of_objectives)
+        self.filename = (
+            problem.name + "_" + str(problem.num_of_objectives)
+        )  # Used for plotting
         self.plotting = plotting
         self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
@@ -98,6 +104,7 @@ class Population:
         )
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
+
         if not assign_type == "empty":
             individuals = create_new_individuals(
                 assign_type, problem, pop_size=self.pop_size
@@ -108,25 +115,17 @@ class Population:
             self.figure = []
             self.plot_init_()
 
-    def eval_fitness(self):
-        """
-        Calculate fitness based on objective values. Fitness = obj if minimized.
-        """
-        fitness = self.objectives * self.problem.objs
-        return fitness
-
     def add(self, new_pop: np.ndarray):
         """Evaluate and add individuals to the population. Update ideal and nadir point.
 
         Parameters
         ----------
-        new_pop: np.ndarray
+        new_pop: ndarray
             Decision variable values for new population.
         """
         for i in range(len(new_pop)):
             self.append_individual(new_pop[i])
 
-        # print(self.ideal_fitness)
         self.update_ideal_and_nadir()
 
     def append_individual(self, ind: np.ndarray):
@@ -218,8 +217,8 @@ class Population:
         ----------
         EA: "BaseEA"
             Should be a derivative of BaseEA (Default value = None)
-        EA_parameters: dict
-            Contains the parameters needed by EA (Default value = None)
+        **kwargs
+            Parameters passed to the EA
 
         """
         ##################################
@@ -237,7 +236,7 @@ class Population:
 
         if self.plotting:
             self.plot_objectives()  # Figure was created in init
-        for i in progressbar(range(0, iterations), desc="Iteration"):
+        for i in progressbar(range(iterations), desc="Iteration"):
             ea._run_interruption(self)
             ea._next_iteration(self)
             if self.plotting:
@@ -261,6 +260,13 @@ class Population:
             )
 
         return offspring
+
+    def eval_fitness(self):
+        """
+        Calculate fitness based on objective values. Fitness = obj if minimized.
+        """
+        fitness = self.objectives * self.problem.objs
+        return fitness
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""

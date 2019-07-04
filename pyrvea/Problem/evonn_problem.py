@@ -58,7 +58,7 @@ class EvoNN(baseProblem):
         num_samples=None,
         num_of_objectives=2,
         w_low=-5.0,
-        w_high=5.0
+        w_high=5.0,
     ):
         super().__init__()
 
@@ -108,16 +108,14 @@ class EvoNN(baseProblem):
             plotting=False,
             recombination_type=self.params["recombination_type"],
             crossover_type=self.params["crossover_type"],
-            mutation_type=self.params["mutation_type"]
+            mutation_type=self.params["mutation_type"],
         )
         pop.evolve(
             PPGA,
-            {
-                "logging": self.params["logging"],
-                "logfile": model.log,
-                "iterations": 1,
-                "generations_per_iteration": 1
-            }
+            logging=self.params["logging"],
+            logfile=model.log,
+            iterations=10,
+            generations_per_iteration=10,
         )
 
         non_dom_front = pop.non_dominated()
@@ -125,8 +123,8 @@ class EvoNN(baseProblem):
             pop, non_dom_front, self.params["criterion"]
         )
 
-        non_linear_layer = self.activation(model.w_matrix)
-        model.linear_layer, _, _ = self.minimize_error(non_linear_layer)
+        non_linear_layer, _ = self.activation(model.w_matrix)
+        model.linear_layer, *_ = self.optimize_layer(non_linear_layer)
 
     def objectives(self, decision_variables) -> list:
 
@@ -144,10 +142,8 @@ class EvoNN(baseProblem):
 
         """
 
-        non_linear_layer = self.activation(decision_variables)
-        _, _, predicted_values = self.minimize_error(non_linear_layer)
-        training_error = self.loss_function(predicted_values)
-        complexity = self.calculate_complexity(decision_variables)
+        non_linear_layer, complexity = self.activation(decision_variables)
+        _, _, predicted_values, training_error = self.optimize_layer(non_linear_layer)
 
         obj_func = [training_error, complexity]
 
@@ -155,6 +151,7 @@ class EvoNN(baseProblem):
 
     def activation(self, w_matrix):
         """ Calculates the dot product and applies the activation function.
+        Also get complexity for the lower part of the network.
 
         Parameters
         ----------
@@ -163,16 +160,22 @@ class EvoNN(baseProblem):
 
         Returns
         -------
-        The final non-linear layer before the output
+        activated_layer : ndarray
+            The activated non-linear layer before the output.
+        complexity : int
+            The model's complexity
 
         """
         # Calculate the dot product + bias
         out = np.dot(self.X_train, w_matrix[1:, :]) + w_matrix[0]
+        complexity = np.count_nonzero(w_matrix[1:, :])
+        activated_layer = self.activate(self.params["activation_func"], out)
 
-        return self.activate(self.params["activation_func"], out)
+        return activated_layer, complexity
 
-    def minimize_error(self, non_linear_layer):
-        """ Minimize the training error.
+    def optimize_layer(self, non_linear_layer):
+        """ Apply the linear function to the activated layer
+        and calculate the training error.
 
         Parameters
         ----------
@@ -181,13 +184,20 @@ class EvoNN(baseProblem):
 
         Returns
         -------
-        w2[0] : ndarray
-            The weight matrix of the upper part of the network
+        linear_layer : ndarray
+            The optimized weight matrix of the upper part of the network
         rss : float
             Sum of residuals
         predicted_values : ndarray
             The prediction of the model
+        training_error : float
+            The model's training error
         """
+
+        linear_layer = None
+        rss = None
+        predicted_values = None
+        training_error = None
 
         if self.params["opt_func"] == "llsq":
             linear_solution = np.linalg.lstsq(
@@ -196,27 +206,11 @@ class EvoNN(baseProblem):
             linear_layer = linear_solution[0]
             rss = linear_solution[1]
             predicted_values = np.dot(non_linear_layer, linear_layer)
-            return linear_layer, rss, predicted_values
 
-    def loss_function(self, predicted_values):
-        """Calculate the error between prediction and target values."""
-
-        if self.params["loss_func"] == "mse":
-            return ((self.y_train - predicted_values) ** 2).mean()
         if self.params["loss_func"] == "rmse":
-            return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
+            training_error = np.sqrt(((self.y_train - predicted_values) ** 2).mean())
 
-    def calculate_complexity(self, w_matrix):
-        """Calculate the complexity of the model.
-
-        Returns
-        -------
-        The number of non-zero connections in the lower part of the network.
-        """
-
-        k = np.count_nonzero(w_matrix[1:, :])
-
-        return k
+        return linear_layer, rss, predicted_values, training_error
 
     def information_criterion(self, decision_variables):
         """Calculate the information criterion.
@@ -227,12 +221,9 @@ class EvoNN(baseProblem):
         -------
         Corrected Akaike Information Criterion by default
         """
-        non_linear_layer = self.activation(decision_variables)
-        linear_layer, rss, _ = self.minimize_error(non_linear_layer)
-        # rss = ((self.y_train - prediction) ** 2).sum()
-        k = self.calculate_complexity(decision_variables) + np.count_nonzero(
-            linear_layer
-        )
+        non_linear_layer, complexity = self.activation(decision_variables)
+        linear_layer, rss, _, _ = self.optimize_layer(non_linear_layer)
+        k = complexity + np.count_nonzero(linear_layer)
         aic = 2 * k + self.num_samples * np.log(rss / self.num_samples)
         aicc = aic + (2 * k * (k + 1) / (self.num_samples - k - 1))
 
@@ -379,11 +370,11 @@ class EvoNNModel(EvoNN):
         opt_func="llsq",
         loss_func="rmse",
         criterion="akaike_corrected",
+        recombination_type=None,
         crossover_type="EvoNN_xover",
         mutation_type="2d_gaussian",
-        recombination_type=None,
         logging=False,
-        plotting=False
+        plotting=False,
     ):
 
         """ Set parameters for the EvoNN model.
@@ -398,6 +389,10 @@ class EvoNNModel(EvoNN):
             Maximum number of nodes per layer.
         prob_omit : float
             Probability of setting some weights to zero initially.
+        w_low : float
+            The lower bound for randomly generated weights.
+        w_high : float
+            The upper bound for randomly generated weights.
         activation_func : str
             Function to use for activation.
         opt_func : str
@@ -406,12 +401,9 @@ class EvoNNModel(EvoNN):
             The loss function to use.
         criterion : str
             The criterion to use for selecting the model.
-        crossover_type : str
-            Crossover method.
-        mutation_type : str
-            Mutation method.
-        recombination_type : str
-            Combined crossover+mutation method.
+        recombination_type, crossover_type, mutation_type : str
+            Recombination functions. If recombination_type is specified, crossover and mutation
+            will be handled by the same function. If None, they are done separately.
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -429,13 +421,14 @@ class EvoNNModel(EvoNN):
             "opt_func": opt_func,
             "loss_func": loss_func,
             "criterion": criterion,
+            "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
-            "recombination_type": recombination_type,
             "logging": logging,
             "plotting": plotting,
         }
-        self.name = params["name"]
+
+        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):
@@ -455,8 +448,6 @@ class EvoNNModel(EvoNN):
         if prob.params["logging"]:
             self.log = prob.create_logfile()
         prob.train(self)
-
-        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
         """Predict using the EvoNN model.
@@ -553,6 +544,8 @@ class EvoNNModel(EvoNN):
                 s = "mixed"
 
             if log is not None:
-                print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
+                print(
+                    "x" + str(i + 1) + " response: " + str(response) + " " + s, file=log
+                )
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

@@ -120,7 +120,7 @@ class EvoDN2(baseProblem):
             pop, non_dom_front, self.params["criterion"]
         )
         model.non_linear_layer, _ = self.activation(model.subnets)
-        model.linear_layer, _ = self.minimize_error(model.non_linear_layer)
+        model.linear_layer, *_ = self.optimize_layer(model.non_linear_layer)
 
     def objectives(self, decision_variables) -> list:
         """ Use this method to calculate objective functions.
@@ -136,8 +136,7 @@ class EvoDN2(baseProblem):
         """
 
         non_linear_layer, complexity = self.activation(decision_variables)
-        _, predicted_values = self.minimize_error(non_linear_layer)
-        training_error = self.loss_function(predicted_values)
+        _, predicted_values, training_error = self.optimize_layer(non_linear_layer)
 
         obj_func = [training_error, complexity]
 
@@ -181,41 +180,38 @@ class EvoDN2(baseProblem):
 
         return non_linear_layer, complexity
 
-    def minimize_error(self, activated_layer):
-        """ Minimize the training error.
+    def optimize_layer(self, activated_layer):
+        """ Apply the linear function to the final output layer
+        and calculate the training error.
+.
         Parameters
         ----------
         activated_layer : ndarray
-            Output of the activation function
+            Output of the activation function.
+
         Returns
         -------
-        linear_solution[0] : ndarray
-            The linear layer of the network
+        linear_layer : ndarray
+            The optimized output layer of the network.
         predicted_values : ndarray
-            The prediction of the model
+            The prediction of the model.
+        training_error : float
+            Training error of the model.
         """
+
+        linear_layer = None
+        predicted_values = None
+        training_error = None
 
         if self.params["opt_func"] == "llsq":
             linear_solution = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
             predicted_values = np.dot(activated_layer, linear_solution[0])
-            return linear_solution[0], predicted_values
+            linear_layer = linear_solution[0]
 
-    def loss_function(self, predicted_values):
-        """Calculate the final training error.
-
-        Parameters
-        ----------
-        predicted_values : ndarray
-            Output of the model.
-
-        Returns
-        -------
-        Training error : float
-        """
-        if self.params["loss_func"] == "mse":
-            return ((self.y_train - predicted_values) ** 2).mean()
         if self.params["loss_func"] == "rmse":
-            return np.sqrt(((self.y_train - predicted_values) ** 2).mean())
+            training_error = np.sqrt(((self.y_train - predicted_values) ** 2).mean())
+
+        return linear_layer, predicted_values, training_error
 
     def select(self, pop, non_dom_front, criterion="min_error"):
         """ Select target model from the population.
@@ -430,8 +426,6 @@ class EvoDN2Model(EvoDN2):
             self.log = prob.create_logfile()
 
         prob.train(self)
-
-        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
         """Predict using the EvoDN2 model.

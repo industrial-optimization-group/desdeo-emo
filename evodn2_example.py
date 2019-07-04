@@ -323,7 +323,7 @@ import plotly.graph_objs as go
 # model_evonn.plot(y, training_data_output)
 #
 # # # ZDT 1 & 2
-test_prob = testProblem("ZDT1", 30, 2, 0, 1, 0)
+test_prob = testProblem("ZDT2", 30, 2, 0, 1, 0)
 np.random.seed(31)
 training_data_input = np.random.rand(250, 30)
 training_data_output = np.asarray(
@@ -334,13 +334,15 @@ f1_training_data_output = training_data_output[:, 0]
 f2_training_data_output = training_data_output[:, 1]
 
 dataset = pd.DataFrame.from_records(data)
-dataset.columns = np.arange(1, 33)
-x = np.arange(1, 31)
-y = np.arange(31, 33)
+x = []
+for n in range(training_data_input.shape[1]):
+    x.append("x" + str(n + 1))
+y = ["f1", "f2"]
+dataset.columns = x+y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(model_type="EvoDN2")
+problem.train(model_type="EvoNN")
 
 pop = Population(
     problem,
@@ -350,14 +352,15 @@ pop = Population(
     mutation_type="bounded_polynomial_mutation",
 )
 
-pop.evolve(
-    PPGA,
-    prob_prey_move=0.5,
-    opt=True,
-    kill_interval=4,
-    iterations=1,
-    generations_per_iteration=1,
-)
+# pop.evolve(
+#     PPGA,
+#     prob_prey_move=0.5,
+#     opt=True,
+#     kill_interval=4,
+#     iterations=10,
+#     generations_per_iteration=10,
+# )
+pop.evolve(RVEA)
 
 ndf = pop.non_dominated()
 pareto = pop.objectives[ndf]
