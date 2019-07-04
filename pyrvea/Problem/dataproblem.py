@@ -98,7 +98,6 @@ class DataProblem(baseProblem):
             objectives = self.y
         if model_type is None:
             model_type = "GPR"
-        self.model_type_name = model_type
         surrogate_model_options = {
             "GPR": GaussianProcessRegressor,
             "MLP": MLPRegressor,
@@ -113,7 +112,7 @@ class DataProblem(baseProblem):
             print("Building model for " + str(obj))
             for train_run, train_indices in enumerate(self.train_indices):
                 print("Training run number", train_run, "of", len(self.train_indices))
-                model = model_type(name=self.model_type_name + str(obj), **kwargs)
+                model = model_type(**kwargs)
                 model.fit(
                     np.array(self.data[self.x])[train_indices],
                     np.array(self.data[obj])[train_indices],
@@ -168,10 +167,13 @@ class DataProblem(baseProblem):
 
         Parameters
         ----------
-        decision_variables
+        decision_variables : ndarray
+            The decision variables
 
         Returns
         -------
+        objectives : ndarray
+            The objective values
 
         """
         objectives = []

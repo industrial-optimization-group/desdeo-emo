@@ -18,7 +18,7 @@ class EvoNN(baseProblem):
     Parameters
     ----------
     name : str
-        Name of the sample
+        Name of the problem
     X_train : ndarray
         Training data input
     y_train : ndarray
@@ -39,7 +39,7 @@ class EvoNN(baseProblem):
 
     def __init__(
         self,
-        name,
+        name=None,
         X_train=None,
         y_train=None,
         num_input_nodes=4,
@@ -101,9 +101,9 @@ class EvoNN(baseProblem):
             {
                 "logging": self.params["logging"],
                 "logfile": model.log,
-                "iterations": 10,
-                "generations_per_iteration": 5,
-            },
+                "iterations": 1,
+                "generations_per_iteration": 1
+            }
         )
 
         non_dom_front = pop.non_dominated()
@@ -326,23 +326,32 @@ class EvoNNModel(EvoNN):
 
     Parameters
     ----------
+    **kwargs
+        Parameters passed for the model.
+
+    Attributes
+    ----------
     name : str
-        Name of the problem
+        Name of the model.
     w_matrix : ndarray
-        The weight matrix of the lower part of the network
+        The weight matrix of the lower part of the network.
     linear_layer : ndarray
-        The linear layer of the upper part of the network
+        The linear layer of the upper part of the network.
+    svr : ndarray
+        Single variable response of the model.
+    log : file
+        If logging set to True in params, external log file is stored here.
 
     """
 
-    def __init__(self, name="EvoNN", w_matrix=None, linear_layer=None):
-        super().__init__(name)
-        self.name = name
-        self.w_matrix = w_matrix
-        self.linear_layer = linear_layer
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.name = "EvoNN_Model"
+        self.w_matrix = None
+        self.linear_layer = None
         self.svr = None
         self.log = None
-        self.set_params()
+        self.set_params(**kwargs)
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -362,10 +371,22 @@ class EvoNNModel(EvoNN):
             self.log = prob.create_logfile()
         prob.train(self)
 
-        #self.single_variable_response(ploton=False, log=None)
+        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
+        """Predict using the EvoNN model.
 
+        Parameters
+        ----------
+        decision_variables : ndarray
+            The decision variables used for prediction.
+
+        Returns
+        -------
+        y : ndarray
+            The prediction of the model.
+
+        """
         out = np.dot(decision_variables, self.w_matrix[1:, :]) + self.w_matrix[0]
 
         non_linear_layer = self.activate(self.params["activation_func"], out)
@@ -376,7 +397,7 @@ class EvoNNModel(EvoNN):
 
     def set_params(
         self,
-        name=None,
+        name="EvoNN_Model",
         pop_size=500,
         num_nodes=20,
         prob_omit=0.2,
@@ -388,10 +409,10 @@ class EvoNNModel(EvoNN):
         mutation_type="2d_gaussian",
         recombination_type=None,
         logging=False,
-        plotting=False,
+        plotting=False
     ):
 
-        """ Set parameters for EvoNN model.
+        """ Set parameters for the EvoNN model.
 
         Parameters
         ----------
@@ -437,7 +458,7 @@ class EvoNNModel(EvoNN):
             "logging": logging,
             "plotting": plotting,
         }
-
+        self.name = params["name"]
         self.params = params
 
     def plot(self, prediction, target):
@@ -512,6 +533,7 @@ class EvoNNModel(EvoNN):
                 response = 2
                 s = "mixed"
 
-            print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
+            if log is not None:
+                print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

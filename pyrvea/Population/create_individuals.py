@@ -100,14 +100,14 @@ def create_new_individuals(design, problem, pop_size=None):
         individuals = []
         for i in range(problem.params["pop_size"]):
             nets = []
-            for j in range(problem.subnet_struct[0]):
+            for j in range(problem.num_subnets):
 
                 layers = []
-                num_layers = np.random.randint(1, problem.subnet_struct[1])
+                num_layers = np.random.randint(1, problem.max_layers)
                 in_nodes = len(problem.subsets[j])
 
                 for k in range(num_layers):
-                    out_nodes = random.randint(2, problem.num_nodes)
+                    out_nodes = random.randint(2, problem.max_nodes)
                     net = np.random.uniform(
                         problem.w_low, problem.w_high, size=(in_nodes, out_nodes)
                     )

@@ -8,12 +8,11 @@ from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
 import numpy as np
 import pandas as pd
-import matplotlib
 import plotly
 import plotly.graph_objs as go
-
-matplotlib.use("WebAgg")
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use("WebAgg")
+# import matplotlib.pyplot as plt
 
 # test_prob = EvoNNTestProblem("Sphere", num_of_variables=3)
 # training_data_input, training_data_output = test_prob.create_training_data(
@@ -339,7 +338,10 @@ x = np.arange(1, 31)
 y = np.arange(31, 33)
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
-problem.train(model_type="EvoDN2")
+
+problem.train(
+    model_type="EvoDN2"
+)
 
 pop = Population(
     problem,
@@ -355,9 +357,9 @@ pop.evolve(
         "prob_prey_move": 0.5,
         "opt": True,
         "kill_interval": 4,
-        "iterations": 10,
-        "generations_per_iteration": 10,
-    }
+        "iterations": 1,
+        "generations_per_iteration": 1,
+    },
 )
 
 ndf = pop.non_dominated()
@@ -366,23 +368,21 @@ pareto_pop = np.asarray(pop.individuals)[ndf].tolist()
 
 for x in pareto_pop:
     for i, y in enumerate(x):
-        x[i] = "x"+str(i+1) + ": " + str(y) + "<br>"
+        x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
 
 trace0 = go.Scatter(x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers")
-trace1 = go.Scatter(x=pareto[:, 0], y=pareto[:, 1], text=pareto_pop, hoverinfo='text', mode="markers+lines")
-data = [trace0, trace1]
-layout = go.Layout(
-    xaxis=dict(
-        title='f1'
-    ),
-    yaxis=dict(
-        title='f2',
-    ),
+trace1 = go.Scatter(
+    x=pareto[:, 0],
+    y=pareto[:, 1],
+    text=pareto_pop,
+    hoverinfo="text",
+    mode="markers+lines",
 )
+data = [trace0, trace1]
+layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
 plotly.offline.plot(
     data,
-    filename=problem.model_type_name + test_prob.name + "pareto"
-             + ".html",
+    filename=problem.models[problem.y[0]][0].__class__.__name__ + test_prob.name + "pareto" + ".html",
     auto_open=True,
 )
 

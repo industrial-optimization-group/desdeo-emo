@@ -17,7 +17,7 @@ class EvoDN2(baseProblem):
     Parameters
     ----------
     name : str
-        Name of the sample
+        Name of the problem
     X_train : ndarray
         Training data input
     y_train : ndarray
@@ -34,7 +34,7 @@ class EvoDN2(baseProblem):
 
     def __init__(
         self,
-        name,
+        name=None,
         X_train=None,
         y_train=None,
         num_of_objectives=2,
@@ -66,19 +66,20 @@ class EvoDN2(baseProblem):
         self.y_train = target_values
         self.num_of_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        self.subnet_struct = self.params["subnet_struct"]
-        self.num_nodes = self.params["num_nodes"]
+        self.num_subnets = self.params["num_subnets"]
+        self.max_layers = self.params["max_layers"]
+        self.max_nodes = self.params["max_nodes"]
 
         # Create random subsets of decision variables for each subnet
         self.subsets = []
-        for i in range(self.subnet_struct[0]):
+        for i in range(self.num_subnets):
             n = random.randint(1, self.X_train.shape[1])
             self.subsets.append(random.sample(range(self.X_train.shape[1]), n))
 
         # Ensure that each decision variable is used as an input in at least one subnet
         for n in list(range(self.X_train.shape[1])):
             if not any(n in k for k in self.subsets):
-                self.subsets[random.randint(0, self.subnet_struct[0] - 1)].append(n)
+                self.subsets[random.randint(0, self.num_subnets - 1)].append(n)
 
         return self.subsets
 
@@ -98,8 +99,8 @@ class EvoDN2(baseProblem):
             {
                 "logging": self.params["logging"],
                 "logfile": model.log,
-                "iterations": 10,
-                "generations_per_iteration": 10
+                "iterations": 1,
+                "generations_per_iteration": 1
             }
         )
 
@@ -239,11 +240,11 @@ class EvoDN2(baseProblem):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.subnet_struct[0])
+            + str(self.num_subnets)
             + "_"
-            + str(self.subnet_struct[1])
+            + str(self.max_layers)
             + "_"
-            + str(self.num_nodes)
+            + str(self.max_nodes)
             + ".log",
             "a",
         )
@@ -255,13 +256,13 @@ class EvoDN2(baseProblem):
             + str(self.num_of_variables)
             + "\n"
             + "number of subnets: "
-            + str(self.subnet_struct[0])
+            + str(self.num_subnets)
             + "\n"
             + "max number of layers: "
-            + str(self.subnet_struct[1])
+            + str(self.max_layers)
             + "\n"
             + "max nodes: "
-            + str(self.num_nodes)
+            + str(self.max_nodes)
             + "\n"
             + "activation: "
             + self.params["activation_func"]
@@ -288,38 +289,46 @@ class EvoDN2(baseProblem):
 
 
 class EvoDN2Model(EvoDN2):
-    """Class for the surrogate model.
+    """Class for the EvoDN2 surrogate model.
+
     Parameters
     ----------
     name : str
         Name of the problem
-    subnets : ndarray
-        The subnets of the model
+    subnets : array_like
+        A list containing the subnets of the model.
+    subsets : array_like
+        A list of variables used for each subnet of the model.
+    non_linear_layer : ndarray
+        The activated layer combining all of the model's subnets.
     linear_layer : ndarray
-        The final optimized layer of the network
-    y_pred : ndarray
-        Prediction of the model
+        The final optimized layer of the network.
+    svr : array_like
+        Single variable response of the model.
+    log : file
+        If logging set to True in params, external log file is stored here.
+
     """
 
-    def __init__(self, name, subnets=None, linear_layer=None, y_pred=None):
-        super().__init__(name)
-        self.name = name
-        self.subnets = subnets
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.name = "EvoDN2_Model"
+        self.subnets = None
         self.subsets = None
         self.fitness = None
         self.non_linear_layer = None
-        self.linear_layer = linear_layer
-        self.y_pred = y_pred
+        self.linear_layer = None
         self.svr = None
         self.log = None
-        self.set_params()
+        self.set_params(**kwargs)
 
     def set_params(
         self,
-        name=None,
+        name="EvoDN2_Model",
         pop_size=500,
-        subnet_struct=(4, 8),
-        num_nodes=10,
+        num_subnets=4,
+        max_layers=8,
+        max_nodes=10,
         prob_omit=0.2,
         activation_func="sigmoid",
         opt_func="llsq",
@@ -338,10 +347,12 @@ class EvoDN2Model(EvoDN2):
             Name of the problem.
         pop_size : int
             Population size.
-        subnet_struct : tuple
-            Structure of the subnets for the model, shape=(num of subnets, max num of layers)
-        num_nodes : int
-            Maximum number of nodes per layer.
+        num_subnets : int
+            Number of subnets.
+        max_layers : int
+            Maximum number of hidden layers in each subnet.
+        max_nodes : int
+            Maximum number of nodes in each hidden layer.
         prob_omit : float
             Probability of setting some weights to zero initially.
         activation_func : str
@@ -366,8 +377,9 @@ class EvoDN2Model(EvoDN2):
         params = {
             "name": name,
             "pop_size": pop_size,
-            "subnet_struct": subnet_struct,
-            "num_nodes": num_nodes,
+            "num_subnets": num_subnets,
+            "max_layers": max_layers,
+            "max_nodes": max_nodes,
             "prob_omit": prob_omit,
             "activation_func": activation_func,
             "opt_func": opt_func,
@@ -380,6 +392,7 @@ class EvoDN2Model(EvoDN2):
             "plotting": plotting,
         }
 
+        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):
@@ -399,30 +412,22 @@ class EvoDN2Model(EvoDN2):
 
         prob.train(self)
 
-        #self.single_variable_response(ploton=False, log=self.log)
-
-    def plot(self, prediction, target):
-
-        trace0 = go.Scatter(x=prediction, y=target, mode="markers")
-        trace1 = go.Scatter(x=target, y=target)
-        data = [trace0, trace1]
-        plotly.offline.plot(
-            data,
-            filename=self.name
-            + "_var"
-            + str(self.num_of_variables)
-            + "_nodes"
-            + str(self.params["subnet_struct"][0])
-            + "_"
-            + str(self.params["subnet_struct"][1])
-            + "_"
-            + str(self.params["num_nodes"])
-            + ".html",
-            auto_open=True,
-        )
+        self.single_variable_response(ploton=False, log=self.log)
 
     def predict(self, decision_variables):
+        """Predict using the EvoDN2 model.
 
+        Parameters
+        ----------
+        decision_variables : ndarray
+            The decision variables used for prediction.
+
+        Returns
+        -------
+        y : ndarray
+            The prediction of the model.
+
+        """
         non_linear_layer = np.empty((decision_variables.shape[0], 0))
 
         for i, subnet in enumerate(self.subnets):
@@ -440,6 +445,26 @@ class EvoDN2Model(EvoDN2):
         y = np.dot(non_linear_layer, self.linear_layer)
 
         return y
+
+    def plot(self, prediction, target):
+
+        trace0 = go.Scatter(x=prediction, y=target, mode="markers")
+        trace1 = go.Scatter(x=target, y=target)
+        data = [trace0, trace1]
+        plotly.offline.plot(
+            data,
+            filename=self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.params["subnet_struct"][0])
+            + "_"
+            + str(self.params["subnet_struct"][1])
+            + "_"
+            + str(self.params["max_nodes"])
+            + ".html",
+            auto_open=True,
+        )
 
     def single_variable_response(self, ploton=False, log=None):
 
@@ -490,6 +515,7 @@ class EvoDN2Model(EvoDN2):
                 response = 2
                 s = "mixed"
 
-            print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
+            if log is not None:
+                print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

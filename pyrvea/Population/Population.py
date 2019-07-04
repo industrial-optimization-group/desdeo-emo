@@ -82,7 +82,8 @@ class Population:
         if recombination_type is None:
             self.crossover = self.recombination_funcs[crossover_type]
             self.mutation = self.recombination_funcs[mutation_type]
-        self.recombination = self.recombination_funcs[recombination_type]
+        else:
+            self.recombination = self.recombination_funcs[recombination_type]
         self.problem = problem
         self.filename = problem.name + "_" + str(problem.num_of_objectives)
         self.plotting = plotting
