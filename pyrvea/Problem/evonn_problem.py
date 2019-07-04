@@ -114,8 +114,8 @@ class EvoNN(baseProblem):
             PPGA,
             logging=self.params["logging"],
             logfile=model.log,
-            iterations=10,
-            generations_per_iteration=10,
+            iterations=self.params["iterations"],
+            generations_per_iteration=self.params["generations_per_iteration"],
         )
 
         non_dom_front = pop.non_dominated()
@@ -373,6 +373,8 @@ class EvoNNModel(EvoNN):
         recombination_type=None,
         crossover_type="EvoNN_xover",
         mutation_type="2d_gaussian",
+        iterations=10,
+        generations_per_iteration=10,
         logging=False,
         plotting=False,
     ):
@@ -404,6 +406,11 @@ class EvoNNModel(EvoNN):
         recombination_type, crossover_type, mutation_type : str
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
+        iterations : int
+            Number of iterations for training.
+        generations_per_iteration : int
+            Number of generations per iteration.
+            Total number of generations = iterations * generations_per_iteration
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -424,6 +431,8 @@ class EvoNNModel(EvoNN):
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
+            "iterations": iterations,
+            "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
         }

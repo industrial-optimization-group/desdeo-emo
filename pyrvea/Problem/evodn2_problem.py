@@ -111,8 +111,8 @@ class EvoDN2(baseProblem):
             PPGA,
             logging=self.params["logging"],
             logfile=model.log,
-            iterations=1,
-            generations_per_iteration=1,
+            iterations=self.params["iterations"],
+            generations_per_iteration=self.params["generations_per_iteration"],
         )
 
         non_dom_front = pop.non_dominated()
@@ -346,6 +346,8 @@ class EvoDN2Model(EvoDN2):
         crossover_type=None,
         mutation_type=None,
         recombination_type="DNN_gaussian_xover+mut",
+        iterations=10,
+        generations_per_iteration=10,
         logging=False,
         plotting=False,
     ):
@@ -376,12 +378,14 @@ class EvoDN2Model(EvoDN2):
             The loss function to use.
         criterion : str
             The criterion to use for selecting the model.
-        crossover_type : str
-            Crossover method.
-        mutation_type : str
-            Mutation method.
-        recombination_type : str
-            Combined crossover+mutation method.
+        recombination_type, crossover_type, mutation_type : str
+            Recombination functions. If recombination_type is specified, crossover and mutation
+            will be handled by the same function. If None, they are done separately.
+        iterations : int
+            Number of iterations for training.
+        generations_per_iteration : int
+            Number of generations per iteration.
+            Total number of generations = iterations * generations_per_iteration
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -403,6 +407,8 @@ class EvoDN2Model(EvoDN2):
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
             "recombination_type": recombination_type,
+            "iterations": iterations,
+            "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
         }

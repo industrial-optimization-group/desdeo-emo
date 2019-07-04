@@ -2,6 +2,7 @@ from pyrvea.EAs.RVEA import RVEA
 from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 from typing import TYPE_CHECKING
 from pyrvea.Problem.testProblem import testProblem
+from pyrvea.Population.create_individuals import create_new_individuals
 import numpy as np
 
 if TYPE_CHECKING:
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 class slowRVEA(RVEA):
     """RVEA variant that impliments slow reference vector movement."""
 
-    def __init__(self, population: "Population", EA_parameters: dict = None):
+    def __init__(self, population: "Population", **ea_parameters):
         """Initialize a Base Decomposition EA.
 
         This will call methods to set up the parameters of RVEA, create
@@ -29,9 +30,9 @@ class slowRVEA(RVEA):
         Population:
             Returns the Population after evolution.
         """
-        self.params = self.set_params(population, **EA_parameters)
+        self.params = self.set_params(population, **ea_parameters)
         if population.individuals.shape[0] == 0:
-            population.create_new_individuals(pop_size=self.params["population_size"])
+            create_new_individuals(pop_size=self.params["population_size"])
         # print("Using BaseDecompositionEA init")
         self._next_iteration(population)
 
@@ -100,4 +101,4 @@ class slowRVEA(RVEA):
         offspring = np.vstack((offspring, population.mate()))
         population.add(offspring)
         selected = self.select(population)
-        population.keep(selected)
+        population.delete_or_keep(selected)

@@ -2,6 +2,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
 from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
 from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
+from pyrvea.Population.Population import Population
 
 # from sklearn.gaussian_process.kernels import RBF, WhiteKernel, ConstantKernel as C
 from sklearn import preprocessing
@@ -11,6 +12,12 @@ from sklearn.metrics import r2_score
 from pyrvea.Problem.baseProblem import baseProblem
 import pandas as pd
 from typing import List
+from pyrvea.EAs.PPGA import PPGA
+from pyrvea.EAs.RVEA import RVEA
+from pyrvea.EAs.slowRVEA import slowRVEA
+from pyrvea.EAs.NSGAIII import NSGAIII
+import plotly
+import plotly.graph_objs as go
 
 
 class DataProblem(baseProblem):
@@ -160,8 +167,42 @@ class DataProblem(baseProblem):
     def retrain_surrogate(self):
         pass
 
-    def objectives(self, decision_variables):
+    def optimize(self, algorithm=RVEA, **kwargs):
+        """Optimize the selected models.
+
+        Parameters
+        ----------
+        algorithm : :obj: EA
+            The EA to use for optimizing.
+        **kwargs
+            Parameters to pass to the optimizer
         """
+        try:
+            pop_size = kwargs["pop_size"]
+            assign_type = kwargs["assign_type"]
+            crossover_type = kwargs["crossover_type"]
+            mutation_type = kwargs["mutation_type"]
+
+        except KeyError:
+            pop_size = 100
+            assign_type = "RandomDesign"
+            crossover_type = "simulated_binary_crossover"
+            mutation_type = "bounded_polynomial_mutation"
+
+        pop = Population(
+            self,
+            pop_size=pop_size,
+            assign_type=assign_type,
+            crossover_type=crossover_type,
+            mutation_type=mutation_type,
+        )
+
+        pop.evolve(algorithm, **kwargs)
+
+        return pop
+
+    def objectives(self, decision_variables):
+        """Objectives function to use in optimization.
 
         Parameters
         ----------
@@ -181,3 +222,34 @@ class DataProblem(baseProblem):
             )
 
         return objectives
+
+    def plot_pareto(self, pop):
+
+        ndf = pop.non_dominated()
+        pareto = pop.objectives[ndf]
+        pareto_pop = np.asarray(pop.individuals)[ndf].tolist()
+
+        for x in pareto_pop:
+            for i, y in enumerate(x):
+                x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
+
+        trace0 = go.Scatter(
+            x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers"
+        )
+        trace1 = go.Scatter(
+            x=pareto[:, 0],
+            y=pareto[:, 1],
+            text=pareto_pop,
+            hoverinfo="text",
+            mode="markers+lines",
+        )
+        data = [trace0, trace1]
+        layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
+        plotly.offline.plot(
+            {"data": data, "layout": layout},
+            filename=self.models[self.y[0]][0].__class__.__name__
+            + self.name
+            + "pareto"
+            + ".html",
+            auto_open=True,
+        )

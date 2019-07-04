@@ -6,10 +6,10 @@ from pyrvea.Problem.dataproblem import DataProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
+from pyrvea.EAs.slowRVEA import slowRVEA
 import numpy as np
 import pandas as pd
-import plotly
-import plotly.graph_objs as go
+
 
 # import matplotlib
 # matplotlib.use("WebAgg")
@@ -324,7 +324,7 @@ import plotly.graph_objs as go
 #
 # # # ZDT 1 & 2
 test_prob = testProblem("ZDT2", 30, 2, 0, 1, 0)
-np.random.seed(31)
+# np.random.seed(31)
 training_data_input = np.random.rand(250, 30)
 training_data_output = np.asarray(
     [test_prob.objectives(x) for x in training_data_input]
@@ -338,56 +338,23 @@ x = []
 for n in range(training_data_input.shape[1]):
     x.append("x" + str(n + 1))
 y = ["f1", "f2"]
-dataset.columns = x+y
+dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(model_type="EvoNN")
+problem.train(model_type="EvoNN", iterations=1, generations_per_iteration=1)
 
-pop = Population(
-    problem,
-    pop_size=100,
-    assign_type="LHSDesign",
-    crossover_type="simulated_binary_crossover",
-    mutation_type="bounded_polynomial_mutation",
+# pop = problem.optimize(RVEA)
+pop = problem.optimize(
+    algorithm=PPGA,
+    opt=True,
+    prob_prey_move=0.5,
+    kill_interval=4,
+    iterations=1,
+    generations_per_iteration=1,
 )
 
-# pop.evolve(
-#     PPGA,
-#     prob_prey_move=0.5,
-#     opt=True,
-#     kill_interval=4,
-#     iterations=10,
-#     generations_per_iteration=10,
-# )
-pop.evolve(RVEA)
-
-ndf = pop.non_dominated()
-pareto = pop.objectives[ndf]
-pareto_pop = np.asarray(pop.individuals)[ndf].tolist()
-
-for x in pareto_pop:
-    for i, y in enumerate(x):
-        x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
-
-trace0 = go.Scatter(x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers")
-trace1 = go.Scatter(
-    x=pareto[:, 0],
-    y=pareto[:, 1],
-    text=pareto_pop,
-    hoverinfo="text",
-    mode="markers+lines",
-)
-data = [trace0, trace1]
-layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
-plotly.offline.plot(
-    data,
-    filename=problem.models[problem.y[0]][0].__class__.__name__
-    + test_prob.name
-    + "pareto"
-    + ".html",
-    auto_open=True,
-)
+problem.plot_pareto(pop)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]
