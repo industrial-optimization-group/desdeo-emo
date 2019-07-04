@@ -18,23 +18,33 @@ class EvoNN(baseProblem):
     Parameters
     ----------
     name : str
-        Name of the problem
+        Name of the problem.
     X_train : ndarray
-        Training data input
+        Training data input.
     y_train : ndarray
-        Training data target values
-    num_input_nodes : int
-        The number of nodes in the input layer
-    num_nodes : int
-        The number of nodes in the hidden layer
-    num_of_objectives : int
-        The number of objectives
-    w_low : float
-        The lower bound for randomly generated weights
-    w_high : float
-        The upper bound for randomly generated weights
+        Training data target values.
     params : dict
-        Parameters for model training
+        Parameters for model training.
+    num_input_nodes : int
+        The number of nodes in the input layer.
+    num_nodes : int
+        The number of nodes in the hidden layer.
+    num_samples : int
+        The number of data points, or samples, used.
+    num_of_objectives : int
+        The number of objectives.
+    w_low : float
+        The lower bound for randomly generated weights.
+    w_high : float
+        The upper bound for randomly generated weights.
+
+    References
+    ----------
+    [1] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
+    J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.
+    [2] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
+    net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.
+
     """
 
     def __init__(
@@ -42,24 +52,26 @@ class EvoNN(baseProblem):
         name=None,
         X_train=None,
         y_train=None,
-        num_input_nodes=4,
-        num_nodes=5,
+        params=None,
+        num_input_nodes=5,
+        num_nodes=20,
+        num_samples=None,
         num_of_objectives=2,
         w_low=-5.0,
-        w_high=5.0,
-        params=None,
+        w_high=5.0
     ):
         super().__init__()
 
         self.name = name
         self.X_train = X_train
         self.y_train = y_train
+        self.params = params
         self.num_input_nodes = num_input_nodes
         self.num_nodes = num_nodes
+        self.num_samples = num_samples
         self.num_of_objectives = num_of_objectives
         self.w_low = w_low
         self.w_high = w_high
-        self.params = params
 
     def fit(self, training_data, target_values):
         """Fit data in EvoNN model.
@@ -74,10 +86,12 @@ class EvoNN(baseProblem):
 
         self.X_train = training_data
         self.y_train = target_values
-        self.num_of_samples = target_values.shape[0]
+        self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
         self.num_input_nodes = self.num_of_variables
         self.num_nodes = self.params["num_nodes"]
+        self.w_low = self.params["w_low"]
+        self.w_high = self.params["w_high"]
 
     def train(self, model):
         """Trains the networks and selects the best model from the non dominated front.
@@ -219,8 +233,8 @@ class EvoNN(baseProblem):
         k = self.calculate_complexity(decision_variables) + np.count_nonzero(
             linear_layer
         )
-        aic = 2 * k + self.num_of_samples * np.log(rss / self.num_of_samples)
-        aicc = aic + (2 * k * (k + 1) / (self.num_of_samples - k - 1))
+        aic = 2 * k + self.num_samples * np.log(rss / self.num_samples)
+        aicc = aic + (2 * k * (k + 1) / (self.num_samples - k - 1))
 
         return aicc
 
@@ -289,7 +303,7 @@ class EvoNN(baseProblem):
         )
         print(
             "samples: "
-            + str(self.num_of_samples)
+            + str(self.num_samples)
             + "\n"
             + "variables: "
             + str(self.num_of_variables)
@@ -353,54 +367,14 @@ class EvoNNModel(EvoNN):
         self.log = None
         self.set_params(**kwargs)
 
-    def fit(self, training_data, target_values):
-        """Fit data in EvoNN model.
-
-        Parameters
-        ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
-        """
-        self.X_train = training_data
-        self.y_train = target_values
-        prob = EvoNN(name=self.name, params=self.params)
-        prob.fit(training_data, target_values)
-        if prob.params["logging"]:
-            self.log = prob.create_logfile()
-        prob.train(self)
-
-        self.single_variable_response(ploton=False, log=self.log)
-
-    def predict(self, decision_variables):
-        """Predict using the EvoNN model.
-
-        Parameters
-        ----------
-        decision_variables : ndarray
-            The decision variables used for prediction.
-
-        Returns
-        -------
-        y : ndarray
-            The prediction of the model.
-
-        """
-        out = np.dot(decision_variables, self.w_matrix[1:, :]) + self.w_matrix[0]
-
-        non_linear_layer = self.activate(self.params["activation_func"], out)
-
-        y = np.dot(non_linear_layer, self.linear_layer)
-
-        return y
-
     def set_params(
         self,
         name="EvoNN_Model",
         pop_size=500,
         num_nodes=20,
         prob_omit=0.2,
+        w_low=-5.0,
+        w_high=5.0,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -443,11 +417,14 @@ class EvoNNModel(EvoNN):
         plotting : bool
             True to create a plot, False otherwise.
         """
+
         params = {
             "name": name,
             "pop_size": pop_size,
             "num_nodes": num_nodes,
             "prob_omit": prob_omit,
+            "w_low": w_low,
+            "w_high": w_high,
             "activation_func": activation_func,
             "opt_func": opt_func,
             "loss_func": loss_func,
@@ -460,6 +437,48 @@ class EvoNNModel(EvoNN):
         }
         self.name = params["name"]
         self.params = params
+
+    def fit(self, training_data, target_values):
+        """Fit data in EvoNN model.
+
+        Parameters
+        ----------
+        training_data : ndarray, shape = (numbers of samples, number of variables)
+            Training data
+        target_values : ndarray
+            Target values
+        """
+        self.X_train = training_data
+        self.y_train = target_values
+        prob = EvoNN(name=self.name, params=self.params)
+        prob.fit(training_data, target_values)
+        if prob.params["logging"]:
+            self.log = prob.create_logfile()
+        prob.train(self)
+
+        self.single_variable_response(ploton=False, log=self.log)
+
+    def predict(self, decision_variables):
+        """Predict using the EvoNN model.
+
+        Parameters
+        ----------
+        decision_variables : ndarray
+            The decision variables used for prediction.
+
+        Returns
+        -------
+        y : ndarray
+            The prediction of the model.
+
+        """
+        out = np.dot(decision_variables, self.w_matrix[1:, :]) + self.w_matrix[0]
+
+        non_linear_layer = self.activate(self.params["activation_func"], out)
+
+        y = np.dot(non_linear_layer, self.linear_layer)
+
+        return y
 
     def plot(self, prediction, target):
         """Creates and shows a plot for the model.

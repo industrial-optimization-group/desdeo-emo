@@ -30,6 +30,12 @@ class EvoDN2(baseProblem):
         The upper bound for randomly generated weights
     params : dict
         Parameters for the models
+
+    References
+    ----------
+    [1] Swagata Roy, Bhupinder Singh Saini, Debalay Chakrabarti and Nirupam Chakraborti.
+    A new Deep Neural Network algorithm employed in the study of mechanical properties of
+    micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indian Institute of Technology, 2019.
     """
 
     def __init__(
@@ -50,6 +56,11 @@ class EvoDN2(baseProblem):
         self.num_of_objectives = num_of_objectives
         self.w_low = w_low
         self.w_high = w_high
+        self.num_samples = None
+        self.num_subnets = None
+        self.max_layers = None
+        self.max_nodes = None
+        self.subsets = None
         self.params = params
 
     def fit(self, training_data, target_values):
@@ -64,11 +75,13 @@ class EvoDN2(baseProblem):
 
         self.X_train = training_data
         self.y_train = target_values
-        self.num_of_samples = target_values.shape[0]
+        self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
         self.num_subnets = self.params["num_subnets"]
         self.max_layers = self.params["max_layers"]
         self.max_nodes = self.params["max_nodes"]
+        self.w_low = self.params["w_low"]
+        self.w_high = self.params["w_high"]
 
         # Create random subsets of decision variables for each subnet
         self.subsets = []
@@ -96,12 +109,10 @@ class EvoDN2(baseProblem):
         )
         pop.evolve(
             PPGA,
-            {
-                "logging": self.params["logging"],
-                "logfile": model.log,
-                "iterations": 1,
-                "generations_per_iteration": 1
-            }
+            logging=self.params["logging"],
+            logfile=model.log,
+            iterations=1,
+            generations_per_iteration=1,
         )
 
         non_dom_front = pop.non_dominated()
@@ -147,7 +158,7 @@ class EvoDN2(baseProblem):
             The complexity of the neural network
         """
         network_complexity = []
-        non_linear_layer = np.empty((self.num_of_samples, 0))
+        non_linear_layer = np.empty((self.num_samples, 0))
 
         for i, subnet in enumerate(decision_variables):
 
@@ -250,7 +261,7 @@ class EvoDN2(baseProblem):
         )
         print(
             "samples: "
-            + str(self.num_of_samples)
+            + str(self.num_samples)
             + "\n"
             + "variables: "
             + str(self.num_of_variables)
@@ -330,6 +341,8 @@ class EvoDN2Model(EvoDN2):
         max_layers=8,
         max_nodes=10,
         prob_omit=0.2,
+        w_low=-5.0,
+        w_high=5.0,
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
@@ -355,6 +368,10 @@ class EvoDN2Model(EvoDN2):
             Maximum number of nodes in each hidden layer.
         prob_omit : float
             Probability of setting some weights to zero initially.
+        w_low : float
+            The lower bound for randomly generated weights.
+        w_high : float
+            The upper bound for randomly generated weights.
         activation_func : str
             Function to use for activation.
         opt_func : str
@@ -381,6 +398,8 @@ class EvoDN2Model(EvoDN2):
             "max_layers": max_layers,
             "max_nodes": max_nodes,
             "prob_omit": prob_omit,
+            "w_low": w_low,
+            "w_high": w_high,
             "activation_func": activation_func,
             "opt_func": opt_func,
             "loss_func": loss_func,
@@ -516,6 +535,8 @@ class EvoDN2Model(EvoDN2):
                 s = "mixed"
 
             if log is not None:
-                print("x" + str(i + 1) + " response: " + str(response) + " " + s, file=log)
+                print(
+                    "x" + str(i + 1) + " response: " + str(response) + " " + s, file=log
+                )
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

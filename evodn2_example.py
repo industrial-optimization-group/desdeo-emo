@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
+
 # import matplotlib
 # matplotlib.use("WebAgg")
 # import matplotlib.pyplot as plt
@@ -339,9 +340,7 @@ y = np.arange(31, 33)
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(
-    model_type="EvoDN2"
-)
+problem.train(model_type="EvoDN2")
 
 pop = Population(
     problem,
@@ -353,13 +352,11 @@ pop = Population(
 
 pop.evolve(
     PPGA,
-    {
-        "prob_prey_move": 0.5,
-        "opt": True,
-        "kill_interval": 4,
-        "iterations": 1,
-        "generations_per_iteration": 1,
-    },
+    prob_prey_move=0.5,
+    opt=True,
+    kill_interval=4,
+    iterations=1,
+    generations_per_iteration=1,
 )
 
 ndf = pop.non_dominated()
@@ -382,7 +379,10 @@ data = [trace0, trace1]
 layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
 plotly.offline.plot(
     data,
-    filename=problem.models[problem.y[0]][0].__class__.__name__ + test_prob.name + "pareto" + ".html",
+    filename=problem.models[problem.y[0]][0].__class__.__name__
+    + test_prob.name
+    + "pareto"
+    + ".html",
     auto_open=True,
 )
 

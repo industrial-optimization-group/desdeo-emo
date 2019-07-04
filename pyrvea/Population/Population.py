@@ -99,7 +99,9 @@ class Population:
         self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
         if not assign_type == "empty":
-            individuals = create_new_individuals(assign_type, problem, pop_size=self.pop_size)
+            individuals = create_new_individuals(
+                assign_type, problem, pop_size=self.pop_size
+            )
             self.add(individuals)
 
         if self.plotting:
@@ -122,7 +124,7 @@ class Population:
             Decision variable values for new population.
         """
         for i in range(len(new_pop)):
-             self.append_individual(new_pop[i])
+            self.append_individual(new_pop[i])
 
         # print(self.ideal_fitness)
         self.update_ideal_and_nadir()
@@ -207,7 +209,7 @@ class Population:
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
 
-    def evolve(self, EA: "BaseEA" = None, EA_parameters: dict = {}) -> "Population":
+    def evolve(self, EA: "BaseEA" = None, **kwargs):
         """Evolve the population with interruptions.
 
         Evolves the population based on the EA sent by the user.
@@ -230,7 +232,7 @@ class Population:
             progressbar = tqdm
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
-        ea = EA(self, EA_parameters)
+        ea = EA(self, **kwargs)
         iterations = ea.params["iterations"]
 
         if self.plotting:
@@ -241,7 +243,6 @@ class Population:
             if self.plotting:
                 self.plot_objectives()
 
-
     def mate(self, mating_pop=None, params=None):
         """Conduct crossover and mutation over the population.
 
@@ -251,7 +252,13 @@ class Population:
             offspring = self.recombination.mate(mating_pop, self.individuals, params)
         else:
             offspring = self.crossover.mate(mating_pop, self.individuals, params)
-            self.mutation.mutate(offspring, self.individuals, params, self.lower_limits, self.upper_limits)
+            self.mutation.mutate(
+                offspring,
+                self.individuals,
+                params,
+                self.lower_limits,
+                self.upper_limits,
+            )
 
         return offspring
 
