@@ -29,7 +29,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 
@@ -45,7 +45,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -68,7 +68,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -84,7 +84,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -106,7 +106,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -122,7 +122,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -145,7 +145,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -161,7 +161,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -184,7 +184,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -200,7 +200,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -222,7 +222,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -238,7 +238,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -260,7 +260,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -276,7 +276,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -298,7 +298,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -314,7 +314,7 @@ import pandas as pd
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -342,12 +342,11 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(model_type="EvoNN", iterations=1, generations_per_iteration=1)
+problem.train(model_type="EvoNN", iterations=1, generations_per_iteration=1, selection="manual")
 
 # pop = problem.optimize(RVEA)
 pop = problem.optimize(
     algorithm=PPGA,
-    opt=True,
     prob_prey_move=0.5,
     kill_interval=4,
     iterations=1,
@@ -376,7 +375,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -388,7 +387,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 # model_evodn_f1.fit(training_data_input, f1_training_data_output)
@@ -407,7 +406,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -419,7 +418,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -448,7 +447,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 #
@@ -460,7 +459,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="min_error",
+#         selection="min_error",
 #         logging=True,
 #         plotting=True)
 # model_evodn_f1.fit(training_data_input, f1_training_data_output)
@@ -480,7 +479,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #
@@ -492,7 +491,7 @@ problem.plot_pareto(pop)
 #         activation_func="sigmoid",
 #         opt_func="llsq",
 #         loss_func="rmse",
-#         criterion="akaike_corrected",
+#         selection="akaike_corrected",
 #         logging=True,
 #         plotting=True)
 #

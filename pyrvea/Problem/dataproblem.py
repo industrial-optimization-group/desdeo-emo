@@ -182,12 +182,17 @@ class DataProblem(baseProblem):
             assign_type = kwargs["assign_type"]
             crossover_type = kwargs["crossover_type"]
             mutation_type = kwargs["mutation_type"]
+            plotting = kwargs["plotting"]
 
         except KeyError:
             pop_size = 100
             assign_type = "RandomDesign"
             crossover_type = "simulated_binary_crossover"
             mutation_type = "bounded_polynomial_mutation"
+            plotting = False
+
+        if algorithm == PPGA:
+            kwargs["opt"] = True
 
         pop = Population(
             self,
@@ -195,6 +200,7 @@ class DataProblem(baseProblem):
             assign_type=assign_type,
             crossover_type=crossover_type,
             mutation_type=mutation_type,
+            plotting=plotting
         )
 
         pop.evolve(algorithm, **kwargs)
@@ -229,9 +235,11 @@ class DataProblem(baseProblem):
         pareto = pop.objectives[ndf]
         pareto_pop = np.asarray(pop.individuals)[ndf].tolist()
 
-        for x in pareto_pop:
+        for idx, x in enumerate(pareto_pop):
+
             for i, y in enumerate(x):
                 x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
+            x.insert(0, "Model " + str(idx))
 
         trace0 = go.Scatter(
             x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers"

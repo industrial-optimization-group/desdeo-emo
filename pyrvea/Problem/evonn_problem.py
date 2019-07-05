@@ -120,7 +120,7 @@ class EvoNN(baseProblem):
 
         non_dom_front = pop.non_dominated()
         model.w_matrix, model.fitness = self.select(
-            pop, non_dom_front, self.params["criterion"]
+            pop, non_dom_front, self.params["selection"]
         )
 
         non_linear_layer, _ = self.activation(model.w_matrix)
@@ -212,14 +212,14 @@ class EvoNN(baseProblem):
 
         return linear_layer, rss, predicted_values, training_error
 
-    def information_criterion(self, decision_variables):
-        """Calculate the information criterion.
+    def information_selection(self, decision_variables):
+        """Calculate the information selection.
 
-        Currently supports Akaike and corrected Akaike Information Criterion.
+        Currently supports Akaike and corrected Akaike Information selection.
 
         Returns
         -------
-        Corrected Akaike Information Criterion by default
+        Corrected Akaike Information selection by default
         """
         non_linear_layer, complexity = self.activation(decision_variables)
         linear_layer, rss, _, _ = self.optimize_layer(non_linear_layer)
@@ -229,7 +229,7 @@ class EvoNN(baseProblem):
 
         return aicc
 
-    def select(self, pop, non_dom_front, criterion="min_error"):
+    def select(self, pop, non_dom_front, selection="min_error"):
         """ Select target model from the population.
 
         Parameters
@@ -238,8 +238,8 @@ class EvoNN(baseProblem):
             The population object
         non_dom_front : list
             Indices of the models on the non-dominated front
-        criterion : str
-            The criterion to use for selecting the model.
+        selection : str
+            The selection to use for selecting the model.
             Possible values: 'min_error', 'akaike_corrected'
 
         Returns
@@ -248,29 +248,70 @@ class EvoNN(baseProblem):
         """
         model = None
         fitness = None
-        if criterion == "min_error":
+        if selection == "min_error":
             # Return the model with the lowest error
 
             lowest_error = np.argmin(pop.objectives[:, 0])
             model = pop.individuals[lowest_error]
             fitness = pop.fitness[lowest_error]
 
-        elif criterion == "akaike_corrected":
+        elif selection == "akaike_corrected":
 
-            # Calculate Akaike information criterion for the non-dominated front
+            # Calculate Akaike information selection for the non-dominated front
             # and return the model with the lowest value
 
             info_c_rank = []
 
             for i in non_dom_front:
 
-                info_c = self.information_criterion(pop.individuals[i])
+                info_c = self.information_selection(pop.individuals[i])
                 info_c_rank.append((info_c, i))
 
             info_c_rank.sort()
 
             model = pop.individuals[info_c_rank[0][1]]
             fitness = pop.fitness[info_c_rank[0][1]]
+
+        elif selection == "manual":
+
+            pareto = pop.objectives[non_dom_front]
+            hover = pop.objectives[non_dom_front].tolist()
+
+            for i, x in enumerate(hover):
+                x.insert(0, "Model " + str(non_dom_front[i]) + "<br>")
+
+            trace0 = go.Scatter(
+                x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers"
+            )
+            trace1 = go.Scatter(
+                x=pareto[:, 0],
+                y=pareto[:, 1],
+                text=hover,
+                hoverinfo="text",
+                mode="markers+lines",
+            )
+            data = [trace0, trace1]
+            layout = go.Layout(xaxis=dict(title="training error"), yaxis=dict(title="complexity"))
+            plotly.offline.plot(
+                {"data": data, "layout": layout},
+                filename=self.name + "_training_models_" + "pareto" + ".html",
+                auto_open=True,
+            )
+
+            model_idx = None
+            while model_idx not in non_dom_front:
+                usr_input = input("Please input the number of the model of your preference: ")
+                try:
+                    model_idx = int(usr_input)
+                except ValueError:
+                    print("Invalid input, please enter the model number.")
+                    continue
+
+                if model_idx not in non_dom_front:
+                    print("Model " + str(model_idx) + " not found.")
+
+            model = pop.individuals[int(model_idx)]
+            fitness = pop.fitness[int(model_idx)]
 
         return model, fitness
 
@@ -369,7 +410,7 @@ class EvoNNModel(EvoNN):
         activation_func="sigmoid",
         opt_func="llsq",
         loss_func="rmse",
-        criterion="akaike_corrected",
+        selection="akaike_corrected",
         recombination_type=None,
         crossover_type="EvoNN_xover",
         mutation_type="2d_gaussian",
@@ -401,8 +442,8 @@ class EvoNNModel(EvoNN):
             Function to use for optimizing the final layer of the model.
         loss_func : str
             The loss function to use.
-        criterion : str
-            The criterion to use for selecting the model.
+        selection : str
+            The selection to use for selecting the model.
         recombination_type, crossover_type, mutation_type : str
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
@@ -427,7 +468,7 @@ class EvoNNModel(EvoNN):
             "activation_func": activation_func,
             "opt_func": opt_func,
             "loss_func": loss_func,
-            "criterion": criterion,
+            "selection": selection,
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
