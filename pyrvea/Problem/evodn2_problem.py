@@ -218,12 +218,12 @@ class EvoDN2(baseProblem):
         Parameters
         ----------
         pop : obj
-            The population object
+            The population object.
         non_dom_front : list
-            Indices of the models on the non-dominated front
+            Indices of the models on the non-dominated front.
         selection : str
             The selection to use for selecting the model.
-            Possible values: 'min_error', 'akaike_corrected', 'manual'
+            Possible values: 'min_error', 'manual'
         Returns
         -------
         The selected model

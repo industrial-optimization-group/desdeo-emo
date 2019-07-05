@@ -19,7 +19,7 @@ class PPGA:
     crossing over their attributes and adding random mutations. After each prey has
     completed its move, the whole process starts again.
 
-    As the weaker individuals get eliminated in each generation, the population as a whole becomes ‘fitter’,
+    As the weaker individuals get eliminated in each generation, the population as a whole becomes more fit,
     i.e. the individuals get closer to the true pareto-optimal solutions.
 
     If you have any questions about the code, please contact:
@@ -33,6 +33,17 @@ class PPGA:
         The population object
     ea_parameters : dict
         PPGA specific parameters
+
+    Notes
+    -----
+    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    that code as a basis.
+    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+
+    For the MATLAB implementation, see:
+    Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to Materials Design: Theoretical and Practical
+    Aspects. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
+    and Materials Domain, pp. 346-369, 2016.
 
     References
     ----------

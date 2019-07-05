@@ -323,15 +323,22 @@ import pandas as pd
 # model_evonn.plot(y, training_data_output)
 #
 # # # ZDT 1 & 2
-test_prob = testProblem("ZDT2", 30, 2, 0, 1, 0)
+test_prob = testProblem(
+    name="ZDT2",
+    num_of_variables=30,
+    num_of_objectives=2,
+    num_of_constraints=0,
+    upper_limits=1,
+    lower_limits=0,
+)
 # np.random.seed(31)
 training_data_input = np.random.rand(250, 30)
 training_data_output = np.asarray(
     [test_prob.objectives(x) for x in training_data_input]
 )
 data = np.hstack((training_data_input, training_data_output))
-f1_training_data_output = training_data_output[:, 0]
-f2_training_data_output = training_data_output[:, 1]
+# f1_training_data_output = training_data_output[:, 0]
+# f2_training_data_output = training_data_output[:, 1]
 
 dataset = pd.DataFrame.from_records(data)
 x = []
@@ -342,7 +349,9 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(model_type="EvoNN", iterations=1, generations_per_iteration=1, selection="manual")
+problem.train(
+    model_type="EvoNN", iterations=1, generations_per_iteration=1, selection="manual"
+)
 
 # pop = problem.optimize(RVEA)
 pop = problem.optimize(

@@ -235,12 +235,12 @@ class EvoNN(baseProblem):
         Parameters
         ----------
         pop : obj
-            The population object
+            The population object.
         non_dom_front : list
-            Indices of the models on the non-dominated front
+            Indices of the models on the non-dominated front.
         selection : str
             The selection to use for selecting the model.
-            Possible values: 'min_error', 'akaike_corrected'
+            Possible values: 'min_error', 'akaike_corrected', 'manual'
 
         Returns
         -------
@@ -275,10 +275,10 @@ class EvoNN(baseProblem):
         elif selection == "manual":
 
             pareto = pop.objectives[non_dom_front]
-            hover = pop.objectives[non_dom_front].tolist()
+            hover = pop.objectives.tolist()
 
             for i, x in enumerate(hover):
-                x.insert(0, "Model " + str(non_dom_front[i]) + "<br>")
+                x.insert(0, "Model " + str(i) + "<br>")
 
             trace0 = go.Scatter(
                 x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers"
@@ -299,7 +299,7 @@ class EvoNN(baseProblem):
             )
 
             model_idx = None
-            while model_idx not in non_dom_front:
+            while model_idx not in pop.objectives:
                 usr_input = input("Please input the number of the model of your preference: ")
                 try:
                     model_idx = int(usr_input)
@@ -307,7 +307,7 @@ class EvoNN(baseProblem):
                     print("Invalid input, please enter the model number.")
                     continue
 
-                if model_idx not in non_dom_front:
+                if model_idx not in pop.objectives:
                     print("Model " + str(model_idx) + " not found.")
 
             model = pop.individuals[int(model_idx)]
