@@ -383,6 +383,8 @@ class EvoNNModel(EvoNN):
         The weight matrix of the lower part of the network.
     linear_layer : ndarray
         The linear layer of the upper part of the network.
+    fitness : list
+        Fitness of the trained model.
     svr : ndarray
         Single variable response of the model.
     log : file
@@ -395,6 +397,7 @@ class EvoNNModel(EvoNN):
         self.name = "EvoNN_Model"
         self.w_matrix = None
         self.linear_layer = None
+        self.fitness = None
         self.svr = None
         self.log = None
         self.set_params(**kwargs)
@@ -498,6 +501,8 @@ class EvoNNModel(EvoNN):
         if prob.params["logging"]:
             self.log = prob.create_logfile()
         prob.train(self)
+        if prob.params["logging"]:
+            print(self.fitness, file=self.log)
 
     def predict(self, decision_variables):
         """Predict using the EvoNN model.
@@ -521,7 +526,7 @@ class EvoNNModel(EvoNN):
 
         return y
 
-    def plot(self, prediction, target):
+    def plot(self, prediction, target, name=None):
         """Creates and shows a plot for the model.
 
         Parameters
@@ -529,12 +534,15 @@ class EvoNNModel(EvoNN):
         The model to create the plot for.
         """
 
+        if name is None:
+            name = self.name
+
         trace0 = go.Scatter(x=prediction, y=target, mode="markers")
         trace1 = go.Scatter(x=target, y=target)
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=self.name
+            filename=name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"

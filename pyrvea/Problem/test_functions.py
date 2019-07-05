@@ -54,7 +54,11 @@ class EvoNNTestProblem(baseProblem):
             "LeviN13": (-10, 10),
             "SchafferN2": (-100, 100),
             "min-ex_f1": (0, 1),
-            "min-ex_f2": (0, 5)
+            "min-ex_f2": (0, 5),
+            "Coello_ex1": (0, 1),
+            "fonseca": (-4, 4),
+            "Kursawe": (-5, 5),
+            "SchafferN1": (-100, 100)
         }
 
         if self.name in self.test_f_limits.keys():
@@ -171,6 +175,44 @@ class EvoNNTestProblem(baseProblem):
 
             self.obj_func = [x1, (1 + x2) / x1]
 
+        elif self.name == "Coello_ex1":
+            x = np.asarray(decision_variables[0])
+            y = np.asarray(decision_variables[1])
+            a = 2
+            q = 4
+            f1 = x
+            f2 = (1 + 10 * y) * (1 - (x/(1+10*y))*a - x/(1+10*y)*np.sin(2 * np.pi * q * x))
+
+            self.obj_func = [f1, f2]
+
+        elif self.name == "Kursawe":
+
+            x1 = np.asarray(decision_variables[0])
+            x2 = np.asarray(decision_variables[1])
+            x3 = np.asarray(decision_variables[1])
+            f1 = -10 * np.exp(-0.2 * np.sqrt(x1 ** 2 + x2 ** 2)) \
+                 - 10 * np.exp(-0.2 * np.sqrt(x2 ** 2 + x3 ** 2))
+            f2 = abs(x1) ** 0.8 + 5. * np.sin(x1 ** 3) \
+                 + abs(x2) ** 0.8 + 5. * np.sin(x2 ** 3) \
+                 + abs(x3) ** 0.8 + 5. * np.sin(x3 ** 3)
+            return [f1, f2]
+
+        elif self.name == "fonseca":
+            x1 = np.asarray(decision_variables[0])
+            x2 = np.asarray(decision_variables[1])
+            f1 = 1 - np.exp(-((x1 - 1 / np.sqrt(1)) ** 2 + (x2 - 1 / np.sqrt(2)) ** 2))
+            f2 = 1 - np.exp(-((x1 + 1 / np.sqrt(1)) ** 2 + (x2 + 1 / np.sqrt(2)) ** 2))
+
+            self.obj_func = [f1, f2]
+
+        elif self.name == "SchafferN1":
+            x = np.asarray(decision_variables[0])
+
+            f1 = x**2
+            f2 = (x - 2)**2
+
+            self.obj_func = [f1, f2]
+
         return self.obj_func
 
     def create_training_data(self, samples=150, method="random", seed=None):
@@ -187,6 +229,7 @@ class EvoNNTestProblem(baseProblem):
         """
 
         np.random.seed(seed)
+        training_data_input = None
 
         if method == "random":
 

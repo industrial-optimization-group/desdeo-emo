@@ -185,7 +185,7 @@ class DataProblem(baseProblem):
             plotting = kwargs["plotting"]
 
         except KeyError:
-            pop_size = 100
+            pop_size = 500
             assign_type = "RandomDesign"
             crossover_type = "simulated_binary_crossover"
             mutation_type = "bounded_polynomial_mutation"

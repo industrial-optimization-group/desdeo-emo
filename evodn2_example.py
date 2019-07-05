@@ -1,4 +1,4 @@
-from pyrvea.Problem.evonn_test_functions import EvoNNTestProblem
+from pyrvea.Problem.test_functions import EvoNNTestProblem
 from pyrvea.Problem.evonn_problem import EvoNNModel
 from pyrvea.Problem.evodn2_problem import EvoDN2Model
 from pyrvea.Problem.testProblem import testProblem
@@ -9,7 +9,9 @@ from pyrvea.EAs.RVEA import RVEA
 from pyrvea.EAs.slowRVEA import slowRVEA
 import numpy as np
 import pandas as pd
-
+from deap.benchmarks import fonseca
+import plotly
+import plotly.graph_objs as go
 
 # import matplotlib
 # matplotlib.use("WebAgg")
@@ -322,23 +324,32 @@ import pandas as pd
 # y = model_evonn.predict(training_data_input)
 # model_evonn.plot(y, training_data_output)
 #
+from deap import benchmarks
+
+
+test_prob = EvoNNTestProblem("Kursawe", num_of_variables=3)
+training_data_input, training_data_output = test_prob.create_training_data(
+    samples=250, method="random", seed=30
+)
+
 # # # ZDT 1 & 2
-test_prob = testProblem(
-    name="ZDT2",
-    num_of_variables=30,
-    num_of_objectives=2,
-    num_of_constraints=0,
-    upper_limits=1,
-    lower_limits=0,
-)
-# np.random.seed(31)
-training_data_input = np.random.rand(250, 30)
-training_data_output = np.asarray(
-    [test_prob.objectives(x) for x in training_data_input]
-)
+
+# test_prob = testProblem(
+#     name="ZDT2",
+#     num_of_variables=30,
+#     num_of_objectives=2,
+#     num_of_constraints=0,
+#     upper_limits=1,
+#     lower_limits=0,
+# )
+# # np.random.seed(31)
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray(
+#     [test_prob.objectives(x) for x in training_data_input]
+# )
 data = np.hstack((training_data_input, training_data_output))
-# f1_training_data_output = training_data_output[:, 0]
-# f2_training_data_output = training_data_output[:, 1]
+f1_training_data_output = training_data_output[:, 0]
+f2_training_data_output = training_data_output[:, 1]
 
 dataset = pd.DataFrame.from_records(data)
 x = []
@@ -350,19 +361,54 @@ problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
 problem.train(
-    model_type="EvoNN", iterations=1, generations_per_iteration=1, selection="manual"
+    model_type="EvoDN2",
+    iterations=10,
+    generations_per_iteration=10,
+
 )
 
-# pop = problem.optimize(RVEA)
-pop = problem.optimize(
+# mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
+#
+# trace0 = go.Scatter(x=mlp_reg_y_pred, y=f1_training_data_output, mode="markers")
+# trace1 = go.Scatter(x=f1_training_data_output, y=f1_training_data_output)
+# data = [trace0, trace1]
+# plotly.offline.plot(
+#         data,
+#         filename="MLP Regressor " + test_prob.name + "f1"
+#                  + ".html",
+#         auto_open=True,
+# )
+#
+# mlp_reg_y_pred = problem.models["f2"][0].predict(training_data_input)
+#
+# trace0 = go.Scatter(x=mlp_reg_y_pred, y=f2_training_data_output, mode="markers")
+# trace1 = go.Scatter(x=f2_training_data_output, y=f2_training_data_output)
+# data = [trace0, trace1]
+# plotly.offline.plot(
+#         data,
+#         filename="MLP Regressor " + test_prob.name + "f2"
+#                  + ".html",
+#         auto_open=True,
+# )
+y = problem.models["f1"][0].predict(training_data_input)
+problem.models["f1"][0].plot(y, training_data_output[:, 0], name="kursawe_f1")
+
+y2 = problem.models["f2"][0].predict(training_data_input)
+problem.models["f2"][0].plot(y2, training_data_output[:, 1], name="kursawe_f2")
+
+pop = problem.optimize(RVEA)
+pop2 = problem.optimize(
     algorithm=PPGA,
     prob_prey_move=0.5,
+    prob_mutation=0.1,
+    target_pop_size=500,
     kill_interval=4,
-    iterations=1,
-    generations_per_iteration=1,
+    iterations=10,
+    generations_per_iteration=10,
 )
 
 problem.plot_pareto(pop)
+problem.plot_pareto(pop2)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]

@@ -1,4 +1,4 @@
-from pyrvea.Problem.evonn_test_functions import EvoNNTestProblem
+from pyrvea.Problem.test_functions import EvoNNTestProblem
 from pyrvea.Problem.evonn_problem import EvoNNModel
 from pyrvea.Problem.evodn2_problem import EvoDN2Model
 

@@ -347,6 +347,8 @@ class EvoDN2Model(EvoDN2):
         A list containing the subnets of the model.
     subsets : array_like
         A list of variables used for each subnet of the model.
+    fitness : list
+        Fitness of the trained model.
     non_linear_layer : ndarray
         The activated layer combining all of the model's subnets.
     linear_layer : ndarray
@@ -363,7 +365,7 @@ class EvoDN2Model(EvoDN2):
         self.name = "EvoDN2_Model"
         self.subnets = None
         self.subsets = None
-        self.fitness = None
+        self.fitness = []
         self.non_linear_layer = None
         self.linear_layer = None
         self.svr = None
@@ -471,8 +473,10 @@ class EvoDN2Model(EvoDN2):
         self.num_of_variables = prob.num_of_variables
         if self.params["logging"]:
             self.log = prob.create_logfile()
-
         prob.train(self)
+
+        if prob.params["logging"]:
+            print(self.fitness, file=self.log)
 
     def predict(self, decision_variables):
         """Predict using the EvoDN2 model.
@@ -506,20 +510,23 @@ class EvoDN2Model(EvoDN2):
 
         return y
 
-    def plot(self, prediction, target):
+    def plot(self, prediction, target, name=None):
+
+        if name is None:
+            name = self.name
 
         trace0 = go.Scatter(x=prediction, y=target, mode="markers")
         trace1 = go.Scatter(x=target, y=target)
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=self.name
+            filename=name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.params["subnet_struct"][0])
+            + str(self.params["num_subnets"])
             + "_"
-            + str(self.params["subnet_struct"][1])
+            + str(self.params["max_layers"])
             + "_"
             + str(self.params["max_nodes"])
             + ".html",
