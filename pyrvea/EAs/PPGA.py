@@ -38,12 +38,13 @@ class PPGA:
     -----
     The algorithm has been created earlier in MATLAB, and this Python implementation has been using
     that code as a basis.
+    See references [4] for the study during which the original MATLAB version was created.
     Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
 
     For the MATLAB implementation, see:
-    Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to Materials Design: Theoretical and Practical
-    Aspects. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
-    and Materials Domain, pp. 346-369, 2016.
+    N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
+    and Materials Domain. In Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to
+    Materials Design: Theoretical and Practical Aspects, pp. 346-369, 2016.
 
     References
     ----------
@@ -57,6 +58,9 @@ class PPGA:
 
     [3] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
     J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.
+
+    [4] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
+    net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.
 
     """
 
