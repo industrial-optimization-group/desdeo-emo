@@ -2,6 +2,7 @@ from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from scipy.special import expit
+from math import ceil
 import numpy as np
 import plotly
 import plotly.graph_objs as go
@@ -44,8 +45,8 @@ class EvoDN2(baseProblem):
         X_train=None,
         y_train=None,
         num_of_objectives=2,
-        w_low=-5.0,
-        w_high=5.0,
+        num_samples=None,
+        subsets=None,
         params=None,
     ):
         super().__init__()
@@ -54,73 +55,9 @@ class EvoDN2(baseProblem):
         self.X_train = X_train
         self.y_train = y_train
         self.num_of_objectives = num_of_objectives
-        self.w_low = w_low
-        self.w_high = w_high
-        self.num_samples = None
-        self.num_subnets = None
-        self.max_layers = None
-        self.max_nodes = None
-        self.subsets = None
+        self.num_samples = num_samples
+        self.subsets = subsets
         self.params = params
-
-    def fit(self, training_data, target_values):
-        """Fit data in EvoNN model.
-        Parameters
-        ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
-        """
-
-        self.X_train = training_data
-        self.y_train = target_values
-        self.num_samples = target_values.shape[0]
-        self.num_of_variables = training_data.shape[1]
-        self.num_subnets = self.params["num_subnets"]
-        self.max_layers = self.params["max_layers"]
-        self.max_nodes = self.params["max_nodes"]
-        self.w_low = self.params["w_low"]
-        self.w_high = self.params["w_high"]
-
-        # Create random subsets of decision variables for each subnet
-        self.subsets = []
-        for i in range(self.num_subnets):
-            n = random.randint(1, self.X_train.shape[1])
-            self.subsets.append(random.sample(range(self.X_train.shape[1]), n))
-
-        # Ensure that each decision variable is used as an input in at least one subnet
-        for n in list(range(self.X_train.shape[1])):
-            if not any(n in k for k in self.subsets):
-                self.subsets[random.randint(0, self.num_subnets - 1)].append(n)
-
-        return self.subsets
-
-    def train(self, model):
-        """Create a random population, evolve it and select a model based on selection."""
-        pop = Population(
-            self,
-            assign_type="EvoDN2",
-            pop_size=self.params["pop_size"],
-            recombination_type=self.params["recombination_type"],
-            crossover_type=self.params["crossover_type"],
-            mutation_type=self.params["mutation_type"],
-            plotting=False,
-        )
-        pop.evolve(
-            PPGA,
-            logging=self.params["logging"],
-            logfile=model.log,
-            iterations=self.params["iterations"],
-            generations_per_iteration=self.params["generations_per_iteration"],
-        )
-
-        non_dom_front = pop.non_dominated()
-        model.subnets, model.fitness = self.select(
-            pop, non_dom_front, self.params["selection"]
-        )
-        model.non_linear_layer, _ = self.activation(model.subnets)
-        model.linear_layer, *_ = self.optimize_layer(model.non_linear_layer)
 
     def objectives(self, decision_variables) -> list:
         """ Use this method to calculate objective functions.
@@ -280,50 +217,6 @@ class EvoDN2(baseProblem):
 
         return model, fitness
 
-    def create_logfile(self):
-
-        # Save params to log file
-        log_file = open(
-            self.name
-            + "_var"
-            + str(self.num_of_variables)
-            + "_nodes"
-            + str(self.num_subnets)
-            + "_"
-            + str(self.max_layers)
-            + "_"
-            + str(self.max_nodes)
-            + ".log",
-            "a",
-        )
-        print(
-            "samples: "
-            + str(self.num_samples)
-            + "\n"
-            + "variables: "
-            + str(self.num_of_variables)
-            + "\n"
-            + "number of subnets: "
-            + str(self.num_subnets)
-            + "\n"
-            + "max number of layers: "
-            + str(self.max_layers)
-            + "\n"
-            + "max nodes: "
-            + str(self.max_nodes)
-            + "\n"
-            + "activation: "
-            + self.params["activation_func"]
-            + "\n"
-            + "opt func: "
-            + self.params["opt_func"]
-            + "\n"
-            + "loss func: "
-            + self.params["loss_func"],
-            file=log_file,
-        )
-        return log_file
-
     @staticmethod
     def activate(name, x):
         if name == "sigmoid":
@@ -460,7 +353,8 @@ class EvoDN2Model(EvoDN2):
         self.params = params
 
     def fit(self, training_data, target_values):
-        """Fit data in EvoNN model.
+        """Fit data in EvoNN model, divide input variables for each subnet randomly,
+        and train the model.
         Parameters
         ----------
         training_data : ndarray, shape = (numbers of samples, number of variables)
@@ -468,15 +362,60 @@ class EvoDN2Model(EvoDN2):
         target_values : ndarray
             Target values
         """
-        prob = EvoDN2(name=self.name, params=self.params)
-        self.subsets = prob.fit(training_data, target_values)
-        self.num_of_variables = prob.num_of_variables
-        if self.params["logging"]:
-            self.log = prob.create_logfile()
-        prob.train(self)
+        self.X_train = training_data
+        self.y_train = target_values
+        self.num_samples = target_values.shape[0]
+        self.num_of_variables = training_data.shape[1]
+        self.num_subnets = self.params["num_subnets"]
+        self.max_layers = self.params["max_layers"]
+        self.max_nodes = self.params["max_nodes"]
+        self.w_low = self.params["w_low"]
+        self.w_high = self.params["w_high"]
 
-        if prob.params["logging"]:
+        # Create random subsets of decision variables for each subnet
+        self.subsets = []
+        for i in range(self.num_subnets):
+            n = random.randint(1, self.X_train.shape[1])
+            self.subsets.append(random.sample(range(self.X_train.shape[1]), n))
+
+        # Ensure that each decision variable is used as an input in at least one subnet
+        for n in list(range(self.X_train.shape[1])):
+            if not any(n in k for k in self.subsets):
+                self.subsets[random.randint(0, self.num_subnets - 1)].append(n)
+
+        if self.params["logging"]:
+            self.log = self.create_logfile()
+
+        self.train()
+
+        if self.params["logging"]:
             print(self.fitness, file=self.log)
+
+    def train(self):
+        """Create a random population, evolve it and select a model based on selection."""
+        pop = Population(
+            self,
+            assign_type="EvoDN2",
+            pop_size=self.params["pop_size"],
+            recombination_type=self.params["recombination_type"],
+            crossover_type=self.params["crossover_type"],
+            mutation_type=self.params["mutation_type"],
+            plotting=False,
+        )
+        pop.evolve(
+            PPGA,
+            logging=self.params["logging"],
+            logfile=self.log,
+            iterations=self.params["iterations"],
+            generations_per_iteration=self.params["generations_per_iteration"],
+        )
+
+        non_dom_front = pop.non_dominated()
+        self.subnets, self.fitness = self.select(
+            pop, non_dom_front, self.params["selection"]
+        )
+        self.non_linear_layer, _ = self.activation(self.subnets)
+        self.linear_layer, *_ = self.optimize_layer(self.non_linear_layer)
 
     def predict(self, decision_variables):
         """Predict using the EvoDN2 model.
@@ -532,6 +471,50 @@ class EvoDN2Model(EvoDN2):
             + ".html",
             auto_open=True,
         )
+
+    def create_logfile(self):
+
+        # Save params to log file
+        log_file = open(
+            self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.num_subnets)
+            + "_"
+            + str(self.max_layers)
+            + "_"
+            + str(self.max_nodes)
+            + ".log",
+            "a",
+        )
+        print(
+            "samples: "
+            + str(self.num_samples)
+            + "\n"
+            + "variables: "
+            + str(self.num_of_variables)
+            + "\n"
+            + "number of subnets: "
+            + str(self.num_subnets)
+            + "\n"
+            + "max number of layers: "
+            + str(self.max_layers)
+            + "\n"
+            + "max nodes: "
+            + str(self.max_nodes)
+            + "\n"
+            + "activation: "
+            + self.params["activation_func"]
+            + "\n"
+            + "opt func: "
+            + self.params["opt_func"]
+            + "\n"
+            + "loss func: "
+            + self.params["loss_func"],
+            file=log_file,
+        )
+        return log_file
 
     def single_variable_response(self, ploton=False, log=None):
 

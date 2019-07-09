@@ -327,26 +327,26 @@ import plotly.graph_objs as go
 from deap import benchmarks
 
 
-test_prob = EvoNNTestProblem("Kursawe", num_of_variables=3)
-training_data_input, training_data_output = test_prob.create_training_data(
-    samples=250, method="random", seed=30
-)
-
+# test_prob = EvoNNTestProblem("SchafferN1", num_of_variables=1)
+# training_data_input, training_data_output = test_prob.create_training_data(
+#     samples=250, method="random", seed=30
+# )
+#
 # # # ZDT 1 & 2
 
-# test_prob = testProblem(
-#     name="ZDT2",
-#     num_of_variables=30,
-#     num_of_objectives=2,
-#     num_of_constraints=0,
-#     upper_limits=1,
-#     lower_limits=0,
-# )
-# # np.random.seed(31)
-# training_data_input = np.random.rand(250, 30)
-# training_data_output = np.asarray(
-#     [test_prob.objectives(x) for x in training_data_input]
-# )
+test_prob = testProblem(
+    name="ZDT2",
+    num_of_variables=30,
+    num_of_objectives=2,
+    num_of_constraints=0,
+    upper_limits=1,
+    lower_limits=0,
+)
+# np.random.seed(31)
+training_data_input = np.random.rand(250, 30)
+training_data_output = np.asarray(
+    [test_prob.objectives(x) for x in training_data_input]
+)
 data = np.hstack((training_data_input, training_data_output))
 f1_training_data_output = training_data_output[:, 0]
 f2_training_data_output = training_data_output[:, 1]
@@ -360,45 +360,34 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(
-    model_type="EvoDN2",
-    iterations=10,
-    generations_per_iteration=10,
+problem.train(model_type="EvoNN", iterations=10, generations_per_iteration=10)
 
+
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+
+pop = Population(
+    problem,
+    pop_size=500,
+    assign_type="RandomDesign",
+    crossover_type="simulated_binary_crossover",
+    mutation_type="bounded_polynomial_mutation",
+    plotting=False,
 )
 
-# mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
-#
-# trace0 = go.Scatter(x=mlp_reg_y_pred, y=f1_training_data_output, mode="markers")
-# trace1 = go.Scatter(x=f1_training_data_output, y=f1_training_data_output)
-# data = [trace0, trace1]
-# plotly.offline.plot(
-#         data,
-#         filename="MLP Regressor " + test_prob.name + "f1"
-#                  + ".html",
-#         auto_open=True,
-# )
-#
-# mlp_reg_y_pred = problem.models["f2"][0].predict(training_data_input)
-#
-# trace0 = go.Scatter(x=mlp_reg_y_pred, y=f2_training_data_output, mode="markers")
-# trace1 = go.Scatter(x=f2_training_data_output, y=f2_training_data_output)
-# data = [trace0, trace1]
-# plotly.offline.plot(
-#         data,
-#         filename="MLP Regressor " + test_prob.name + "f2"
-#                  + ".html",
-#         auto_open=True,
-# )
-y = problem.models["f1"][0].predict(training_data_input)
-problem.models["f1"][0].plot(y, training_data_output[:, 0], name="kursawe_f1")
+pop2 = Population(
+    problem,
+    assign_type="RandomDesign",
+    crossover_type="simulated_binary_crossover",
+    mutation_type="bounded_polynomial_mutation",
+    plotting=False,
+)
 
-y2 = problem.models["f2"][0].predict(training_data_input)
-problem.models["f2"][0].plot(y2, training_data_output[:, 1], name="kursawe_f2")
-
-pop = problem.optimize(RVEA)
-pop2 = problem.optimize(
-    algorithm=PPGA,
+pop.evolve(
+    PPGA,
     prob_prey_move=0.5,
     prob_mutation=0.1,
     target_pop_size=500,
@@ -407,8 +396,10 @@ pop2 = problem.optimize(
     generations_per_iteration=10,
 )
 
-problem.plot_pareto(pop)
-problem.plot_pareto(pop2)
+pop2.evolve(RVEA, iterations=10, generations_per_iteration=100)
+
+pop.plot_pareto("evonn"+test_prob.name)
+pop2.plot_pareto("rvea"+test_prob.name)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]

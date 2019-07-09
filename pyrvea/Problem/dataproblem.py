@@ -16,8 +16,6 @@ from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
 from pyrvea.EAs.slowRVEA import slowRVEA
 from pyrvea.EAs.NSGAIII import NSGAIII
-import plotly
-import plotly.graph_objs as go
 
 
 class DataProblem(baseProblem):
@@ -191,9 +189,6 @@ class DataProblem(baseProblem):
             mutation_type = "bounded_polynomial_mutation"
             plotting = False
 
-        if algorithm == PPGA:
-            kwargs["opt"] = True
-
         pop = Population(
             self,
             pop_size=pop_size,
@@ -229,35 +224,3 @@ class DataProblem(baseProblem):
 
         return objectives
 
-    def plot_pareto(self, pop):
-
-        ndf = pop.non_dominated()
-        pareto = pop.objectives[ndf]
-        pareto_pop = np.asarray(pop.individuals)[ndf].tolist()
-
-        for idx, x in enumerate(pareto_pop):
-
-            for i, y in enumerate(x):
-                x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
-            x.insert(0, "Model " + str(idx))
-
-        trace0 = go.Scatter(
-            x=pop.objectives[:, 0], y=pop.objectives[:, 1], mode="markers"
-        )
-        trace1 = go.Scatter(
-            x=pareto[:, 0],
-            y=pareto[:, 1],
-            text=pareto_pop,
-            hoverinfo="text",
-            mode="markers+lines",
-        )
-        data = [trace0, trace1]
-        layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
-        plotly.offline.plot(
-            {"data": data, "layout": layout},
-            filename=self.models[self.y[0]][0].__class__.__name__
-            + self.name
-            + "pareto"
-            + ".html",
-            auto_open=True,
-        )

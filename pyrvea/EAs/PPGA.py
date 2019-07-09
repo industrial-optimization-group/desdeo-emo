@@ -77,7 +77,6 @@ class PPGA:
         iterations: int = 10,
         logging: list = False,
         logfile=None,
-        opt: bool = False,
         kill_interval: int = 7,
         max_rank: int = 20,
         prob_crossover: float = 0.8,
@@ -135,7 +134,6 @@ class PPGA:
             "iterations": iterations,
             "total_generations": iterations * generations_per_iteration,
             "logging": logging,
-            "opt": opt,
             "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_total_gen_count": 0,
@@ -187,7 +185,7 @@ class PPGA:
         # Predator max moves for gen
         self.params["predator_max_moves"] = int(
             (
-                len(self.params["population"].individuals)
+                len(population.individuals)
                 - self.params["target_pop_size"]
             )
             / self.params["predator_pop_size"]
@@ -206,7 +204,7 @@ class PPGA:
         )
 
         # If optimizing instead of training, perform crossover over the entire pop at once
-        if self.params["opt"]:
+        if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
             for ind in range(len(population.individuals)):

@@ -11,6 +11,8 @@ from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
 from pyrvea.Population.create_individuals import create_new_individuals
+import plotly
+import plotly.graph_objs as go
 
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
@@ -285,6 +287,41 @@ class Population:
         obj = self.objectives
         self.figure = animate_next_(
             obj, self.figure, self.filename + ".html", iteration
+        )
+
+    def plot_pareto(self, filename):
+
+        if filename is None:
+            filename = self.problem.name
+
+        ndf = self.non_dominated()
+        pareto = self.objectives[ndf]
+        pareto_pop = np.asarray(self.individuals)[ndf].tolist()
+
+        for idx, x in enumerate(pareto_pop):
+
+            for i, y in enumerate(x):
+                x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
+            x.insert(0, "Model " + str(idx))
+
+        trace0 = go.Scatter(
+            x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
+        )
+        trace1 = go.Scatter(
+            x=pareto[:, 0],
+            y=pareto[:, 1],
+            text=pareto_pop,
+            hoverinfo="text",
+            mode="markers+lines",
+        )
+        data = [trace0, trace1]
+        layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
+        plotly.offline.plot(
+            {"data": data, "layout": layout},
+            filename=filename
+            + "pareto"
+            + ".html",
+            auto_open=True,
         )
 
     def hypervolume(self, ref_point):

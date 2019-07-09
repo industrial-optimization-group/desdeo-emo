@@ -14,7 +14,12 @@ def mate(mating_pop, individuals, params):
         The probability for the crossover
     """
 
-    prob_crossover = params["prob_crossover"]
+    try:
+
+        prob_crossover = params["prob_crossover"]
+    except KeyError:
+        prob_crossover = 0.8
+
     offspring1 = np.copy(individuals[mating_pop[0]])
     offspring2 = np.copy(individuals[mating_pop[1]])
 

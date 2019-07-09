@@ -1,6 +1,7 @@
 from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
+from pyrvea.EAs.RVEA import RVEA
 from math import ceil
 from scipy.special import expit
 import numpy as np
@@ -52,79 +53,18 @@ class EvoNN(baseProblem):
         name=None,
         X_train=None,
         y_train=None,
-        params=None,
-        num_input_nodes=5,
-        num_nodes=20,
-        num_samples=None,
         num_of_objectives=2,
-        w_low=-5.0,
-        w_high=5.0,
+        params=None,
+        num_samples=None
     ):
         super().__init__()
 
         self.name = name
         self.X_train = X_train
         self.y_train = y_train
-        self.params = params
-        self.num_input_nodes = num_input_nodes
-        self.num_nodes = num_nodes
-        self.num_samples = num_samples
         self.num_of_objectives = num_of_objectives
-        self.w_low = w_low
-        self.w_high = w_high
-
-    def fit(self, training_data, target_values):
-        """Fit data in EvoNN model.
-
-        Parameters
-        ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
-        """
-
-        self.X_train = training_data
-        self.y_train = target_values
-        self.num_samples = target_values.shape[0]
-        self.num_of_variables = training_data.shape[1]
-        self.num_input_nodes = self.num_of_variables
-        self.num_nodes = self.params["num_nodes"]
-        self.w_low = self.params["w_low"]
-        self.w_high = self.params["w_high"]
-
-    def train(self, model):
-        """Trains the networks and selects the best model from the non dominated front.
-
-        Parameters
-        ----------
-        model : :obj:
-            The model to be chosen.
-        """
-        pop = Population(
-            self,
-            assign_type="EvoNN",
-            pop_size=self.params["pop_size"],
-            plotting=False,
-            recombination_type=self.params["recombination_type"],
-            crossover_type=self.params["crossover_type"],
-            mutation_type=self.params["mutation_type"],
-        )
-        pop.evolve(
-            PPGA,
-            logging=self.params["logging"],
-            logfile=model.log,
-            iterations=self.params["iterations"],
-            generations_per_iteration=self.params["generations_per_iteration"],
-        )
-
-        non_dom_front = pop.non_dominated()
-        model.w_matrix, model.fitness = self.select(
-            pop, non_dom_front, self.params["selection"]
-        )
-
-        non_linear_layer, _ = self.activation(model.w_matrix)
-        model.linear_layer, *_ = self.optimize_layer(non_linear_layer)
+        self.params = params
+        self.num_samples = num_samples
 
     def objectives(self, decision_variables) -> list:
 
@@ -149,13 +89,13 @@ class EvoNN(baseProblem):
 
         return obj_func
 
-    def activation(self, w_matrix):
+    def activation(self, non_linear_layer):
         """ Calculates the dot product and applies the activation function.
         Also get complexity for the lower part of the network.
 
         Parameters
         ----------
-        w_matrix : ndarray
+        non_linear_layer : ndarray
             Weight matrix of the neural network
 
         Returns
@@ -167,8 +107,8 @@ class EvoNN(baseProblem):
 
         """
         # Calculate the dot product + bias
-        out = np.dot(self.X_train, w_matrix[1:, :]) + w_matrix[0]
-        complexity = np.count_nonzero(w_matrix[1:, :])
+        out = np.dot(self.X_train, non_linear_layer[1:, :]) + non_linear_layer[0]
+        complexity = np.count_nonzero(non_linear_layer[1:, :])
         activated_layer = self.activate(self.params["activation_func"], out)
 
         return activated_layer, complexity
@@ -212,14 +152,14 @@ class EvoNN(baseProblem):
 
         return linear_layer, rss, predicted_values, training_error
 
-    def information_selection(self, decision_variables):
-        """Calculate the information selection.
+    def information_criterion(self, decision_variables):
+        """Calculate the information criterion.
 
-        Currently supports Akaike and corrected Akaike Information selection.
+        Currently supports Akaike and corrected Akaike Information Criterion.
 
         Returns
         -------
-        Corrected Akaike Information selection by default
+        Corrected Akaike Information criterion
         """
         non_linear_layer, complexity = self.activation(decision_variables)
         linear_layer, rss, _, _ = self.optimize_layer(non_linear_layer)
@@ -257,14 +197,14 @@ class EvoNN(baseProblem):
 
         elif selection == "akaike_corrected":
 
-            # Calculate Akaike information selection for the non-dominated front
+            # Calculate Akaike information criterion for the non-dominated front
             # and return the model with the lowest value
 
             info_c_rank = []
 
             for i in non_dom_front:
 
-                info_c = self.information_selection(pop.individuals[i])
+                info_c = self.information_criterion(pop.individuals[i])
                 info_c_rank.append((info_c, i))
 
             info_c_rank.sort()
@@ -315,46 +255,6 @@ class EvoNN(baseProblem):
 
         return model, fitness
 
-    def create_logfile(self):
-        """Create a log file containing the parameters for training the model and the GA.
-
-        Returns
-        -------
-        An external log file
-        """
-
-        # Save params to log file
-        log_file = open(
-            self.name
-            + "_var"
-            + str(self.num_of_variables)
-            + "_nodes"
-            + str(self.num_nodes)
-            + ".log",
-            "a",
-        )
-        print(
-            "samples: "
-            + str(self.num_samples)
-            + "\n"
-            + "variables: "
-            + str(self.num_of_variables)
-            + "\n"
-            + "nodes: "
-            + str(self.num_nodes)
-            + "\n"
-            + "activation: "
-            + self.params["activation_func"]
-            + "\n"
-            + "opt func: "
-            + self.params["opt_func"]
-            + "\n"
-            + "loss func: "
-            + self.params["loss_func"],
-            file=log_file,
-        )
-        return log_file
-
     @staticmethod
     def activate(name, x):
         if name == "sigmoid":
@@ -379,7 +279,7 @@ class EvoNNModel(EvoNN):
     ----------
     name : str
         Name of the model.
-    w_matrix : ndarray
+    non_linear_layer : ndarray
         The weight matrix of the lower part of the network.
     linear_layer : ndarray
         The linear layer of the upper part of the network.
@@ -395,7 +295,7 @@ class EvoNNModel(EvoNN):
     def __init__(self, **kwargs):
         super().__init__()
         self.name = "EvoNN_Model"
-        self.w_matrix = None
+        self.non_linear_layer = None
         self.linear_layer = None
         self.fitness = None
         self.svr = None
@@ -494,15 +394,48 @@ class EvoNNModel(EvoNN):
         target_values : ndarray
             Target values
         """
+
         self.X_train = training_data
         self.y_train = target_values
-        prob = EvoNN(name=self.name, params=self.params)
-        prob.fit(training_data, target_values)
-        if prob.params["logging"]:
-            self.log = prob.create_logfile()
-        prob.train(self)
-        if prob.params["logging"]:
+        self.num_samples = target_values.shape[0]
+        self.num_of_variables = training_data.shape[1]
+        self.num_input_nodes = self.num_of_variables
+        self.num_nodes = self.params["num_nodes"]
+        self.w_low = self.params["w_low"]
+        self.w_high = self.params["w_high"]
+
+        if self.params["logging"]:
+            self.log = self.create_logfile()
+
+        self.train()
+
+        if self.params["logging"]:
             print(self.fitness, file=self.log)
+
+    def train(self):
+        """Trains the networks and selects the best model from the non dominated front.
+
+        """
+        pop = Population(
+            self,
+            assign_type="EvoNN",
+            pop_size=self.params["pop_size"],
+            plotting=False,
+            recombination_type=self.params["recombination_type"],
+            crossover_type=self.params["crossover_type"],
+            mutation_type=self.params["mutation_type"],
+        )
+        pop.evolve(
+            RVEA
+        )
+
+        non_dom_front = pop.non_dominated()
+        self.non_linear_layer, self.fitness = self.select(
+            pop, non_dom_front, self.params["selection"]
+        )
+
+        activated_layer, _ = self.activation(self.non_linear_layer)
+        self.linear_layer, *_ = self.optimize_layer(activated_layer)
 
     def predict(self, decision_variables):
         """Predict using the EvoNN model.
@@ -518,9 +451,9 @@ class EvoNNModel(EvoNN):
             The prediction of the model.
 
         """
-        out = np.dot(decision_variables, self.w_matrix[1:, :]) + self.w_matrix[0]
+        out = np.dot(decision_variables, self.non_linear_layer[1:, :]) + self.non_linear_layer[0]
 
-        non_linear_layer = self.activate(self.params["activation_func"], out)
+        non_linear_layer = self.activate(self.params["activation_func"], out) # rename
 
         y = np.dot(non_linear_layer, self.linear_layer)
 
@@ -551,14 +484,54 @@ class EvoNNModel(EvoNN):
             auto_open=True,
         )
 
+    def create_logfile(self):
+        """Create a log file containing the parameters for training the model and the GA.
+
+        Returns
+        -------
+        An external log file
+        """
+
+        # Save params to log file
+        log_file = open(
+            self.name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_nodes"
+            + str(self.num_nodes)
+            + ".log",
+            "a",
+        )
+        print(
+            "samples: "
+            + str(self.num_samples)
+            + "\n"
+            + "variables: "
+            + str(self.num_of_variables)
+            + "\n"
+            + "nodes: "
+            + str(self.num_nodes)
+            + "\n"
+            + "activation: "
+            + self.params["activation_func"]
+            + "\n"
+            + "opt func: "
+            + self.params["opt_func"]
+            + "\n"
+            + "loss func: "
+            + self.params["loss_func"],
+            file=log_file,
+        )
+        return log_file
+
     def single_variable_response(self, ploton=False, log=None):
         """Get the model's response to a single variable."""
 
         trend = np.loadtxt("trend")
-        avg = np.ones((1, self.w_matrix[1:].shape[0])) * (0 + 1) / 2
+        avg = np.ones((1, self.non_linear_layer[1:].shape[0])) * (0 + 1) / 2
         svr = np.empty((0, 2))
 
-        for i in range(self.w_matrix[1:].shape[0]):
+        for i in range(self.non_linear_layer[1:].shape[0]):
             variables = np.ones((len(trend), 1)) * avg
             variables[:, i] = trend
 
