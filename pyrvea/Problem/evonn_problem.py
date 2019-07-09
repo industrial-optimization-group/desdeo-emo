@@ -426,7 +426,11 @@ class EvoNNModel(EvoNN):
             mutation_type=self.params["mutation_type"],
         )
         pop.evolve(
-            RVEA
+            PPGA,
+            logging=self.params["logging"],
+            logfile=self.log,
+            iterations=self.params["iterations"],
+            generations_per_iteration=self.params["generations_per_iteration"],
         )
 
         non_dom_front = pop.non_dominated()
