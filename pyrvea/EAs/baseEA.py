@@ -88,10 +88,10 @@ class BaseDecompositionEA(BaseEA):
         population: "Population"
             Population object
         """
-        print(str(len(population.individuals)))  # DEBUG
-        start = time.process_time()  # DEBUG
+        #print(str(len(population.individuals)))  # DEBUG
+        #start = time.process_time()  # DEBUG
         offspring = population.mate(params=self.params)
-        print(time.process_time() - start)  # DEBUG
+        #print(time.process_time() - start)  # DEBUG
         population.add(offspring)
         selected = self.select(population)
         population.delete_or_keep(selected, "keep")

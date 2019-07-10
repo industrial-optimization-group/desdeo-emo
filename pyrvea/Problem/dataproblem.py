@@ -60,8 +60,11 @@ class DataProblem(baseProblem):
         self.test_indices: List[List] = []
         self.validation_indices: List[List] = None
 
-        # self.models = dict.fromkeys(self.y, [])
-        self.models = {}
+        # self.models = dict.fromkeys(self.y, [])  # This method duplicates models in each key, why?
+        self.models = {}                           # This works..
+        for x in self.y:
+            self.models[x] = []
+
         self.metrics = []
         # Defining bounds in the decision space
         if lower_limits is None:
@@ -89,7 +92,7 @@ class DataProblem(baseProblem):
     def outlier_removal(self):  # Removes the outliers
         pass
 
-    def train_test_split(self, train_size: float = 0.99):  # Split dataset
+    def train_test_split(self, train_size: float = 0.7):  # Split dataset
 
         for x in range(1):
             train_indices, test_indices = tts(self.all_indices, train_size=train_size)
@@ -112,6 +115,7 @@ class DataProblem(baseProblem):
         print("Building Surrogate Models ...")
         # Fit to data using Maximum Likelihood Estimation of the parameters
         for obj in objectives:
+
             print("Building model for " + str(obj))
             for train_run, train_indices in enumerate(self.train_indices):
                 print("Training run number", train_run, "of", len(self.train_indices))
@@ -120,7 +124,7 @@ class DataProblem(baseProblem):
                     np.array(self.data[self.x])[train_indices],
                     np.array(self.data[obj])[train_indices],
                 )
-                self.models[obj] = [model]
+                self.models[obj].append(model)
 
         # Select model
         print("Surrogate models build completed.")

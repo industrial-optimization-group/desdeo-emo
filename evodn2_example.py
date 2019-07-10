@@ -375,12 +375,31 @@ problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
 problem.train(
+    model_type="EvoNN",
+    algorithm=RVEA,
+    iterations=1,
+    generations_per_iteration=1
+)
+
+problem.train(
+    model_type="EvoDN2",
+    algorithm=RVEA,
+    iterations=1,
+    generations_per_iteration=1
+)
+
+problem.train(
+    model_type="EvoNN",
+    algorithm=PPGA,
+    iterations=1,
+    generations_per_iteration=1
+)
+
+problem.train(
     model_type="EvoDN2",
     algorithm=PPGA,
-    pop_size=500,
-    iterations=10,
-    generations_per_iteration=10,
-    recombination_type="evodn2_xover_mut_gaussian",
+    iterations=1,
+    generations_per_iteration=1
 )
 
 # problem.train(
