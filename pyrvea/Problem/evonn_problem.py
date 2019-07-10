@@ -55,7 +55,7 @@ class EvoNN(baseProblem):
         y_train=None,
         num_of_objectives=2,
         params=None,
-        num_samples=None
+        num_samples=None,
     ):
         super().__init__()
 
@@ -231,7 +231,9 @@ class EvoNN(baseProblem):
                 mode="markers+lines",
             )
             data = [trace0, trace1]
-            layout = go.Layout(xaxis=dict(title="training error"), yaxis=dict(title="complexity"))
+            layout = go.Layout(
+                xaxis=dict(title="training error"), yaxis=dict(title="complexity")
+            )
             plotly.offline.plot(
                 {"data": data, "layout": layout},
                 filename=self.name + "_training_models_" + "pareto" + ".html",
@@ -240,7 +242,9 @@ class EvoNN(baseProblem):
 
             model_idx = None
             while model_idx not in pop.objectives:
-                usr_input = input("Please input the number of the model of your preference: ")
+                usr_input = input(
+                    "Please input the number of the model of your preference: "
+                )
                 try:
                     model_idx = int(usr_input)
                 except ValueError:
@@ -315,8 +319,8 @@ class EvoNNModel(EvoNN):
         opt_func="llsq",
         loss_func="rmse",
         selection="akaike_corrected",
-        recombination_type=None,
-        crossover_type="EvoNN_xover",
+        recombination_type="evonn_xover_mut_gaussian",
+        crossover_type="evonn_xover",
         mutation_type="2d_gaussian",
         iterations=10,
         generations_per_iteration=10,
@@ -461,9 +465,12 @@ class EvoNNModel(EvoNN):
             The prediction of the model.
 
         """
-        out = np.dot(decision_variables, self.non_linear_layer[1:, :]) + self.non_linear_layer[0]
+        out = (
+            np.dot(decision_variables, self.non_linear_layer[1:, :])
+            + self.non_linear_layer[0]
+        )
 
-        non_linear_layer = self.activate(self.params["activation_func"], out) # rename
+        non_linear_layer = self.activate(self.params["activation_func"], out)  # rename
 
         y = np.dot(non_linear_layer, self.linear_layer)
 
@@ -485,7 +492,8 @@ class EvoNNModel(EvoNN):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=self.__class__.__name__
+            filename=self.params['algorithm'].__name__
+            + self.__class__.__name__
             + name
             + "_var"
             + str(self.num_of_variables)
@@ -505,7 +513,9 @@ class EvoNNModel(EvoNN):
 
         # Save params to log file
         log_file = open(
-            self.name
+            self.params["algorithm"].__name__
+            + self.__class__.__name__
+            + self.name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"

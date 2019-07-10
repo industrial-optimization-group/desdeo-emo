@@ -53,15 +53,15 @@ import plotly.graph_objs as go
 # model_evonn.plot(y, training_data_output)
 #
 #
-# test_prob = EvoNNTestProblem("Himmelblau")
+# test_prob = EvoNNTestProblem("Matyas")
 # training_data_input, training_data_output = test_prob.create_training_data(
 #     samples=250, method="random", seed=31
 # )
 #
 # model_evonn = EvoNNModel()
 # model_evonn.set_params(
-#         name="EvoNN_" + test_prob.name,
-#         algorithm=RVEA,
+#         name=test_prob.name,
+#         algorithm=PPGA,
 #         num_nodes=20,
 #         pop_size=500,
 #         prob_omit=0.2,
@@ -77,7 +77,7 @@ import plotly.graph_objs as go
 # model_evonn.fit(training_data_input, training_data_output)
 # y = model_evonn.predict(training_data_input)
 # model_evonn.plot(y, training_data_output)
-
+#
 # model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 # model_evodn2.set_params(
 #         pop_size=500,
@@ -214,42 +214,51 @@ import plotly.graph_objs as go
 # model_evonn.plot(y, training_data_output)
 #
 #
-# test_prob = EvoNNTestProblem("Goldstein-Price")
-# training_data_input, training_data_output = test_prob.create_training_data(
-#     samples=250, method="random", seed=31
-# )
-# model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
-# model_evodn2.set_params(
-#         pop_size=500,
-#         subnet_struct=(6, 10),
-#         num_nodes=10,
-#         prob_omit=0.2,
-#         activation_func="sigmoid",
-#         opt_func="llsq",
-#         loss_func="rmse",
-#         selection="min_error",
-#         logging=True,
-#         plotting=True)
-#
-# model_evodn2.fit(training_data_input, training_data_output)
-# y = model_evodn2.predict(training_data_input)
-# model_evodn2.plot(y, training_data_output)
-#
-# model_evonn = EvoNNModel(name="EvoNN_" + test_prob.name)
-# model_evonn.set_params(
-#         num_nodes=20,
-#         pop_size=500,
-#         prob_omit=0.2,
-#         activation_func="sigmoid",
-#         opt_func="llsq",
-#         loss_func="rmse",
-#         selection="akaike_corrected",
-#         logging=True,
-#         plotting=True)
-#
-# model_evonn.fit(training_data_input, training_data_output)
-# y = model_evonn.predict(training_data_input)
-# model_evonn.plot(y, training_data_output)
+test_prob = EvoNNTestProblem("Goldstein-Price")
+training_data_input, training_data_output = test_prob.create_training_data(
+    samples=250, method="random", seed=31
+)
+model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
+model_evodn2.set_params(
+        name=test_prob.name,
+        algorithm=PPGA,
+        pop_size=500,
+        num_subnets=10,
+        max_layers=10,
+        max_nodes=10,
+        prob_omit=0.2,
+        activation_func="sigmoid",
+        opt_func="llsq",
+        loss_func="rmse",
+        selection="min_error",
+        iterations=10,
+        generations_per_iteration=15,
+        logging=True,
+        plotting=True)
+
+model_evodn2.fit(training_data_input, training_data_output)
+y = model_evodn2.predict(training_data_input)
+model_evodn2.plot(y, training_data_output)
+
+model_evonn = EvoNNModel(name="EvoNN_" + test_prob.name)
+model_evonn.set_params(
+        name=test_prob.name,
+        algorithm=PPGA,
+        num_nodes=20,
+        pop_size=500,
+        prob_omit=0.2,
+        activation_func="sigmoid",
+        opt_func="llsq",
+        loss_func="rmse",
+        selection="min_error",
+        iterations=10,
+        generations_per_iteration=10,
+        logging=True,
+        plotting=True)
+
+model_evonn.fit(training_data_input, training_data_output)
+y = model_evonn.predict(training_data_input)
+model_evonn.plot(y, training_data_output)
 #
 #
 # test_prob = EvoNNTestProblem("LeviN13")
@@ -330,12 +339,12 @@ import plotly.graph_objs as go
 from deap import benchmarks
 
 
-# test_prob = EvoNNTestProblem("SchafferN1", num_of_variables=1)
+# test_prob = EvoNNTestProblem("Fonseca", num_of_variables=2)
 # training_data_input, training_data_output = test_prob.create_training_data(
 #     samples=250, method="random", seed=30
 # )
-#
-# # # ZDT 1 & 2
+
+# # ZDT 1 & 2
 
 test_prob = testProblem(
     name="ZDT1",
@@ -345,11 +354,12 @@ test_prob = testProblem(
     upper_limits=1,
     lower_limits=0,
 )
-np.random.seed(31)
+np.random.seed(30)
 training_data_input = np.random.rand(250, 30)
 training_data_output = np.asarray(
     [test_prob.objectives(x) for x in training_data_input]
 )
+
 data = np.hstack((training_data_input, training_data_output))
 f1_training_data_output = training_data_output[:, 0]
 f2_training_data_output = training_data_output[:, 1]
@@ -363,25 +373,58 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-# problem.train(
-#     model_type="EvoDN2",
-#     algorithm=PPGA,
-#     pop_size=500,
-#     iterations=10,
-#     generations_per_iteration=10,
-#     recombination_type="evodn2_xover_mut_gaussian",
-# )
-
 problem.train(
-    model_type="EvoNN",
+    model_type="EvoDN2",
     algorithm=PPGA,
+    pop_size=500,
     iterations=10,
     generations_per_iteration=10,
-    crossover_type="evonn_xover",
-    mutation_type="2d_gaussian"
+    recombination_type="evodn2_xover_mut_gaussian",
 )
 
+# problem.train(
+#     model_type="EvoNN",
+#     algorithm=PPGA,
+#     iterations=10,
+#     generations_per_iteration=10,
+#     num_nodes=30,
+#     crossover_type="evonn_xover",
+#     mutation_type="2d_gaussian",
+#     recombination_type="evonn_xover_mut_gaussian"
+# )
+
+# problem.train(
+#     model_type="MLP",
+#     algorithm=RVEA,
+#     iterations=10,
+#     generations_per_iteration=10,
+#     recombination_type="evonn_xover_mut_gaussian"
+# )
+
 # problem.train(model_type="MLP")
+# mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
+#
+# trace0 = go.Scatter(x=mlp_reg_y_pred, y=training_data_output[:, 0], mode="markers")
+# trace1 = go.Scatter(x=training_data_output[:, 0], y=training_data_output[:, 0])
+# data = [trace0, trace1]
+# plotly.offline.plot(
+#         data,
+#         filename="MLP Regressor " + test_prob.name
+#                  + ".html",
+#         auto_open=True,
+# )
+#
+# mlp_reg_y_pred2 = problem.models["f2"][0].predict(training_data_input)
+#
+# trace0 = go.Scatter(x=mlp_reg_y_pred2, y=training_data_output[:, 1], mode="markers")
+# trace1 = go.Scatter(x=training_data_output[:, 1], y=training_data_output[:, 1])
+# data = [trace0, trace1]
+# plotly.offline.plot(
+#         data,
+#         filename="MLP Regressor f2" + test_prob.name
+#                  + ".html",
+#         auto_open=True,
+# )
 
 
 y = problem.models["f1"][0].predict(training_data_input)
@@ -419,8 +462,8 @@ pop.evolve(
 
 pop2.evolve(RVEA, iterations=10, generations_per_iteration=100)
 #
-pop.plot_pareto("evonn" + test_prob.name)
-pop2.plot_pareto("rvea" + test_prob.name)
+pop.plot_pareto(problem.models["f1"][0].__class__.__name__ + "_ppga" + test_prob.name)
+pop2.plot_pareto(problem.models["f1"][0].__class__.__name__ + "_rvea" + test_prob.name)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]

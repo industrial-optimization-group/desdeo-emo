@@ -193,7 +193,9 @@ class EvoDN2(baseProblem):
                 mode="markers+lines",
             )
             data = [trace0, trace1]
-            layout = go.Layout(xaxis=dict(title="training error"), yaxis=dict(title="complexity"))
+            layout = go.Layout(
+                xaxis=dict(title="training error"), yaxis=dict(title="complexity")
+            )
             plotly.offline.plot(
                 {"data": data, "layout": layout},
                 filename=self.name + "_training_models_" + "pareto" + ".html",
@@ -202,7 +204,9 @@ class EvoDN2(baseProblem):
 
             model_idx = None
             while model_idx not in non_dom_front:
-                usr_input = input("Please input the number of the model of your preference: ")
+                usr_input = input(
+                    "Please input the number of the model of your preference: "
+                )
                 try:
                     model_idx = int(usr_input)
                 except ValueError:
@@ -282,7 +286,7 @@ class EvoDN2Model(EvoDN2):
         selection="min_error",
         crossover_type=None,
         mutation_type=None,
-        recombination_type="DNN_gaussian_xover+mut",
+        recombination_type="evodn2_xover_mut_gaussian",
         iterations=10,
         generations_per_iteration=10,
         logging=False,
@@ -293,6 +297,8 @@ class EvoDN2Model(EvoDN2):
         ----------
         name : str
             Name of the problem.
+        algorithm : :obj:
+            Which training algorithm to use.
         pop_size : int
             Population size.
         num_subnets : int
@@ -463,8 +469,10 @@ class EvoDN2Model(EvoDN2):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=self.__class__.__name__
+            filename=self.params["algorithm"].__name__
+            + self.__class__.__name__
             + name
+            + str(self.params["algorithm"])
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
@@ -481,7 +489,9 @@ class EvoDN2Model(EvoDN2):
 
         # Save params to log file
         log_file = open(
-            self.name
+            self.params['algorithm'].__name__
+            + self.__class__.__name__
+            + self.name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"

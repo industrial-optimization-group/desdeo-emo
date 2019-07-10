@@ -94,6 +94,8 @@ class PPGA:
             Population object.
         target_pop_size : int
             Target population size.
+        predator_pop_size : int
+            Predator population size.
         generations_per_iteration : int
             Number of generations per iteration.
         iterations : int
@@ -184,15 +186,6 @@ class PPGA:
             Population object
         """
 
-        # Predator max moves for gen
-        self.params["predator_max_moves"] = int(
-            (
-                len(population.individuals)
-                - self.params["target_pop_size"]
-            )
-            / self.params["predator_pop_size"]
-        )
-
         # Move prey and select neighbours for breeding
         mating_pop = self.lattice.move_prey()
 
@@ -206,10 +199,10 @@ class PPGA:
         if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
-            print(str(len(population.individuals)))
-            start = time.process_time()
+            #print(str(len(population.individuals)))  #DEBUG
+            #start = time.process_time()  #DEBUG
             offspring = population.mate(mating_pop, self.params)
-            print(time.process_time() - start)
+            #print(time.process_time() - start)  #DEBUG
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
 
@@ -445,7 +438,13 @@ class Lattice:
         move the predator and kill the weakest prey in its neighbourhood, if any.
         Repeat until > predator_max_moves."""
 
-        predator_max_moves = self.params["predator_max_moves"]
+        predator_max_moves = int(
+            (
+                len(self.params["population"].individuals)
+                - self.params["target_pop_size"]
+            )
+            / self.params["predator_pop_size"]
+        )
 
         # Track killed preys in list and remove them at the end of the function
         to_be_killed = []
@@ -454,7 +453,7 @@ class Lattice:
 
             for i in range(predator_max_moves):
 
-                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=4)
+                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=5)
                 targets = neighbours[neighbours > 0]
 
                 # If preys found in the neighbourhood, calculate their fitness and kill the weakest

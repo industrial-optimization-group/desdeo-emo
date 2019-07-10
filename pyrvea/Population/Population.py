@@ -306,17 +306,17 @@ class Population:
                 x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
             x.insert(0, "Model " + str(idx))
 
-        trace0 = go.Scatter(
-            x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
-        )
-        trace1 = go.Scatter(
+        # trace0 = go.Scatter(
+        #     x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
+        # )
+        pareto_front = go.Scatter(
             x=pareto[:, 0],
             y=pareto[:, 1],
             text=pareto_pop,
             hoverinfo="text",
             mode="markers+lines",
         )
-        data = [trace0, trace1]
+        data = [pareto_front]
         layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
         plotly.offline.plot(
             {"data": data, "layout": layout},

@@ -89,7 +89,7 @@ class DataProblem(baseProblem):
     def outlier_removal(self):  # Removes the outliers
         pass
 
-    def train_test_split(self, train_size: float = 0.7):  # Split dataset
+    def train_test_split(self, train_size: float = 0.99):  # Split dataset
 
         for x in range(1):
             train_indices, test_indices = tts(self.all_indices, train_size=train_size)
@@ -164,43 +164,6 @@ class DataProblem(baseProblem):
 
     def retrain_surrogate(self):
         pass
-
-    def optimize(self, algorithm=RVEA, **kwargs):
-        """Optimize the selected models.
-
-        Parameters
-        ----------
-        algorithm : :obj: EA
-            The EA to use for optimizing.
-        **kwargs
-            Parameters to pass to the optimizer
-        """
-        try:
-            pop_size = kwargs["pop_size"]
-            assign_type = kwargs["assign_type"]
-            crossover_type = kwargs["crossover_type"]
-            mutation_type = kwargs["mutation_type"]
-            plotting = kwargs["plotting"]
-
-        except KeyError:
-            pop_size = 500
-            assign_type = "RandomDesign"
-            crossover_type = "simulated_binary_crossover"
-            mutation_type = "bounded_polynomial_mutation"
-            plotting = False
-
-        pop = Population(
-            self,
-            pop_size=pop_size,
-            assign_type=assign_type,
-            crossover_type=crossover_type,
-            mutation_type=mutation_type,
-            plotting=plotting
-        )
-
-        pop.evolve(algorithm, **kwargs)
-
-        return pop
 
     def objectives(self, decision_variables):
         """Objectives function to use in optimization.

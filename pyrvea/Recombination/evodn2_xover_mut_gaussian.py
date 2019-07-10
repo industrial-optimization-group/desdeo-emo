@@ -34,15 +34,30 @@ def mate(
         Standard deviation
     """
 
+    try:
+        prob_crossover = params["prob_crossover"]
+        prob_mutation = params["prob_mutation"]
+        std_dev = params["std_dev"]
+    except KeyError:
+        prob_crossover = 0.8
+        prob_mutation = 0.3
+        std_dev = (4 / 3) * (
+            1
+            - params["current_total_gen_count"] / params["total_generations"]
+        )
+        if std_dev < 0:
+            std_dev = 0
+
+    if mating_pop is None:
+        mating_pop = []
+        for i in range(len(individuals)):
+            mating_pop.append([i, np.random.randint(len(individuals))])
+
     offspring = []
 
     for mates in mating_pop:
 
         offspring1, offspring2 = deepcopy(individuals[mates[0]]), deepcopy(individuals[mates[1]])
-
-        prob_crossover = params["prob_crossover"]
-        prob_mutation = params["prob_mutation"]
-        std_dev = params["std_dev"]
 
         for subnet in range(len(offspring1)):
 
