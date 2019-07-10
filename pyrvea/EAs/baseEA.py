@@ -73,6 +73,7 @@ class BaseDecompositionEA(BaseEA):
         while self.continue_iteration():
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
+            self.params["current_total_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 
     def _next_gen(self, population: "Population"):

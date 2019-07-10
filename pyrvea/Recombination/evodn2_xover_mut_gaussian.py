@@ -34,54 +34,57 @@ def mate(
         Standard deviation
     """
 
-    parent1, parent2 = individuals[mating_pop[0]], individuals[mating_pop[1]]
-    offspring1 = deepcopy(parent1)
-    offspring2 = deepcopy(parent2)
+    offspring = []
 
-    prob_crossover = params["prob_crossover"]
-    prob_mutation = params["prob_mutation"]
-    std_dev = params["std_dev"]
+    for mates in mating_pop:
 
-    for subnet in range(len(offspring1)):
+        offspring1, offspring2 = deepcopy(individuals[mates[0]]), deepcopy(individuals[mates[1]])
 
-        sub1 = offspring1[subnet]
-        sub2 = offspring2[subnet]
+        prob_crossover = params["prob_crossover"]
+        prob_mutation = params["prob_mutation"]
+        std_dev = params["std_dev"]
 
-        for layer in range(max(len(sub1), len(sub2))):
+        for subnet in range(len(offspring1)):
 
-            try:
-                connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
+            sub1 = offspring1[subnet]
+            sub2 = offspring2[subnet]
 
-                # Crossover
-                exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
-                tmp = np.copy(sub1[layer])
-                sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[exchange]
-                sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+            for layer in range(max(len(sub1), len(sub2))):
 
-            except IndexError:
-                pass
+                try:
+                    connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
 
-            try:
-                connections = sub1[layer][1:, :].size
+                    # Crossover
+                    exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
+                    tmp = np.copy(sub1[layer])
+                    sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[exchange]
+                    sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
 
-                mut_val = np.random.normal(0, std_dev, connections)
+                except IndexError:
+                    pass
 
-                mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-                sub1[layer][1:, :].ravel()[mut] += sub1[layer][1:, :].ravel()[mut] * mut_val[mut]
+                try:
+                    connections = sub1[layer][1:, :].size
 
-            except IndexError:
-                pass
+                    mut_val = np.random.normal(0, std_dev, connections)
 
-            try:
-                connections = sub2[layer][1:, :].size
+                    mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
+                    sub1[layer][1:, :].ravel()[mut] += sub1[layer][1:, :].ravel()[mut] * mut_val[mut]
 
-                mut_val = np.random.normal(0, std_dev, connections)
+                except IndexError:
+                    pass
 
-                mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-                sub2[layer][1:, :].ravel()[mut] += sub2[layer][1:, :].ravel()[mut] * mut_val[mut]
+                try:
+                    connections = sub2[layer][1:, :].size
 
-            except IndexError:
-                continue
+                    mut_val = np.random.normal(0, std_dev, connections)
 
-    offspring = [offspring1, offspring2]
+                    mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
+                    sub2[layer][1:, :].ravel()[mut] += sub2[layer][1:, :].ravel()[mut] * mut_val[mut]
+
+                except IndexError:
+                    continue
+
+        offspring.extend((offspring1, offspring2))
+
     return offspring

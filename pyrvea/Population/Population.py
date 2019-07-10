@@ -18,6 +18,7 @@ from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
     evodn2_xover_mut_gaussian,
+    evonn_xover_mut_gaussian,
     evonn_mut_gaussian,
     ppga_crossover,
     self_adapting_mutation,
@@ -76,6 +77,7 @@ class Population:
         self.pop_size = pop_size
         self.recombination_funcs = {
             "DNN_gaussian_xover+mut": evodn2_xover_mut_gaussian,
+            "evonn_xover_mut_gaussian": evonn_xover_mut_gaussian,
             "2d_gaussian": evonn_mut_gaussian,
             "EvoNN_xover": ppga_crossover,
             "self_adapting": self_adapting_mutation,

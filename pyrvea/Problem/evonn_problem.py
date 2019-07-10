@@ -305,6 +305,7 @@ class EvoNNModel(EvoNN):
     def set_params(
         self,
         name="EvoNN_Model",
+        algorithm=PPGA,
         pop_size=500,
         num_nodes=20,
         prob_omit=0.2,
@@ -329,6 +330,8 @@ class EvoNNModel(EvoNN):
         ----------
         name : str
             Name of the problem.
+        algorithm : :obj:
+            Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
         num_nodes : int
@@ -363,6 +366,7 @@ class EvoNNModel(EvoNN):
 
         params = {
             "name": name,
+            "algorithm": algorithm,
             "pop_size": pop_size,
             "num_nodes": num_nodes,
             "prob_omit": prob_omit,
@@ -412,6 +416,8 @@ class EvoNNModel(EvoNN):
         if self.params["logging"]:
             print(self.fitness, file=self.log)
 
+        return self
+
     def train(self):
         """Trains the networks and selects the best model from the non dominated front.
 
@@ -426,7 +432,7 @@ class EvoNNModel(EvoNN):
             mutation_type=self.params["mutation_type"],
         )
         pop.evolve(
-            PPGA,
+            EA=self.params["algorithm"],
             logging=self.params["logging"],
             logfile=self.log,
             iterations=self.params["iterations"],

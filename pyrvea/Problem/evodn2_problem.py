@@ -391,6 +391,8 @@ class EvoDN2Model(EvoDN2):
         if self.params["logging"]:
             print(self.fitness, file=self.log)
 
+        return self
+
     def train(self):
         """Create a random population, evolve it and select a model based on selection."""
         pop = Population(

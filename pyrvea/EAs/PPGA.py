@@ -3,6 +3,7 @@ from random import choice, sample
 import numpy as np
 from pyrvea.Population.Population import Population
 from pygmo import fast_non_dominated_sorting as nds
+import time
 
 
 class PPGA:
@@ -191,11 +192,8 @@ class PPGA:
             / self.params["predator_pop_size"]
         )
 
-        # Move prey
-        self.lattice.move_prey()
-
-        # Choose and create offspring
-        offspring = []
+        # Move prey and select neighbours for breeding
+        mating_pop = self.lattice.move_prey()
 
         # Calculate standard deviation
         self.params["std_dev"] = (4 / 3) * (
@@ -207,17 +205,9 @@ class PPGA:
         if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
-            for ind in range(len(population.individuals)):
-
-                mate_idx = self.lattice.choose_mate(ind)
-                if not mate_idx:
-                    continue
-                else:
-                    mating_pop = [ind, mate_idx]
-                    offsprings = population.mate(mating_pop, self.params)
-                    for n in offsprings:
-                        offspring.append(n)
-
+            start = time.process_time()
+            offspring = population.mate(mating_pop, self.params)
+            print(time.process_time() - start)
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
 
@@ -312,6 +302,7 @@ class Lattice:
         self.predator_pop = np.empty((0, 1))
         self.predators_loc = []
         self.preys_loc = []
+        self.mating_pop = []
         self.params = params
         self.init_predators()
         self.init_prey()
@@ -354,8 +345,15 @@ class Lattice:
             self.lattice[indices[i][0]][indices[i][1]] = int(i + 1)
 
     def move_prey(self):
-        """Find an empty position in prey neighbourhood for the prey to move in."""
+        """Find an empty position in prey neighbourhood for the prey to move in,
+        and choose a mate for breeding if any available.
 
+        Returns
+        -------
+        mating_pop : list
+            List of parent indices to use for mating
+        """
+        mating_pop = []
         for prey, pos in enumerate(self.preys_loc):
 
             if np.random.random() < self.params["prob_prey_move"]:
@@ -389,31 +387,18 @@ class Lattice:
                     # Update prey location in the list
                     pos[0], pos[1] = dest_y, dest_x
 
-    def choose_mate(self, idx):
-        """Choose a mate from prey neighbourhood, return None if no mates
-        are found.
+            neighbours = self.neighbours(
+                self.lattice, self.preys_loc[prey][0], self.preys_loc[prey][1]
+            )
+            mates = neighbours[(neighbours > 0) & (neighbours != prey + 1)]
+            if len(mates) < 1:
+                continue
+            else:
+                # -1 for lattice offset
+                mate = int(choice(mates)) - 1
+                mating_pop.append([prey, mate])
 
-        Parameters
-        ----------
-        idx : int
-            Index of the current prey
-
-        Returns
-        -------
-        int or None
-            Index of the prey chosen for mating. None if no preys in neighbouring cells.
-        """
-
-        neighbours = self.neighbours(
-            self.lattice, self.preys_loc[idx][0], self.preys_loc[idx][1]
-        )
-        mates = neighbours[(neighbours > 0) & (neighbours != idx + 1)]
-        if len(mates) < 1:
-            return
-        else:
-            # -1 for lattice offset
-            mate = int(choice(mates)) - 1
-            return mate
+        return mating_pop
 
     def place_offspring(self, offspring):
         """Try to place the offsprings to the lattice. If no empty spot found within
