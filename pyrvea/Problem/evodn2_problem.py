@@ -469,10 +469,10 @@ class EvoDN2Model(EvoDN2):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=self.params["algorithm"].__name__
+            filename="my-tests/"
+            + self.params["algorithm"].__name__
             + self.__class__.__name__
             + name
-            + str(self.params["algorithm"])
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
@@ -489,7 +489,8 @@ class EvoDN2Model(EvoDN2):
 
         # Save params to log file
         log_file = open(
-            self.params['algorithm'].__name__
+            "my-tests/"
+            + self.params['algorithm'].__name__
             + self.__class__.__name__
             + self.name
             + "_var"
