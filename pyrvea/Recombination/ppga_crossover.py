@@ -15,33 +15,42 @@ def mate(mating_pop, individuals, params):
     """
 
     try:
-
         prob_crossover = params["prob_crossover"]
     except KeyError:
         prob_crossover = 0.8
 
-    offspring1 = np.copy(individuals[mating_pop[0]])
-    offspring2 = np.copy(individuals[mating_pop[1]])
+    if mating_pop is None:
+        mating_pop = []
+        for i in range(len(individuals)):
+            mating_pop.append([i, np.random.randint(len(individuals))])
 
-    # Crossover
+    offspring = []
 
-    # Method 1
-    # Take a random number of connections based on probability and swap them
-    #
-    # connections = offspring1[1:, :].size
-    # exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
-    # tmp = np.copy(offspring1)
-    # offspring1[1:, :].ravel()[exchange] = offspring2[1:, :].ravel()[exchange]
-    # offspring2[1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+    for mates in mating_pop:
 
-    # Method 2
-    # Take random nodes based on probability and swap them
-    #
-    for i in range(offspring1.shape[1]):
-        if np.random.random() < prob_crossover:
-            tmp = np.copy(offspring1[:, i])
-            offspring1[:, i] = offspring2[:, i]
-            offspring2[:, i] = tmp
+        offspring1 = np.copy(individuals[mates[0]])
+        offspring2 = np.copy(individuals[mates[1]])
 
-    offspring = [offspring1, offspring2]
+        # Crossover
+
+        # Method 1
+        # Take a random number of connections based on probability and swap them
+        #
+        # connections = offspring1[1:, :].size
+        # exchange = np.random.choice(connections, np.random.binomial(connections, prob_crossover), replace=False)
+        # tmp = np.copy(offspring1)
+        # offspring1[1:, :].ravel()[exchange] = offspring2[1:, :].ravel()[exchange]
+        # offspring2[1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+
+        # Method 2
+        # Take random nodes based on probability and swap them
+        #
+        for i in range(offspring1.shape[1]):
+            if np.random.random() < prob_crossover:
+                tmp = np.copy(offspring1[:, i])
+                offspring1[:, i] = offspring2[:, i]
+                offspring2[:, i] = tmp
+
+        offspring.extend((offspring1, offspring2))
+
     return offspring

@@ -485,7 +485,8 @@ class EvoNNModel(EvoNN):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=name
+            filename=self.__class__.__name__
+            + name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"

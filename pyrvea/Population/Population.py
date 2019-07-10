@@ -76,10 +76,10 @@ class Population:
         self.non_dom = 0
         self.pop_size = pop_size
         self.recombination_funcs = {
-            "DNN_gaussian_xover+mut": evodn2_xover_mut_gaussian,
+            "evodn2_xover_mut_gaussian": evodn2_xover_mut_gaussian,
             "evonn_xover_mut_gaussian": evonn_xover_mut_gaussian,
             "2d_gaussian": evonn_mut_gaussian,
-            "EvoNN_xover": ppga_crossover,
+            "evonn_xover": ppga_crossover,
             "self_adapting": self_adapting_mutation,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
             "simulated_binary_crossover": simulated_binary_crossover,

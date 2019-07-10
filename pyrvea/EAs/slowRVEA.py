@@ -31,10 +31,10 @@ class slowRVEA(RVEA):
             Returns the Population after evolution.
         """
         self.params = self.set_params(population, **ea_parameters)
-        if population.individuals.shape[0] == 0:
-            create_new_individuals(pop_size=self.params["population_size"])
-        # print("Using BaseDecompositionEA init")
-        self._next_iteration(population)
+        # if population.individuals.shape[0] == 0:
+        #     create_new_individuals(pop_size=self.params["population_size"])
+        # # print("Using BaseDecompositionEA init")
+        # self._next_iteration(population)
 
     def set_params(
         self,
@@ -43,6 +43,8 @@ class slowRVEA(RVEA):
         iterations: int = 10,
         Alpha: float = 2,
         plotting: bool = True,
+        logging: bool = False,
+        logfile = None,
         ref_point: list = None,
         old_point: list = None,
     ):
@@ -75,8 +77,12 @@ class slowRVEA(RVEA):
             "iterations": iterations,
             "Alpha": Alpha,
             "ploton": plotting,
+            "logging": logging,
+            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
+            "current_total_gen_count": 0,
+            "total_generations": iterations * generations_per_iteration,
             "ref_point": ref_point,
         }
         return rveaparams
@@ -85,20 +91,3 @@ class slowRVEA(RVEA):
         self.params["reference_vectors"].slow_interactive_adapt(
             self.params["ref_point"]
         )
-
-    def _next_gen(self, population: "Population"):
-        """Run one generation of decomposition based EA.
-
-        This method leaves method.params unchanged. Intended to be used by
-        next_iteration.
-
-        Parameters
-        ----------
-        population: "Population"
-            Population object
-        """
-        offspring = population.mate()
-        offspring = np.vstack((offspring, population.mate()))
-        population.add(offspring)
-        selected = self.select(population)
-        population.delete_or_keep(selected)

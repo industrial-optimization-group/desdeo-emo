@@ -25,12 +25,14 @@ def mutate(
         the strength of the mutation constant
     """
 
+
     cur_gen = params["current_iteration_gen_count"]
     total_gen = params["generations"]
     prob_mut = params["prob_mutation"]
     mut_strength = params["mut_strength"]
 
     alternatives = np.array(individuals)[:, 1:, :]
+
     mut_offspring1 = offspring[0]
     mut_offspring2 = offspring[1]
 

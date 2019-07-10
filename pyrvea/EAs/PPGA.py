@@ -74,6 +74,7 @@ class PPGA:
         self,
         population: "Population",
         target_pop_size: int = 300,
+        predator_pop_size: int = 50,
         generations_per_iteration: int = 10,
         iterations: int = 10,
         logging: list = False,
@@ -127,7 +128,7 @@ class PPGA:
             "population": population,
             "population_size": population.pop_size,
             "target_pop_size": target_pop_size,
-            "predator_pop_size": 50,
+            "predator_pop_size": predator_pop_size,
             "prey_max_moves": 10,
             "prob_prey_move": prob_prey_move,
             "offspring_place_attempts": 10,
@@ -205,6 +206,7 @@ class PPGA:
         if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
+            print(str(len(population.individuals)))
             start = time.process_time()
             offspring = population.mate(mating_pop, self.params)
             print(time.process_time() - start)
@@ -452,7 +454,7 @@ class Lattice:
 
             for i in range(predator_max_moves):
 
-                neighbours = self.neighbours(self.lattice, pos[0], pos[1])
+                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=4)
                 targets = neighbours[neighbours > 0]
 
                 # If preys found in the neighbourhood, calculate their fitness and kill the weakest

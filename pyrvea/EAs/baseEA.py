@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+import time
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population
@@ -87,7 +88,6 @@ class BaseDecompositionEA(BaseEA):
         population: "Population"
             Population object
         """
-
         offspring = population.mate(params=self.params)
         population.add(offspring)
         selected = self.select(population)

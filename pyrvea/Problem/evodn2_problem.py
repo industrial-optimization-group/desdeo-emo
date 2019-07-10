@@ -268,6 +268,7 @@ class EvoDN2Model(EvoDN2):
     def set_params(
         self,
         name="EvoDN2_Model",
+        algorithm=PPGA,
         pop_size=500,
         num_subnets=4,
         max_layers=8,
@@ -329,6 +330,7 @@ class EvoDN2Model(EvoDN2):
         """
         params = {
             "name": name,
+            "algorithm": algorithm,
             "pop_size": pop_size,
             "num_subnets": num_subnets,
             "max_layers": max_layers,
@@ -405,7 +407,7 @@ class EvoDN2Model(EvoDN2):
             plotting=False,
         )
         pop.evolve(
-            PPGA,
+            self.params["algorithm"],
             logging=self.params["logging"],
             logfile=self.log,
             iterations=self.params["iterations"],
@@ -461,7 +463,8 @@ class EvoDN2Model(EvoDN2):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename=name
+            filename=self.__class__.__name__
+            + name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"

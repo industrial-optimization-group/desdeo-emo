@@ -26,6 +26,8 @@ class NSGAIII(BaseDecompositionEA):
         generations_per_iteration: int = 100,
         iterations: int = 10,
         plotting: bool = True,
+        logging: bool = False,
+        logfile = None
     ):
         lattice_resolution_options = {
             "2": 49,
@@ -55,8 +57,12 @@ class NSGAIII(BaseDecompositionEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "ploton": plotting,
+            "logging": logging,
+            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
+            "current_total_gen_count": 0,
+            "total_generations": iterations * generations_per_iteration,
             "reference_vectors": reference_vectors,
             "extreme_points": None,
         }
