@@ -190,7 +190,7 @@ class PPGA:
         mating_pop = self.lattice.move_prey()
 
         # Calculate standard deviation
-        self.params["std_dev"] = (4 / 3) * (
+        self.params["std_dev"] = (5 / 3) * (
             1
             - self.params["current_total_gen_count"] / self.params["total_generations"]
         )

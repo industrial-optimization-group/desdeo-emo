@@ -320,8 +320,8 @@ class EvoNNModel(EvoNN):
         loss_func="rmse",
         selection="akaike_corrected",
         recombination_type="evonn_xover_mut_gaussian",
-        crossover_type="evonn_xover",
-        mutation_type="2d_gaussian",
+        crossover_type="evonn_xover_nodeswap",
+        mutation_type="evonn_mut_gaussian",
         iterations=10,
         generations_per_iteration=10,
         logging=False,
@@ -354,7 +354,7 @@ class EvoNNModel(EvoNN):
             The loss function to use.
         selection : str
             The selection to use for selecting the model.
-        recombination_type, crossover_type, mutation_type : str
+        recombination_type, crossover_type, mutation_type : str or None
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
         iterations : int

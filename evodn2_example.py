@@ -53,9 +53,9 @@ import plotly.graph_objs as go
 # model_evonn.plot(y, training_data_output)
 #
 #
-# test_prob = EvoNNTestProblem("Matyas")
+# test_prob = EvoNNTestProblem("Himmelblau")
 # training_data_input, training_data_output = test_prob.create_training_data(
-#     samples=250, method="random", seed=31
+#     samples=250, method="random"
 # )
 #
 # model_evonn = EvoNNModel()
@@ -69,15 +69,15 @@ import plotly.graph_objs as go
 #         opt_func="llsq",
 #         loss_func="rmse",
 #         selection="akaike_corrected",
-#         recombination_type="evonn_xover_mut_gaussian",
+#         recombination_type="evonn_nodeswap_self_adapting",
+#         mutation_type="evonn_mut_self_adapting",
 #         generations_per_iteration=10,
-#         logging=True,
 #         plotting=True)
 #
 # model_evonn.fit(training_data_input, training_data_output)
 # y = model_evonn.predict(training_data_input)
 # model_evonn.plot(y, training_data_output)
-#
+
 # model_evodn2 = EvoDN2Model(name="EvoDN2_" + test_prob.name)
 # model_evodn2.set_params(
 #         pop_size=500,
@@ -340,26 +340,26 @@ import plotly.graph_objs as go
 from deap import benchmarks
 
 
-# test_prob = EvoNNTestProblem("Fonseca", num_of_variables=2)
-# training_data_input, training_data_output = test_prob.create_training_data(
-#     samples=250, method="random", seed=30
-# )
+test_prob = EvoNNTestProblem("SchafferN1", num_of_variables=1)
+training_data_input, training_data_output = test_prob.create_training_data(
+    samples=250, method="random"
+)
 
 # # ZDT 1 & 2
 
-test_prob = testProblem(
-    name="ZDT1",
-    num_of_variables=30,
-    num_of_objectives=2,
-    num_of_constraints=0,
-    upper_limits=1,
-    lower_limits=0,
-)
-np.random.seed(30)
-training_data_input = np.random.rand(250, 30)
-training_data_output = np.asarray(
-    [test_prob.objectives(x) for x in training_data_input]
-)
+# test_prob = testProblem(
+#     name="ZDT1",
+#     num_of_variables=30,
+#     num_of_objectives=2,
+#     num_of_constraints=0,
+#     upper_limits=1,
+#     lower_limits=0,
+# )
+#
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray(
+#     [test_prob.objectives(x) for x in training_data_input]
+# )
 
 data = np.hstack((training_data_input, training_data_output))
 f1_training_data_output = training_data_output[:, 0]
@@ -377,30 +377,59 @@ problem.train_test_split()
 problem.train(
     model_type="EvoNN",
     algorithm=RVEA,
-    iterations=1,
-    generations_per_iteration=1
+    recombination_type="evonn_nodeswap_gaussian",
+    generations_per_iteration=25,
+    iterations=10
 )
 
-problem.train(
-    model_type="EvoDN2",
-    algorithm=RVEA,
-    iterations=1,
-    generations_per_iteration=1
-)
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
-problem.train(
-    model_type="EvoNN",
-    algorithm=PPGA,
-    iterations=1,
-    generations_per_iteration=1
-)
+# problem.train(
+#     model_type="EvoDN2",
+#     algorithm=PPGA,
+#     num_subnets=4,
+#     max_layers=8,
+#     max_nodes=10,
+#     generations_per_iteration=20,
+#     iterations=10
+# )
 
-problem.train(
-    model_type="EvoDN2",
-    algorithm=PPGA,
-    iterations=1,
-    generations_per_iteration=1
-)
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+
+# problem.train(
+#     model_type="EvoNN",
+#     algorithm=PPGA
+# )
+#
+# y = problem.models["f1"][2].predict(training_data_input)
+# problem.models["f1"][2].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][2].predict(training_data_input)
+# problem.models["f2"][2].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+#
+# problem.train(
+#     model_type="EvoDN2",
+#     algorithm=PPGA,
+#     num_subnets=4,
+#     max_layers=8,
+#     max_nodes=8,
+#     generations_per_iteration=10,
+#     iterations=10
+# )
+#
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 # problem.train(
 #     model_type="EvoNN",
@@ -421,7 +450,7 @@ problem.train(
 #     recombination_type="evonn_xover_mut_gaussian"
 # )
 
-# problem.train(model_type="MLP")
+# problem.train(model_type="MLP", max_iter=10000, n_iter_no_change=100)
 # mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
 #
 # trace0 = go.Scatter(x=mlp_reg_y_pred, y=training_data_output[:, 0], mode="markers")
@@ -447,16 +476,16 @@ problem.train(
 # )
 
 
-y = problem.models["f1"][0].predict(training_data_input)
-problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-
-y2 = problem.models["f2"][0].predict(training_data_input)
-problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 pop = Population(
     problem,
     pop_size=500,
-    assign_type="RandomDesign",
+    assign_type="LHSDesign",
     crossover_type="simulated_binary_crossover",
     mutation_type="bounded_polynomial_mutation",
     plotting=False,
@@ -464,7 +493,7 @@ pop = Population(
 
 pop2 = Population(
     problem,
-    assign_type="RandomDesign",
+    assign_type="LHSDesign",
     crossover_type="simulated_binary_crossover",
     mutation_type="bounded_polynomial_mutation",
     plotting=False,
@@ -474,16 +503,15 @@ pop.evolve(
     PPGA,
     prob_prey_move=0.5,
     prob_mutation=0.1,
-    target_pop_size=500,
+    target_pop_size=100,
     kill_interval=4,
     iterations=10,
     generations_per_iteration=10,
 )
 
 pop2.evolve(RVEA, iterations=10, generations_per_iteration=100)
-#
-pop.plot_pareto(filename="mytests/" + problem.models["f1"][0].__class__.__name__ + "_ppga_" + test_prob.name)
-pop2.plot_pareto(filename="mytests/" + problem.models["f1"][0].__class__.__name__ + "_rvea_" + test_prob.name)
+pop.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_ppga_" + test_prob.name)
+pop2.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_rvea_" + test_prob.name)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]

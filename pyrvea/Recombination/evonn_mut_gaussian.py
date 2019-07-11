@@ -9,40 +9,27 @@ def mutate(
     offspring,
     individuals,
     params,
-    lower_limits=None,
-    upper_limits=None
+    *args
 ):
-    """ Perform simultaneous crossover and mutation over two individuals.
+    """ Perform mutation based on standard deviation on the offspring.
 
     Parameters
     ----------
-    parent1 : ndarray
-        The first individual
-    parent2 : ndarray
-        The second individual
-    individuals : ndarray
-        All individuals to choose mutation partner from
-    prob_crossover : float
-        The probability for crossover
-    prob_mutation : float
-        The probability for mutation
-    mut_strength : float
-        Mutation alfa parameter
-    cur_gen : int
-        Current generation
-    total_gen : int
-        Total generations
-    std_dev : float
-        Standard deviation
+    offspring : list
+        List of individuals to mutate.
+    individuals : list
+        List of all individuals.
+    params : dict
+        Parameters for breeding. If None, use defaults.
+
     """
 
     try:
-        cur_gen = params["current_total_gen_count"]
-        total_gen = params["total_generations"]
-        prob_crossover = params["prob_crossover"]
         prob_mutation = params["prob_mutation"]
         std_dev = params["std_dev"]
+
     except KeyError:
+
         prob_mutation = 0.3
         std_dev = (5 / 3) * (
             1
@@ -55,7 +42,7 @@ def mutate(
 
         connections = ind[1:, :].size
 
-        # Method 1: Gaussian
+        # Method : Gaussian
         # Take a random number of connections based on probability and mutate based on
         # standard deviation, calculated once per generation
         # VERY FAST
@@ -64,24 +51,3 @@ def mutate(
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
         ind[1:, :].ravel()[mut] += ind[1:, :].ravel()[mut] * mut_val[mut]
-
-        # Method 2: Self adapting
-        # Choose two random individuals and a random number of connections,
-        # mutate offspring based on current gen and connections of two randomly chosen individuals
-        #
-        # alternatives = np.array(individuals)[:, 1:, :]
-        #
-        # # Randomly select two individuals with current match active (=non-zero)
-        # select = alternatives[
-        #     np.random.choice(
-        #         np.nonzero(alternatives)[
-        #             0
-        #         ],
-        #         2,
-        #     )
-        # ]
-        #
-        # mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        # ind[1:, :].ravel()[mut] = ind[1:, :].ravel()[mut] + params["mut_strength"] * (
-        #             1 - cur_gen / total_gen
-        #         ) * (select[1].ravel()[mut] - select[0].ravel()[mut])

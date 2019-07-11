@@ -17,11 +17,13 @@ import plotly.graph_objs as go
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
-    evodn2_xover_mut_gaussian,
-    evonn_xover_mut_gaussian,
+    evodn2_self_adapting,
+    evodn2_gaussian,
+    evonn_nodeswap_gaussian,
+    evonn_nodeswap_self_adapting,
     evonn_mut_gaussian,
-    ppga_crossover,
-    self_adapting_mutation,
+    evonn_xover_nodeswap,
+    evonn_mut_self_adapting,
     bounded_polynomial_mutation,
     simulated_binary_crossover,
 )
@@ -76,13 +78,15 @@ class Population:
         self.non_dom = 0
         self.pop_size = pop_size
         self.recombination_funcs = {
-            "evodn2_xover_mut_gaussian": evodn2_xover_mut_gaussian,
-            "evonn_xover_mut_gaussian": evonn_xover_mut_gaussian,
-            "2d_gaussian": evonn_mut_gaussian,
-            "evonn_xover": ppga_crossover,
-            "self_adapting": self_adapting_mutation,
+            "evodn2_self_adapting": evodn2_self_adapting,
+            "evodn2_gaussian": evodn2_gaussian,
+            "evonn_nodeswap_gaussian": evonn_nodeswap_gaussian,
+            "evonn_nodeswap_self_adapting": evonn_nodeswap_self_adapting,
+            "evonn_xover_nodeswap": evonn_xover_nodeswap,
+            "evonn_mut_gaussian": evonn_mut_gaussian,
+            "evonn_mut_self_adapting": evonn_mut_self_adapting,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
-            "simulated_binary_crossover": simulated_binary_crossover,
+            "simulated_binary_crossover": simulated_binary_crossover
         }
         self.crossover_type = crossover_type
         self.mutation_type = mutation_type
@@ -309,14 +313,14 @@ class Population:
         # trace0 = go.Scatter(
         #     x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
         # )
-        pareto_front = go.Scatter(
+        trace1 = go.Scatter(
             x=pareto[:, 0],
             y=pareto[:, 1],
             text=pareto_pop,
             hoverinfo="text",
             mode="markers+lines",
         )
-        data = [pareto_front]
+        data = [trace1]
         layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
         plotly.offline.plot(
             {"data": data, "layout": layout},

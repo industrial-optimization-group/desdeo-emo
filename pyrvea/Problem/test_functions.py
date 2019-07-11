@@ -299,4 +299,5 @@ class EvoNNTestProblem(baseProblem):
             [self.objectives(x) for x in training_data_input]
         )
 
+        np.random.seed()
         return training_data_input, training_data_output

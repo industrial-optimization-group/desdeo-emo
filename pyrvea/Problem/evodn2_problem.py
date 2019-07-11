@@ -380,8 +380,28 @@ class EvoDN2Model(EvoDN2):
         self.w_low = self.params["w_low"]
         self.w_high = self.params["w_high"]
 
-        # Create random subsets of decision variables for each subnet
         self.subsets = []
+
+        # Method 1: Divide variables evenly in overlapping subsets
+        # n = 10
+        # k = 0
+        #
+        # for i in range(self.num_subnets):
+        #
+        #     if n > self.num_of_variables:
+        #         k = abs(k - self.num_of_variables)
+        #         n = k + 10
+        #
+        #     self.subsets.append(np.arange(k, n))
+        #     k += 5
+        #     n += 5
+
+        # Method 2: Use all variables in all subnets
+        # for i in range(self.num_subnets):
+        #     self.subsets.append(np.arange(0, self.num_of_variables))
+
+        # Method 3: Create random subsets of decision variables for each subnet
+
         for i in range(self.num_subnets):
             n = random.randint(1, self.X_train.shape[1])
             self.subsets.append(random.sample(range(self.X_train.shape[1]), n))

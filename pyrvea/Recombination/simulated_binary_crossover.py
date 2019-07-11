@@ -2,19 +2,38 @@ import numpy as np
 from random import shuffle
 
 
-def mate(mating_pop, pop, params, prob_xover=1, dis_xover=30):
+def mate(mating_pop, pop, params):
+    """Simulated binary crossover.
+
+    Parameters
+    ----------
+    mating_pop : list
+        List of population to mate.
+    pop : list
+        List of all individuals
+    params : dict
+        Parameters for breeding. If None, use defaults.
+
+    Returns
+    -------
+    offspring : List
+        The offspring produced as a result of crossover.
+    """
 
     try:
         prob_xover = params["prob_xover"]
         dis_xover = params["dis_xover"]
     except KeyError:
-        pass
+        prob_xover = 1
+        dis_xover = 30
 
     pop = np.array(pop)
     pop_size, num_var = pop.shape
-    shuffled_ids = list(range(pop_size))
-    shuffle(shuffled_ids)
-    mating_pop = pop[shuffled_ids]
+
+    if mating_pop is None:
+        shuffled_ids = list(range(pop_size))
+        shuffle(shuffled_ids)
+        mating_pop = pop[shuffled_ids]
 
     if pop_size % 2 == 1:
         # Maybe it should be pop_size-1?

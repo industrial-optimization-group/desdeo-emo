@@ -92,7 +92,7 @@ class DataProblem(baseProblem):
     def outlier_removal(self):  # Removes the outliers
         pass
 
-    def train_test_split(self, train_size: float = 0.7):  # Split dataset
+    def train_test_split(self, train_size: float = 0.8):  # Split dataset
 
         for x in range(1):
             train_indices, test_indices = tts(self.all_indices, train_size=train_size)

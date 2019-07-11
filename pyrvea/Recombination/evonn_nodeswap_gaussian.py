@@ -1,28 +1,33 @@
 import numpy as np
-from random import shuffle
 
 
 def mate(mating_pop, individuals, params):
-    """Randomly exchange nodes between two individuals.
+    """Swap nodes between two partners and mutate based on standard deviation.
 
     Parameters
     ----------
     mating_pop : list
-        List of individuals to mate
+        List of individuals to mate. If None, choose from population randomly.
     individuals : list
-        List of all individuals
+        List of all individuals.
     params : dict
         Parameters for evolution. If None, use defaults.
+
+    Returns
+    -------
+    offspring : list
+        The offsprings produced as a result of crossover and mutation.
     """
 
     try:
         prob_crossover = params["prob_crossover"]
         prob_mutation = params["prob_mutation"]
         std_dev = params["std_dev"]
+
     except KeyError:
         prob_crossover = 0.8
         prob_mutation = 0.3
-        std_dev = (4 / 3) * (
+        std_dev = (5 / 3) * (
             1
             - params["current_total_gen_count"] / params["total_generations"]
         )

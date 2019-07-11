@@ -1,13 +1,30 @@
 import numpy as np
 
 
-def mutate(offspring, individuals, params, lower_limits, upper_limits, prob_mutation=0.3, dis_mut=20):
+def mutate(offspring, individuals, params, lower_limits, upper_limits):
+    """Bounded polynomial mutation.
 
+    Parameters
+    ----------
+    offspring : List
+        List of offspring to mutate.
+    individuals : List
+        List of all individuals.
+    params : dict
+        Parameters used for breeding.
+    lower_limits : float
+        Problem lower bounds.
+    upper_limits : float
+        Problem upper bounds.
+
+    """
     try:
-        prob_mut = params["prob_mutation"]
         dis_mut = params["dis_mut"]
+
     except KeyError:
-        pass
+        dis_mut = 20
+
+    prob_mutation = 1 / np.array(individuals).shape[1]
 
     min_val = np.ones_like(offspring) * lower_limits
     max_val = np.ones_like(offspring) * upper_limits
