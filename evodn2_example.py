@@ -371,22 +371,22 @@ for n in range(training_data_input.shape[1]):
 y = ["f1", "f2"]
 dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
-problem.train_test_split()
+problem.train_test_split(train_size=0.7)
 
 problem.train(
-    model_type="EvoNN",
+    model_type="EvoDN2",
     algorithm=RVEA,
-    num_nodes=25,
-    recombination_type="evonn_nodeswap_self_adapting",
     generations_per_iteration=10,
-    iterations=10
+    iterations=10,
 )
 
+# Train data vs. test data:
 # y = problem.models["f1"][0].predict(training_data_input)
 # problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
 #
 # y2 = problem.models["f2"][0].predict(training_data_input)
 # problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+
 
 # problem.train(
 #     model_type="EvoDN2",
@@ -503,8 +503,18 @@ pop.evolve(
 )
 
 pop2.evolve(RVEA, iterations=10, generations_per_iteration=25)
-pop.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_ppga_" + test_prob.name)
-pop2.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_rvea_" + test_prob.name)
+pop.plot_pareto(
+    filename="my-tests/"
+    + problem.models["f1"][0].__class__.__name__
+    + "_ppga_"
+    + test_prob.name
+)
+pop2.plot_pareto(
+    filename="my-tests/"
+    + problem.models["f1"][0].__class__.__name__
+    + "_rvea_"
+    + test_prob.name
+)
 
 # f1_all = pop.objectives[:, 0]
 # f2_all = pop.objectives[:, 1]

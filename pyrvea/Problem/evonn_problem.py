@@ -26,18 +26,10 @@ class EvoNN(baseProblem):
         Training data target values.
     params : dict
         Parameters for model training.
-    num_input_nodes : int
-        The number of nodes in the input layer.
-    num_nodes : int
-        The number of nodes in the hidden layer.
     num_samples : int
         The number of data points, or samples, used.
     num_of_objectives : int
         The number of objectives.
-    w_low : float
-        The lower bound for randomly generated weights.
-    w_high : float
-        The upper bound for randomly generated weights.
 
     References
     ----------
@@ -407,10 +399,6 @@ class EvoNNModel(EvoNN):
         self.y_train = target_values
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        self.num_input_nodes = self.num_of_variables
-        self.num_nodes = self.params["num_nodes"]
-        self.w_low = self.params["w_low"]
-        self.w_high = self.params["w_high"]
 
         if self.params["logging"]:
             self.log = self.create_logfile()
@@ -499,7 +487,7 @@ class EvoNNModel(EvoNN):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_nodes)
+            + str(self.params["num_nodes"])
             + ".html",
             auto_open=True,
         )
@@ -521,7 +509,7 @@ class EvoNNModel(EvoNN):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_nodes)
+            + str(self.params["num_nodes"])
             + ".log",
             "a",
         )
@@ -533,7 +521,7 @@ class EvoNNModel(EvoNN):
             + str(self.num_of_variables)
             + "\n"
             + "nodes: "
-            + str(self.num_nodes)
+            + str(self.params["num_nodes"])
             + "\n"
             + "activation: "
             + self.params["activation_func"]

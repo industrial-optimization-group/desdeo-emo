@@ -5,10 +5,13 @@ from pyDOE import lhs
 
 
 def create_new_individuals(design, problem, pop_size=None):
-    """Create, evaluate and add new individuals to the population. Initiate Plots.
+    """Create new individuals to the population.
 
     The individuals can be created randomly, by LHS design, or can be passed by the
     user.
+
+    Design does not apply in case of EvoNN and EvoDN2 problem, where neural networks are created
+    as individuals.
 
     Parameters
     ----------
@@ -88,6 +91,13 @@ def create_new_individuals(design, problem, pop_size=None):
         return individuals
 
     elif design == "EvoDN2":
+        """Create a population of deep neural networks (DNNs) for the EvoDN2 algorithm.
+
+        Each individual is a list of subnets, and each subnet contains a random amount of layers and
+        nodes per layer. The subnets are evolved via evolutionary algorithms, and they converge
+        on the final linear layer of the DNN.
+
+        """
 
         individuals = []
         for i in range(problem.params["pop_size"]):

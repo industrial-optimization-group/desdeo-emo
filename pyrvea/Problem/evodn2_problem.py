@@ -25,10 +25,6 @@ class EvoDN2(baseProblem):
         Training data target values
     num_of_objectives : int
         The number of objectives
-    w_low : float
-        The lower bound for randomly generated weights
-    w_high : float
-        The upper bound for randomly generated weights
     params : dict
         Parameters for the models
 
@@ -374,11 +370,6 @@ class EvoDN2Model(EvoDN2):
         self.y_train = target_values
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        self.num_subnets = self.params["num_subnets"]
-        self.max_layers = self.params["max_layers"]
-        self.max_nodes = self.params["max_nodes"]
-        self.w_low = self.params["w_low"]
-        self.w_high = self.params["w_high"]
 
         self.subsets = []
 
@@ -402,14 +393,14 @@ class EvoDN2Model(EvoDN2):
 
         # Method 3: Create random subsets of decision variables for each subnet
 
-        for i in range(self.num_subnets):
+        for i in range(self.params["num_subnets"]):
             n = random.randint(1, self.X_train.shape[1])
             self.subsets.append(random.sample(range(self.X_train.shape[1]), n))
 
         # Ensure that each decision variable is used as an input in at least one subnet
         for n in list(range(self.X_train.shape[1])):
             if not any(n in k for k in self.subsets):
-                self.subsets[random.randint(0, self.num_subnets - 1)].append(n)
+                self.subsets[random.randint(0, self.params["num_subnets"] - 1)].append(n)
 
         if self.params["logging"]:
             self.log = self.create_logfile()
@@ -516,11 +507,11 @@ class EvoDN2Model(EvoDN2):
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
-            + str(self.num_subnets)
+            + str(self.params["num_subnets"])
             + "_"
-            + str(self.max_layers)
+            + str(self.params["max_layers"])
             + "_"
-            + str(self.max_nodes)
+            + str(self.params["max_nodes"])
             + ".log",
             "a",
         )
@@ -532,13 +523,13 @@ class EvoDN2Model(EvoDN2):
             + str(self.num_of_variables)
             + "\n"
             + "number of subnets: "
-            + str(self.num_subnets)
+            + str(self.params["num_subnets"])
             + "\n"
             + "max number of layers: "
-            + str(self.max_layers)
+            + str(self.params["max_layers"])
             + "\n"
             + "max nodes: "
-            + str(self.max_nodes)
+            + str(self.params["max_nodes"])
             + "\n"
             + "activation: "
             + self.params["activation_func"]

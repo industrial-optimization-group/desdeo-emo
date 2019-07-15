@@ -5,7 +5,10 @@ from pyrvea.Problem.baseProblem import baseProblem
 
 class OptTestFunctions(baseProblem):
 
-    """Test functions for testing the EvoNN/PPGA algorithm.
+    """Test functions for single/multi-objective problems to test
+    the performance of evolutionary algorithms.
+
+    See: https://en.wikipedia.org/wiki/Test_functions_for_optimization
 
         Attributes
         ----------

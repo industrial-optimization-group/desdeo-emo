@@ -73,7 +73,7 @@ class PPGA:
     def set_params(
         self,
         population: "Population",
-        target_pop_size: int = 300,
+        target_pop_size: int = 100,
         predator_pop_size: int = 50,
         generations_per_iteration: int = 10,
         iterations: int = 10,
