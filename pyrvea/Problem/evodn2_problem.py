@@ -286,7 +286,7 @@ class EvoDN2Model(EvoDN2):
         selection="min_error",
         crossover_type=None,
         mutation_type=None,
-        recombination_type="evodn2_xover_mut_gaussian",
+        recombination_type="evodn2_gaussian",
         iterations=10,
         generations_per_iteration=10,
         logging=False,

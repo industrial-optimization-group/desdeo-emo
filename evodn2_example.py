@@ -340,7 +340,7 @@ import plotly.graph_objs as go
 from deap import benchmarks
 
 
-test_prob = EvoNNTestProblem("SchafferN1", num_of_variables=1)
+test_prob = EvoNNTestProblem("Kursawe", num_of_variables=3)
 training_data_input, training_data_output = test_prob.create_training_data(
     samples=250, method="random"
 )
@@ -348,7 +348,7 @@ training_data_input, training_data_output = test_prob.create_training_data(
 # # ZDT 1 & 2
 
 # test_prob = testProblem(
-#     name="ZDT1",
+#     name="ZDT2",
 #     num_of_variables=30,
 #     num_of_objectives=2,
 #     num_of_constraints=0,
@@ -374,27 +374,12 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
-problem.train(
-    model_type="EvoNN",
-    algorithm=RVEA,
-    recombination_type="evonn_nodeswap_gaussian",
-    generations_per_iteration=25,
-    iterations=10
-)
-
-# y = problem.models["f1"][0].predict(training_data_input)
-# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-#
-# y2 = problem.models["f2"][0].predict(training_data_input)
-# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
-
 # problem.train(
-#     model_type="EvoDN2",
+#     model_type="EvoNN",
 #     algorithm=PPGA,
-#     num_subnets=4,
-#     max_layers=8,
-#     max_nodes=10,
-#     generations_per_iteration=20,
+#     num_nodes=25,
+#     recombination_type="evonn_nodeswap_gaussian",
+#     generations_per_iteration=10,
 #     iterations=10
 # )
 
@@ -403,6 +388,22 @@ problem.train(
 #
 # y2 = problem.models["f2"][0].predict(training_data_input)
 # problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+
+problem.train(
+    model_type="EvoDN2",
+    algorithm=PPGA,
+    num_subnets=4,
+    max_layers=8,
+    max_nodes=10,
+    generations_per_iteration=10,
+    iterations=10
+)
+
+y = problem.models["f1"][0].predict(training_data_input)
+problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+
+y2 = problem.models["f2"][0].predict(training_data_input)
+problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 # problem.train(
 #     model_type="EvoNN",

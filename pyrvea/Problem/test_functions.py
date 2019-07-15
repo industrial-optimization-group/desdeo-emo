@@ -163,12 +163,6 @@ class EvoNNTestProblem(baseProblem):
                 / (1 + 0.001 * (x ** 2 + y ** 2)) ** 2
             )
 
-        elif self.name == "McCormick":
-            # McCormick function, -1.5 <= x <= 4, -3 <= y <= 4
-            x = np.asarray(decision_variables[0])
-            y = np.asarray(decision_variables[1])
-            self.obj_func = np.sin(x + y) + (x - y) ** 2 - 1.5 * x + 2.5 * y + 1
-
         elif self.name == "min-ex":
             x1 = decision_variables[0]
             x2 = decision_variables[1]
@@ -183,7 +177,7 @@ class EvoNNTestProblem(baseProblem):
             f1 = x
             f2 = (1 + 10 * y) * (
                 1
-                - (x / (1 + 10 * y)) * a
+                - (x / (1 + 10 * y)) ** a
                 - x / (1 + 10 * y) * np.sin(2 * np.pi * q * x)
             )
 
@@ -205,7 +199,7 @@ class EvoNNTestProblem(baseProblem):
                 + abs(x3) ** 0.8
                 + 5.0 * np.sin(x3 ** 3)
             )
-            return [f1, f2]
+            self.obj_func = [f1, f2]
 
         elif self.name == "Fonseca":
             x1 = np.asarray(decision_variables[0])
@@ -246,14 +240,6 @@ class EvoNNTestProblem(baseProblem):
             training_data_input = np.random.uniform(
                 self.lower_limits, self.upper_limits, (samples, self.num_of_variables)
             )
-
-            if self.name == "McCormick":
-                training_data_input[:, 0] = minmax_scale(
-                    training_data_input[:, 0], feature_range=(-1.5, 4)
-                )
-                training_data_input[:, 1] = minmax_scale(
-                    training_data_input[:, 1], feature_range=(-3, 4)
-                )
 
         elif method == "lhs":
 
@@ -300,4 +286,5 @@ class EvoNNTestProblem(baseProblem):
         )
 
         np.random.seed()
+
         return training_data_input, training_data_output
