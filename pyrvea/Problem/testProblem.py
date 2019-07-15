@@ -1,5 +1,6 @@
 from optproblems import dtlz, zdt
 from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.test_functions import OptTestFunctions
 
 
 class testProblem(baseProblem):

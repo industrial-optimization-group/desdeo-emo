@@ -1,8 +1,8 @@
-from pyrvea.Problem.test_functions import EvoNNTestProblem
+from pyrvea.Problem.test_functions import OptTestFunctions
 from pyrvea.Problem.evonn_problem import EvoNNModel
 from pyrvea.Problem.evodn2_problem import EvoDN2Model
 
-test_prob = EvoNNTestProblem("Three-hump camel")
+test_prob = OptTestFunctions("Three-hump camel")
 training_data_input, training_data_output = test_prob.create_training_data(
     samples=150, method="random"
 )

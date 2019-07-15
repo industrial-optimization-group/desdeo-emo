@@ -1,10 +1,9 @@
 import numpy as np
 from pyDOE import lhs
 from pyrvea.Problem.baseProblem import baseProblem
-from sklearn.preprocessing import minmax_scale
 
 
-class EvoNNTestProblem(baseProblem):
+class OptTestFunctions(baseProblem):
 
     """Test functions for testing the EvoNN/PPGA algorithm.
 
@@ -34,7 +33,7 @@ class EvoNNTestProblem(baseProblem):
         lower_limits=0,
     ):
 
-        super(EvoNNTestProblem, self).__init__(
+        super(OptTestFunctions, self).__init__(
             name,
             num_of_variables,
             num_of_objectives,
@@ -56,7 +55,7 @@ class EvoNNTestProblem(baseProblem):
             "min-ex_f1": (0, 1),
             "min-ex_f2": (0, 5),
             "Coello_ex1": (0, 1),
-            "Fonseca": (-4, 4),
+            "Fonseca-Fleming": (-4, 4),
             "Kursawe": (-5, 5),
             "SchafferN1": (-100, 100),
         }
@@ -76,9 +75,10 @@ class EvoNNTestProblem(baseProblem):
 
         self.num_of_variables = decision_variables.shape[0]
 
+        # Single objective test functions
+
         if self.name == "Sphere":
             # Sphere function, -5 <= x <= 5
-            # Error close to zero with random data.
 
             x = np.asarray(decision_variables)
             self.obj_func = sum(x ** 2)
@@ -86,10 +86,6 @@ class EvoNNTestProblem(baseProblem):
         elif self.name == "Matyas":
 
             # Matyas function, -10 <= x, y <= 10
-            # Error close to zero with random data,
-            # when number of nodes = 20. With less nodes,
-            # training wasn't as successful. With linear data,
-            # training wasn't successful.
 
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
@@ -98,7 +94,6 @@ class EvoNNTestProblem(baseProblem):
         elif self.name == "Himmelblau":
 
             # Himmelblau's function, -5 <= x, y <= 5
-            # Error close to zero with random data.
 
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
@@ -106,8 +101,6 @@ class EvoNNTestProblem(baseProblem):
 
         elif self.name == "Rastigrin":
             # Rastigrin function, -5.12 <= x <= 5.12
-            # Didn't work that well with random data
-            # and 2 variables.
 
             x = np.asarray(decision_variables)
             n = len(x)
@@ -115,7 +108,6 @@ class EvoNNTestProblem(baseProblem):
 
         elif self.name == "Three-hump camel":
             # Three-hump camel function,  -5 <= x, y <= 5
-            # Worked pretty well with random data.
 
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
@@ -123,11 +115,7 @@ class EvoNNTestProblem(baseProblem):
 
         elif self.name == "Goldstein-Price":
             # Goldstein-Price function, -2 <= x, y <= 2
-            # with 15 nodes, min. error == 20000
-            # with 20 nodes, min. error == 17000
-            # with 25 nodes, min. error == 8671
-            # EvoDN2 performs better here even with
-            # lesser amount of nets/layers/nodes
+
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             self.obj_func = (
@@ -142,8 +130,7 @@ class EvoNNTestProblem(baseProblem):
 
         elif self.name == "LeviN13":
             # Levi function N.13, -10 <= x, y <= 10
-            # with random data and 10 nodes, min. error == 27, not very good
-            # with random data and 15 nodes, min. error == 22, bit better
+
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             self.obj_func = (
@@ -154,7 +141,7 @@ class EvoNNTestProblem(baseProblem):
 
         elif self.name == "SchafferN2":
             # Schaffer function N. 2, -100 <= x, y <= 100
-            # Doesn't work with random data
+
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             self.obj_func = (
@@ -162,6 +149,8 @@ class EvoNNTestProblem(baseProblem):
                 + (np.sin((x ** 2 - y ** 2) ** 2) - 0.5)
                 / (1 + 0.001 * (x ** 2 + y ** 2)) ** 2
             )
+
+        # Test functions for multi-objective optimization
 
         elif self.name == "min-ex":
             x1 = decision_variables[0]
@@ -201,11 +190,17 @@ class EvoNNTestProblem(baseProblem):
             )
             self.obj_func = [f1, f2]
 
-        elif self.name == "Fonseca":
-            x1 = np.asarray(decision_variables[0])
-            x2 = np.asarray(decision_variables[1])
-            f1 = 1 - np.exp(-((x1 - 1 / np.sqrt(1)) ** 2 + (x2 - 1 / np.sqrt(2)) ** 2))
-            f2 = 1 - np.exp(-((x1 + 1 / np.sqrt(1)) ** 2 + (x2 + 1 / np.sqrt(2)) ** 2))
+        elif self.name == "Fonseca-Fleming":
+
+            f1 = 0
+            f2 = 0
+
+            for n in range(len(decision_variables)):
+                f1 += (decision_variables[n] - 1 / np.sqrt(len(decision_variables))) ** 2
+                f2 += (decision_variables[n] + 1 / np.sqrt(len(decision_variables))) ** 2
+
+            f1 = 1 - np.exp(-f1)
+            f2 = 1 - np.exp(-f2)
 
             self.obj_func = [f1, f2]
 
@@ -285,6 +280,6 @@ class EvoNNTestProblem(baseProblem):
             [self.objectives(x) for x in training_data_input]
         )
 
-        np.random.seed()
+        np.random.seed(None)
 
         return training_data_input, training_data_output

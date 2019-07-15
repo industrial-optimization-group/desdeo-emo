@@ -319,7 +319,7 @@ class EvoNNModel(EvoNN):
         opt_func="llsq",
         loss_func="rmse",
         selection="akaike_corrected",
-        recombination_type="evonn_xover_mut_gaussian",
+        recombination_type="evonn_nodeswap_gaussian",
         crossover_type="evonn_xover_nodeswap",
         mutation_type="evonn_mut_gaussian",
         iterations=10,

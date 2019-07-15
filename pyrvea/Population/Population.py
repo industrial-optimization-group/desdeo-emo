@@ -43,8 +43,8 @@ class Population:
         plotting: bool = True,
         pop_size=None,
         recombination_type=None,
-        crossover_type=None,
-        mutation_type=None,
+        crossover_type="simulated_binary_crossover",
+        mutation_type="bounded_polynomial_mutation",
         *args
     ):
         """Initialize the population.

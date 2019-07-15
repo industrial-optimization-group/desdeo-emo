@@ -1,7 +1,8 @@
-from pyrvea.Problem.test_functions import EvoNNTestProblem
+from pyrvea.Problem.test_functions import OptTestFunctions
 from pyrvea.Problem.evonn_problem import EvoNNModel
 from pyrvea.Problem.evodn2_problem import EvoDN2Model
 from pyrvea.Problem.testProblem import testProblem
+from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Problem.dataproblem import DataProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
@@ -337,10 +338,8 @@ import plotly.graph_objs as go
 # y = model_evonn.predict(training_data_input)
 # model_evonn.plot(y, training_data_output)
 #
-from deap import benchmarks
 
-
-test_prob = EvoNNTestProblem("Kursawe", num_of_variables=3)
+test_prob = OptTestFunctions("Fonseca-Fleming", num_of_variables=2)
 training_data_input, training_data_output = test_prob.create_training_data(
     samples=250, method="random"
 )
@@ -374,11 +373,27 @@ dataset.columns = x + y
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split()
 
+problem.train(
+    model_type="EvoNN",
+    algorithm=RVEA,
+    num_nodes=25,
+    recombination_type="evonn_nodeswap_self_adapting",
+    generations_per_iteration=10,
+    iterations=10
+)
+
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+
 # problem.train(
-#     model_type="EvoNN",
-#     algorithm=PPGA,
-#     num_nodes=25,
-#     recombination_type="evonn_nodeswap_gaussian",
+#     model_type="EvoDN2",
+#     algorithm=RVEA,
+#     num_subnets=4,
+#     max_layers=8,
+#     max_nodes=10,
 #     generations_per_iteration=10,
 #     iterations=10
 # )
@@ -388,22 +403,6 @@ problem.train_test_split()
 #
 # y2 = problem.models["f2"][0].predict(training_data_input)
 # problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
-
-problem.train(
-    model_type="EvoDN2",
-    algorithm=PPGA,
-    num_subnets=4,
-    max_layers=8,
-    max_nodes=10,
-    generations_per_iteration=10,
-    iterations=10
-)
-
-y = problem.models["f1"][0].predict(training_data_input)
-problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-
-y2 = problem.models["f2"][0].predict(training_data_input)
-problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 # problem.train(
 #     model_type="EvoNN",
@@ -443,13 +442,6 @@ problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name
 #     recombination_type="evonn_xover_mut_gaussian"
 # )
 
-# problem.train(
-#     model_type="MLP",
-#     algorithm=RVEA,
-#     iterations=10,
-#     generations_per_iteration=10,
-#     recombination_type="evonn_xover_mut_gaussian"
-# )
 
 # problem.train(model_type="MLP", max_iter=10000, n_iter_no_change=100)
 # mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
@@ -510,7 +502,7 @@ pop.evolve(
     generations_per_iteration=10,
 )
 
-pop2.evolve(RVEA, iterations=10, generations_per_iteration=100)
+pop2.evolve(RVEA, iterations=10, generations_per_iteration=25)
 pop.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_ppga_" + test_prob.name)
 pop2.plot_pareto(filename="my-tests/" + problem.models["f1"][0].__class__.__name__ + "_rvea_" + test_prob.name)
 
