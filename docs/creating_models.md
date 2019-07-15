@@ -52,7 +52,7 @@ problem.train(model_type="EvoNN", algorithm=PPGA, num_nodes=25, generations_per_
 EvoNN and EvoDN2 models can currently be trained with Predator-Prey (PPGA) or reference vector guided evolutionary algorithms (RVEA). For explanations of the different EAs, see their respective class documentation at pyRVEA/EAs.
 Training parameters can currently be passed as kwargs. For available parameters, see pyrvea.Problem.evonn_problem.EvoNNModel class documentation (a separate documentation page will come later). If no parameters are passed, defaults are used.
 
-After the models have been trained, the test function can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve:
+After the models have been trained, the test function can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve (PPGA or RVEA can be used for optimization):
 
 ```
 pop = Population(problem)
