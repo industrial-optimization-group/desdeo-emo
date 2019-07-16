@@ -2,7 +2,6 @@ from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from scipy.special import expit
-from math import ceil
 import numpy as np
 import plotly
 import plotly.graph_objs as go
@@ -12,8 +11,9 @@ import random
 class EvoDN2(baseProblem):
     """Creates Deep Neural Networks (DNN) for the EvoDN2 algorithm.
 
-    DNNs have a fixed number of subnets, each of which has random number of
-    layers and nodes in each layer, dependant on max layers and max nodes set by user.
+    DNNs have a fixed number of subnets, each of which has a random number of
+    layers, and a random number of nodes in each layer, dependant on max layers
+    and max nodes set by user.
 
     Parameters
     ----------
@@ -25,6 +25,10 @@ class EvoDN2(baseProblem):
         Training data target values
     num_of_objectives : int
         The number of objectives
+    num_samples : int
+        The number of data points, or samples.
+    subsets : array_like
+        A list of variables used for each subnet of the model.
     params : dict
         Parameters for the models
 
@@ -357,8 +361,9 @@ class EvoDN2Model(EvoDN2):
         self.params = params
 
     def fit(self, training_data, target_values):
-        """Fit data in EvoNN model, divide input variables for each subnet randomly,
+        """Fit data in EvoDN2 model, divide input variables for each subnet randomly,
         and train the model.
+
         Parameters
         ----------
         training_data : ndarray, shape = (numbers of samples, number of variables)
@@ -373,25 +378,7 @@ class EvoDN2Model(EvoDN2):
 
         self.subsets = []
 
-        # Method 1: Divide variables evenly in overlapping subsets
-        # n = 10
-        # k = 0
-        #
-        # for i in range(self.num_subnets):
-        #
-        #     if n > self.num_of_variables:
-        #         k = abs(k - self.num_of_variables)
-        #         n = k + 10
-        #
-        #     self.subsets.append(np.arange(k, n))
-        #     k += 5
-        #     n += 5
-
-        # Method 2: Use all variables in all subnets
-        # for i in range(self.num_subnets):
-        #     self.subsets.append(np.arange(0, self.num_of_variables))
-
-        # Method 3: Create random subsets of decision variables for each subnet
+        # Create random subsets of decision variables for each subnet
 
         for i in range(self.params["num_subnets"]):
             n = random.randint(1, self.X_train.shape[1])
@@ -400,7 +387,9 @@ class EvoDN2Model(EvoDN2):
         # Ensure that each decision variable is used as an input in at least one subnet
         for n in list(range(self.X_train.shape[1])):
             if not any(n in k for k in self.subsets):
-                self.subsets[random.randint(0, self.params["num_subnets"] - 1)].append(n)
+                self.subsets[random.randint(0, self.params["num_subnets"] - 1)].append(
+                    n
+                )
 
         if self.params["logging"]:
             self.log = self.create_logfile()
@@ -421,7 +410,7 @@ class EvoDN2Model(EvoDN2):
             recombination_type=self.params["recombination_type"],
             crossover_type=self.params["crossover_type"],
             mutation_type=self.params["mutation_type"],
-            plotting=False,
+            plotting=self.params["plotting"],
         )
         pop.evolve(
             self.params["algorithm"],
@@ -471,6 +460,17 @@ class EvoDN2Model(EvoDN2):
         return y
 
     def plot(self, prediction, target, name=None):
+        """Creates and shows a plot for the model's prediction.
+
+        Parameters
+        ----------
+        prediction : ndarray
+            The prediction of the model.
+        target : ndarray
+            The target values.
+        name : str
+            Filename to save the plot as.
+        """
 
         if name is None:
             name = self.name
@@ -480,7 +480,7 @@ class EvoDN2Model(EvoDN2):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename="my-tests/"
+            filename="Tests/"
             + self.params["algorithm"].__name__
             + self.__class__.__name__
             + name
@@ -496,14 +496,24 @@ class EvoDN2Model(EvoDN2):
             auto_open=True,
         )
 
-    def create_logfile(self):
+    def create_logfile(self, name=None):
+        """Create a log file containing the parameters for training the model and the EA.
+
+        Returns
+        -------
+        log_file : file
+            An external log file.
+        """
+
+        if name is None:
+            name = self.name
 
         # Save params to log file
         log_file = open(
-            "my-tests/"
-            + self.params['algorithm'].__name__
+            "Tests/"
+            + self.params["algorithm"].__name__
             + self.__class__.__name__
-            + self.name
+            + name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
@@ -515,6 +525,7 @@ class EvoDN2Model(EvoDN2):
             + ".log",
             "a",
         )
+
         print(
             "samples: "
             + str(self.num_samples)
@@ -541,9 +552,20 @@ class EvoDN2Model(EvoDN2):
             + self.params["loss_func"],
             file=log_file,
         )
+
         return log_file
 
     def single_variable_response(self, ploton=False, log=None):
+        """Get the model's response to a single variable.
+
+        Parameters
+        ----------
+        ploton : bool
+            Create and show plot on/off.
+        log : file
+            Write the results in a log file.
+
+        """
 
         trend = np.loadtxt("trend")
         avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2

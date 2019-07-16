@@ -27,6 +27,11 @@ def create_new_individuals(design, problem, pop_size=None):
         Number of individuals in the population. If none, some default population
         size based on number of objectives is chosen.
 
+    Returns
+    -------
+    individuals : list
+        A list of individuals.
+
     """
 
     if pop_size is None:
