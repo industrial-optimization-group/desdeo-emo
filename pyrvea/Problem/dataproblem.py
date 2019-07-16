@@ -2,9 +2,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
 from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
 from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
-from pyrvea.Population.Population import Population
-
-# from sklearn.gaussian_process.kernels import RBF, WhiteKernel, ConstantKernel as C
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split as tts
 import numpy as np
@@ -103,7 +100,7 @@ class DataProblem(baseProblem):
         if objectives is None:
             objectives = self.y
         if model_type is None:
-            model_type = "GPR"
+            model_type = "MLP"
         surrogate_model_options = {
             "GPR": GaussianProcessRegressor,
             "MLP": MLPRegressor,

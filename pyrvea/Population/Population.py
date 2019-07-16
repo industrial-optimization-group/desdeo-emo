@@ -295,10 +295,19 @@ class Population:
             obj, self.figure, self.filename + ".html", iteration
         )
 
-    def plot_pareto(self, filename):
+    def plot_pareto(self, name, show_all=False):
+        """Plot the pareto front.
 
-        if filename is None:
-            filename = self.problem.name
+        Parameters
+        ----------
+        name : str
+            Name to append to the plot filename.
+        show_all : bool
+            Show all solutions, including those not on the pareto front.
+
+        """
+        if name is None:
+            name = self.problem.name
 
         ndf = self.non_dominated()
         pareto = self.objectives[ndf]
@@ -310,21 +319,27 @@ class Population:
                 x[i] = "x" + str(i + 1) + ": " + str(y) + "<br>"
             x.insert(0, "Model " + str(idx))
 
-        # trace0 = go.Scatter(
-        #     x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
-        # )
-        trace1 = go.Scatter(
+        trace0 = go.Scatter(
             x=pareto[:, 0],
             y=pareto[:, 1],
             text=pareto_pop,
             hoverinfo="text",
             mode="markers+lines",
         )
-        data = [trace1]
+
+        if show_all:
+            trace1 = go.Scatter(
+                x=self.objectives[:, 0], y=self.objectives[:, 1], mode="markers"
+            )
+
+            data = [trace0, trace1]
+        else:
+            data = [trace0]
+
         layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
         plotly.offline.plot(
             {"data": data, "layout": layout},
-            filename=filename
+            filename=name
             + "pareto"
             + ".html",
             auto_open=True,

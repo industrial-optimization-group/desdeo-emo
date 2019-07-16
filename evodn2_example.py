@@ -1,5 +1,6 @@
 from pyrvea.Problem.test_functions import OptTestFunctions
 from pyrvea.Problem.dataproblem import DataProblem
+from pyrvea.Problem.testProblem import testProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
@@ -11,26 +12,25 @@ import plotly
 import plotly.graph_objs as go
 
 
-test_prob = OptTestFunctions("Fonseca-Fleming", num_of_variables=2)
-training_data_input, training_data_output = test_prob.create_training_data(
-    samples=250, method="random"
-)
+# test_prob = OptTestFunctions("Fonseca-Fleming", num_of_variables=2)
+# training_data_input, training_data_output = test_prob.create_training_data(
+#     samples=250, method="random"
+# )
 
 # # ZDT
+test_prob = testProblem(
+    name="ZDT1",
+    num_of_variables=30,
+    num_of_objectives=2,
+    num_of_constraints=0,
+    upper_limits=1,
+    lower_limits=0,
+)
 
-# test_prob = testProblem(
-#     name="ZDT2",
-#     num_of_variables=30,
-#     num_of_objectives=2,
-#     num_of_constraints=0,
-#     upper_limits=1,
-#     lower_limits=0,
-# )
-#
-# training_data_input = np.random.rand(250, 30)
-# training_data_output = np.asarray(
-#     [test_prob.objectives(x) for x in training_data_input]
-# )
+training_data_input = np.random.rand(500, 30)
+training_data_output = np.asarray(
+    [test_prob.objectives(x) for x in training_data_input]
+)
 
 data = np.hstack((training_data_input, training_data_output))
 f1_training_data_output = training_data_output[:, 0]
@@ -52,22 +52,22 @@ problem.train(
     iterations=10,
 )
 
-# y = problem.models["f1"][0].predict(training_data_input)
-# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-#
-# y2 = problem.models["f2"][0].predict(training_data_input)
-# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+y = problem.models["f1"][0].predict(training_data_input)
+problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+
+y2 = problem.models["f2"][0].predict(training_data_input)
+problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 # problem.train(
 #     model_type="EvoNN",
 #     algorithm=PPGA
 # )
 #
-# y = problem.models["f1"][2].predict(training_data_input)
-# problem.models["f1"][2].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
 #
-# y2 = problem.models["f2"][2].predict(training_data_input)
-# problem.models["f2"][2].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 
 # Multilayer perceptron
@@ -132,13 +132,13 @@ pop_ppga.evolve(
 
 pop_rvea.evolve(RVEA, iterations=10, generations_per_iteration=25)
 pop_ppga.plot_pareto(
-    filename="Tests/"
+    name="Tests/"
     + problem.models["f1"][0].__class__.__name__
     + "_ppga_"
     + test_prob.name
 )
 pop_rvea.plot_pareto(
-    filename="Tests/"
+    name="Tests/"
     + problem.models["f1"][0].__class__.__name__
     + "_rvea_"
     + test_prob.name

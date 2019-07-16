@@ -21,7 +21,7 @@ class NSGAIII(BaseDecompositionEA):
         population: "Population",
         population_size: int = None,
         lattice_resolution: int = None,
-        interact: bool = True,
+        interact: bool = False,
         a_priori_preference: bool = False,
         generations_per_iteration: int = 100,
         iterations: int = 10,

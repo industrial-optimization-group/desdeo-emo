@@ -370,6 +370,11 @@ class EvoDN2Model(EvoDN2):
             Training data
         target_values : ndarray
             Target values
+
+        Returns
+        -------
+        self : returns an instance of self.
+
         """
         self.X_train = training_data
         self.y_train = target_values
