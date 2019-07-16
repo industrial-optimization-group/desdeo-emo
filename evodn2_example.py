@@ -12,6 +12,7 @@ import plotly
 import plotly.graph_objs as go
 
 
+<<<<<<< HEAD
 # test_prob = OptTestFunctions("Fonseca-Fleming", num_of_variables=2)
 # training_data_input, training_data_output = test_prob.create_training_data(
 #     samples=250, method="random"
@@ -31,6 +32,28 @@ training_data_input = np.random.rand(500, 30)
 training_data_output = np.asarray(
     [test_prob.objectives(x) for x in training_data_input]
 )
+=======
+test_prob = OptTestFunctions("Fonseca-Fleming", num_of_variables=2)
+training_data_input, training_data_output = test_prob.create_training_data(
+    samples=250, method="random"
+)
+
+# # ZDT
+
+# test_prob = testProblem(
+#     name="ZDT2",
+#     num_of_variables=30,
+#     num_of_objectives=2,
+#     num_of_constraints=0,
+#     upper_limits=1,
+#     lower_limits=0,
+# )
+#
+# training_data_input = np.random.rand(250, 30)
+# training_data_output = np.asarray(
+#     [test_prob.objectives(x) for x in training_data_input]
+# )
+>>>>>>> 3bc70e9a5d2ae6ef5c48a0ab4f484f18bd50c07b
 
 data = np.hstack((training_data_input, training_data_output))
 f1_training_data_output = training_data_output[:, 0]
@@ -52,22 +75,38 @@ problem.train(
     iterations=10,
 )
 
+<<<<<<< HEAD
 y = problem.models["f1"][0].predict(training_data_input)
 problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
 
 y2 = problem.models["f2"][0].predict(training_data_input)
 problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+=======
+# y = problem.models["f1"][0].predict(training_data_input)
+# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][0].predict(training_data_input)
+# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+>>>>>>> 3bc70e9a5d2ae6ef5c48a0ab4f484f18bd50c07b
 
 # problem.train(
 #     model_type="EvoNN",
 #     algorithm=PPGA
 # )
 #
+<<<<<<< HEAD
 # y = problem.models["f1"][0].predict(training_data_input)
 # problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
 #
 # y2 = problem.models["f2"][0].predict(training_data_input)
 # problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+=======
+# y = problem.models["f1"][2].predict(training_data_input)
+# problem.models["f1"][2].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+#
+# y2 = problem.models["f2"][2].predict(training_data_input)
+# problem.models["f2"][2].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+>>>>>>> 3bc70e9a5d2ae6ef5c48a0ab4f484f18bd50c07b
 
 
 # Multilayer perceptron
@@ -132,13 +171,21 @@ pop_ppga.evolve(
 
 pop_rvea.evolve(RVEA, iterations=10, generations_per_iteration=25)
 pop_ppga.plot_pareto(
+<<<<<<< HEAD
     name="Tests/"
+=======
+    filename="Tests/"
+>>>>>>> 3bc70e9a5d2ae6ef5c48a0ab4f484f18bd50c07b
     + problem.models["f1"][0].__class__.__name__
     + "_ppga_"
     + test_prob.name
 )
 pop_rvea.plot_pareto(
+<<<<<<< HEAD
     name="Tests/"
+=======
+    filename="Tests/"
+>>>>>>> 3bc70e9a5d2ae6ef5c48a0ab4f484f18bd50c07b
     + problem.models["f1"][0].__class__.__name__
     + "_rvea_"
     + test_prob.name
