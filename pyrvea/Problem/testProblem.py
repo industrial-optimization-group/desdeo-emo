@@ -1,6 +1,9 @@
 from optproblems import dtlz, zdt
 from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Problem.test_functions import OptTestFunctions
+import numpy as np
+import pandas as pd
+from pyDOE import lhs
 
 
 class testProblem(baseProblem):
@@ -85,6 +88,11 @@ class testProblem(baseProblem):
             self.obj_func = dtlz.DTLZ7(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
+        elif name == "Sphere":
+            self.obj_func = OptTestFunctions(name="Sphere")
+            self.num_of_objectives = 1
+            self.lower_limits = self.obj_func.lower_limits
+            self.upper_limits = self.obj_func.upper_limits
 
     def objectives(self, decision_variables) -> list:
         """Use this method to calculate objective functions.
@@ -102,3 +110,57 @@ class testProblem(baseProblem):
             objective_variables:
         """
         print("Error: Constraints not supported yet.")
+
+    def create_training_data(self, samples=150, method="random", seed=None):
+        """Create training data for test functions.
+
+        Parameters
+        ----------
+        samples : int
+            number of samples
+        method : str
+            method to use in data creation. Possible values random, lhs, linear.
+        seed : int
+            if a number is given, random data will be seeded
+        """
+
+        np.random.seed(seed)
+        training_data_input = None
+
+        if method == "random":
+
+            training_data_input = np.random.uniform(
+                self.lower_limits, self.upper_limits, (samples, self.num_of_variables)
+            )
+
+        elif method == "lhs":
+
+            training_data_input = lhs(self.num_of_variables, samples) * (
+                abs(self.upper_limits) + abs(self.lower_limits)
+            ) - abs(self.upper_limits)
+
+        elif method == "linear":
+
+            training_data_input = np.linspace(
+                self.lower_limits, self.upper_limits, samples
+            )
+
+        training_data_output = np.asarray(
+            [self.objectives(x) for x in training_data_input]
+        )
+        if self.num_of_objectives == 1:
+            training_data_output = training_data_output[:, None]
+        # Convert numpy array into pandas dataframe, and make columns for it
+        data = np.hstack((training_data_input, training_data_output))
+        dataset = pd.DataFrame.from_records(data)
+        x = []
+        y = []
+        for var in range(training_data_input.shape[1]):
+            x.append("x" + str(var + 1))
+        for obj in range(training_data_output.shape[1]):
+            y.append("f" + str(obj + 1))
+        dataset.columns = x + y
+
+        np.random.seed(None)
+
+        return dataset, x, y

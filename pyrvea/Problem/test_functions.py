@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from pyDOE import lhs
 from pyrvea.Problem.baseProblem import baseProblem
 
@@ -66,6 +67,9 @@ class OptTestFunctions(baseProblem):
         if self.name in self.test_f_limits.keys():
             self.lower_limits = self.test_f_limits[self.name][0]
             self.upper_limits = self.test_f_limits[self.name][1]
+
+    def __call__(self, x):
+        return self.objectives(x)
 
     def objectives(self, decision_variables) -> list:
         """Use this method to calculate objective functions.
@@ -247,7 +251,7 @@ class OptTestFunctions(baseProblem):
 
         elif method == "linear":
 
-            np.linspace(
+            training_data_input = np.linspace(
                 (self.lower_limits, self.lower_limits),
                 (self.upper_limits, self.upper_limits),
                 samples,
@@ -255,7 +259,7 @@ class OptTestFunctions(baseProblem):
 
         elif method == "linear+zeros":
 
-            np.linspace(
+            training_data_input = np.linspace(
                 (self.lower_limits, self.lower_limits),
                 (self.upper_limits, self.upper_limits),
                 samples,
@@ -283,6 +287,17 @@ class OptTestFunctions(baseProblem):
             [self.objectives(x) for x in training_data_input]
         )
 
+        # Convert numpy array into pandas dataframe, and make columns for it
+        data = np.hstack((training_data_input, training_data_output))
+        dataset = pd.DataFrame.from_records(data)
+        x = []
+        y = []
+        for var in range(training_data_input.shape[1]):
+            x.append("x" + str(var + 1))
+        for obj in range(training_data_output.shape[1]):
+            y.append("f" + str(obj + 1))
+        dataset.columns = x + y
+
         np.random.seed(None)
 
-        return training_data_input, training_data_output
+        return dataset, x, y

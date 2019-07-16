@@ -120,7 +120,7 @@ class EvoDN2(baseProblem):
     def optimize_layer(self, activated_layer):
         """ Apply the linear function to the final output layer
         and calculate the training error.
-.
+
         Parameters
         ----------
         activated_layer : ndarray
@@ -152,6 +152,7 @@ class EvoDN2(baseProblem):
 
     def select(self, pop, non_dom_front, selection="min_error"):
         """ Select target model from the population.
+
         Parameters
         ----------
         pop : obj
@@ -161,9 +162,14 @@ class EvoDN2(baseProblem):
         selection : str
             The selection to use for selecting the model.
             Possible values: 'min_error', 'manual'
+
         Returns
         -------
-        The selected model
+        model:
+            The selected model.
+        fitness:
+            The model's fitness values.
+
         """
         model = None
         fitness = None
@@ -293,6 +299,7 @@ class EvoDN2Model(EvoDN2):
         plotting=False,
     ):
         """ Set parameters for EvoDN2 model.
+
         Parameters
         ----------
         name : str
@@ -333,6 +340,7 @@ class EvoDN2Model(EvoDN2):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
+
         """
         params = {
             "name": name,
