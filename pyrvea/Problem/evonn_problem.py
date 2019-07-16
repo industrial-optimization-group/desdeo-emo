@@ -2,7 +2,6 @@ from pyrvea.Problem.baseProblem import baseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
-from math import ceil
 from scipy.special import expit
 import numpy as np
 import plotly
@@ -27,7 +26,7 @@ class EvoNN(baseProblem):
     params : dict
         Parameters for model training.
     num_samples : int
-        The number of data points, or samples, used.
+        The number of data points, or samples.
     num_of_objectives : int
         The number of objectives.
 
@@ -418,7 +417,7 @@ class EvoNNModel(EvoNN):
             self,
             assign_type="EvoNN",
             pop_size=self.params["pop_size"],
-            plotting=False,
+            plotting=self.params["plotting"],
             recombination_type=self.params["recombination_type"],
             crossover_type=self.params["crossover_type"],
             mutation_type=self.params["mutation_type"],
@@ -465,11 +464,16 @@ class EvoNNModel(EvoNN):
         return y
 
     def plot(self, prediction, target, name=None):
-        """Creates and shows a plot for the model.
+        """Creates and shows a plot for the model's prediction.
 
         Parameters
         ----------
-        The model to create the plot for.
+        prediction : ndarray
+            The prediction of the model.
+        target : ndarray
+            The target values.
+        name : str
+            Filename to save the plot as.
         """
 
         if name is None:
@@ -480,8 +484,8 @@ class EvoNNModel(EvoNN):
         data = [trace0, trace1]
         plotly.offline.plot(
             data,
-            filename="my-tests/"
-            + self.params['algorithm'].__name__
+            filename="Tests/"
+            + self.params["algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"
@@ -492,20 +496,29 @@ class EvoNNModel(EvoNN):
             auto_open=True,
         )
 
-    def create_logfile(self):
-        """Create a log file containing the parameters for training the model and the GA.
+    def create_logfile(self, name=None):
+        """Create a log file containing the parameters for training the model and the EA.
+
+        Parameters
+        ----------
+        name : str
+            Filename to save the log as.
 
         Returns
         -------
-        An external log file
+        log_file : file
+            An external log file.
         """
+
+        if name is None:
+            name = self.name
 
         # Save params to log file
         log_file = open(
-            "my-tests/"
+            "Tests/"
             + self.params["algorithm"].__name__
             + self.__class__.__name__
-            + self.name
+            + name
             + "_var"
             + str(self.num_of_variables)
             + "_nodes"
@@ -513,6 +526,7 @@ class EvoNNModel(EvoNN):
             + ".log",
             "a",
         )
+
         print(
             "samples: "
             + str(self.num_samples)
@@ -536,7 +550,16 @@ class EvoNNModel(EvoNN):
         return log_file
 
     def single_variable_response(self, ploton=False, log=None):
-        """Get the model's response to a single variable."""
+        """Get the model's response to a single variable.
+
+        Parameters
+        ----------
+        ploton : bool
+            Create and show plot on/off.
+        log : file
+            Write the results in a log file.
+
+        """
 
         trend = np.loadtxt("trend")
         avg = np.ones((1, self.non_linear_layer[1:].shape[0])) * (0 + 1) / 2
