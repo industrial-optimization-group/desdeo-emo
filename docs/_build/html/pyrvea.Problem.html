@@ -85,7 +85,6 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="pyrvea.html">pyrvea package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="pyrvea.html#subpackages">Subpackages</a><ul class="current">
@@ -94,12 +93,12 @@
 <li class="toctree-l3"><a class="reference internal" href="pyrvea.Population.html">pyrvea.Population package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">pyrvea.Problem package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyrvea-problem-baseproblem-module">pyrvea.Problem.baseProblem module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.baseproblem">pyrvea.Problem.baseproblem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.dataproblem">pyrvea.Problem.dataproblem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.evodn2_problem">pyrvea.Problem.evodn2_problem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.evonn_problem">pyrvea.Problem.evonn_problem module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyrvea-problem-testproblem-module">pyrvea.Problem.testProblem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.test_functions">pyrvea.Problem.test_functions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem.testproblem">pyrvea.Problem.testproblem module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Problem">Module contents</a></li>
 </ul>
 </li>
@@ -181,15 +180,53 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="pyrvea-problem-baseproblem-module">
-<h2>pyrvea.Problem.baseProblem module<a class="headerlink" href="#pyrvea-problem-baseproblem-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pyrvea.Problem.baseproblem">
+<span id="pyrvea-problem-baseproblem-module"></span><h2>pyrvea.Problem.baseproblem module<a class="headerlink" href="#module-pyrvea.Problem.baseproblem" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyrvea.Problem.baseproblem.BaseProblem">
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.baseproblem.</code><code class="sig-name descname">BaseProblem</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">num_of_variables=None</em>, <em class="sig-param">num_of_objectives=None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">upper_limits=1</em>, <em class="sig-param">lower_limits=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.baseproblem.BaseProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for the problems.</p>
+<dl class="method">
+<dt id="pyrvea.Problem.baseproblem.BaseProblem.objectives">
+<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.baseproblem.BaseProblem.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accept a sample. Return Objective values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.baseproblem.BaseProblem.constraints">
+<code class="sig-name descname">constraints</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em>, <em class="sig-param">objective_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.baseproblem.BaseProblem.constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accept a sample and/or corresponding objective values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decision_variables</strong> – </p></li>
+<li><p><strong>objective_variables</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.baseproblem.BaseProblem.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.baseproblem.BaseProblem.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the problem based on new information.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-pyrvea.Problem.dataproblem">
 <span id="pyrvea-problem-dataproblem-module"></span><h2>pyrvea.Problem.dataproblem module<a class="headerlink" href="#module-pyrvea.Problem.dataproblem" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrvea.Problem.dataproblem.DataProblem">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.dataproblem.</code><code class="sig-name descname">DataProblem</code><span class="sig-paren">(</span><em class="sig-param">data: pandas.core.frame.DataFrame = None</em>, <em class="sig-param">x: List[str] = None</em>, <em class="sig-param">y: List[str] = None</em>, <em class="sig-param">minimize: List[bool] = None</em>, <em class="sig-param">ideal: List[float] = None</em>, <em class="sig-param">nadir: List[float] = None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">lower_limits: List[float] = None</em>, <em class="sig-param">upper_limits: List[float] = None</em>, <em class="sig-param">name='data_problem'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
 <dl class="method">
 <dt id="pyrvea.Problem.dataproblem.DataProblem.data_scaling">
 <code class="sig-name descname">data_scaling</code><span class="sig-paren">(</span><em class="sig-param">data_decision</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.data_scaling" title="Permalink to this definition">¶</a></dt>
@@ -198,6 +235,41 @@
 <dl class="method">
 <dt id="pyrvea.Problem.dataproblem.DataProblem.data_uniform_mapping">
 <code class="sig-name descname">data_uniform_mapping</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.data_uniform_mapping" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.outlier_removal">
+<code class="sig-name descname">outlier_removal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.outlier_removal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.train_test_split">
+<code class="sig-name descname">train_test_split</code><span class="sig-paren">(</span><em class="sig-param">train_size: float = 0.8</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.train_test_split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">model_type: str = None</em>, <em class="sig-param">objectives: str = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.train" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.transform_new_data">
+<code class="sig-name descname">transform_new_data</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.transform_new_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.surrogates_predict">
+<code class="sig-name descname">surrogates_predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.surrogates_predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.testing_score">
+<code class="sig-name descname">testing_score</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.testing_score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.dataproblem.DataProblem.retrain_surrogate">
+<code class="sig-name descname">retrain_surrogate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.retrain_surrogate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -217,41 +289,6 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.outlier_removal">
-<code class="sig-name descname">outlier_removal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.outlier_removal" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.retrain_surrogate">
-<code class="sig-name descname">retrain_surrogate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.retrain_surrogate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.surrogates_predict">
-<code class="sig-name descname">surrogates_predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.surrogates_predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.testing_score">
-<code class="sig-name descname">testing_score</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.testing_score" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.train">
-<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">model_type: str = None</em>, <em class="sig-param">objectives: str = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.train" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.train_test_split">
-<code class="sig-name descname">train_test_split</code><span class="sig-paren">(</span><em class="sig-param">train_size: float = 0.8</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.train_test_split" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.dataproblem.DataProblem.transform_new_data">
-<code class="sig-name descname">transform_new_data</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.dataproblem.DataProblem.transform_new_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </div>
@@ -260,7 +297,7 @@
 <dl class="class">
 <dt id="pyrvea.Problem.evodn2_problem.EvoDN2">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.evodn2_problem.</code><code class="sig-name descname">EvoDN2</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">X_train=None</em>, <em class="sig-param">y_train=None</em>, <em class="sig-param">num_of_objectives=2</em>, <em class="sig-param">num_samples=None</em>, <em class="sig-param">subsets=None</em>, <em class="sig-param">params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
 <p>Creates Deep Neural Networks (DNN) for the EvoDN2 algorithm.</p>
 <p>DNNs have a fixed number of subnets, each of which has a random number of
 layers, and a random number of nodes in each layer, dependant on max layers
@@ -283,9 +320,21 @@ and max nodes set by user.</p>
 A new Deep Neural Network algorithm employed in the study of mechanical properties of
 micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indian Institute of Technology, 2019.</p>
 <dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2.activate">
-<em class="property">static </em><code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2.activate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2.objectives">
+<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to calculate objective functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – Variables from the neural network</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj_func</strong> – The objective function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.Problem.evodn2_problem.EvoDN2.activation">
@@ -300,23 +349,6 @@ micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indi
 <li><p><strong>complexity</strong> (<em>float</em>) – The complexity of the neural network</p></li>
 </ul>
 </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2.objectives">
-<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2.objectives" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use this method to calculate objective functions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – Variables from the neural network</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>obj_func</strong> – The objective function</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -364,6 +396,11 @@ Possible values: ‘min_error’, ‘manual’</p></li>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2.activate">
+<em class="property">static </em><code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2.activate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -385,73 +422,6 @@ Possible values: ‘min_error’, ‘manual’</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.create_logfile">
-<code class="sig-name descname">create_logfile</code><span class="sig-paren">(</span><em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.create_logfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a log file containing the parameters for training the model and the EA.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>log_file</strong> – An external log file.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.fit">
-<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">training_data</em>, <em class="sig-param">target_values</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit data in EvoDN2 model, divide input variables for each subnet randomly,
-and train the model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>training_data</strong> (<em>ndarray</em><em>, </em><em>shape =</em><em> (</em><em>numbers of samples</em><em>, </em><em>number of variables</em><em>)</em>) – Training data</p></li>
-<li><p><strong>target_values</strong> (<em>ndarray</em>) – Target values</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>returns an instance of self.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">prediction</em>, <em class="sig-param">target</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates and shows a plot for the model’s prediction.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>prediction</strong> (<em>ndarray</em>) – The prediction of the model.</p></li>
-<li><p><strong>target</strong> (<em>ndarray</em>) – The target values.</p></li>
-<li><p><strong>name</strong> (<em>str</em>) – Filename to save the plot as.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predict using the EvoDN2 model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – The decision variables used for prediction.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>y</strong> – The prediction of the model.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="method">
 <dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params">
 <code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoDN2_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_subnets=4</em>, <em class="sig-param">max_layers=8</em>, <em class="sig-param">max_nodes=10</em>, <em class="sig-param">prob_omit=0.2</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='min_error'</em>, <em class="sig-param">crossover_type=None</em>, <em class="sig-param">mutation_type=None</em>, <em class="sig-param">recombination_type='evodn2_gaussian'</em>, <em class="sig-param">iterations=10</em>, <em class="sig-param">generations_per_iteration=10</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params" title="Permalink to this definition">¶</a></dt>
@@ -486,6 +456,79 @@ Total number of generations = iterations * generations_per_iteration</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">training_data</em>, <em class="sig-param">target_values</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit data in EvoDN2 model, divide input variables for each subnet randomly,
+and train the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_data</strong> (<em>ndarray</em><em>, </em><em>shape =</em><em> (</em><em>numbers of samples</em><em>, </em><em>number of variables</em><em>)</em>) – Training data</p></li>
+<li><p><strong>target_values</strong> (<em>ndarray</em>) – Target values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>self</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>returns an instance of self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random population, evolve it and select a model based on selection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using the EvoDN2 model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – The decision variables used for prediction.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – The prediction of the model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">prediction</em>, <em class="sig-param">target</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and shows a plot for the model’s prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prediction</strong> (<em>ndarray</em>) – The prediction of the model.</p></li>
+<li><p><strong>target</strong> (<em>ndarray</em>) – The target values.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Filename to save the plot as.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.create_logfile">
+<code class="sig-name descname">create_logfile</code><span class="sig-paren">(</span><em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.create_logfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a log file containing the parameters for training the model and the EA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>log_file</strong> – An external log file.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.single_variable_response">
 <code class="sig-name descname">single_variable_response</code><span class="sig-paren">(</span><em class="sig-param">ploton=False</em>, <em class="sig-param">log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.single_variable_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the model’s response to a single variable.</p>
@@ -499,12 +542,6 @@ Total number of generations = iterations * generations_per_iteration</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.train">
-<code class="sig-name descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a random population, evolve it and select a model based on selection.</p>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -513,7 +550,7 @@ Total number of generations = iterations * generations_per_iteration</p></li>
 <dl class="class">
 <dt id="pyrvea.Problem.evonn_problem.EvoNN">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.evonn_problem.</code><code class="sig-name descname">EvoNN</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">X_train=None</em>, <em class="sig-param">y_train=None</em>, <em class="sig-param">num_of_objectives=2</em>, <em class="sig-param">params=None</em>, <em class="sig-param">num_samples=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
 <p>Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.</p>
 <p>These models contain only one hidden node layer. The lower part of the network
 is optimized by a genetic algorithm, and the upper part is optimized by Linear Least Square
@@ -536,9 +573,21 @@ J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engine
 [2] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
 net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
 <dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNN.activate">
-<em class="property">static </em><code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.activate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="pyrvea.Problem.evonn_problem.EvoNN.objectives">
+<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to calculate objective functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – Variables from the neural network</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>obj_func</strong> – The objective function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.Problem.evonn_problem.EvoNN.activation">
@@ -555,38 +604,6 @@ Also get complexity for the lower part of the network.</p>
 <li><p><strong>complexity</strong> (<em>int</em>) – The model’s complexity</p></li>
 </ul>
 </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNN.information_criterion">
-<code class="sig-name descname">information_criterion</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.information_criterion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the information criterion.</p>
-<p>Currently supports Akaike and corrected Akaike Information Criterion.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Corrected Akaike Information criterion</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNN.objectives">
-<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.objectives" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use this method to calculate objective functions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – Variables from the neural network</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>obj_func</strong> – The objective function</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -613,6 +630,21 @@ and calculate the training error.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNN.information_criterion">
+<code class="sig-name descname">information_criterion</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.information_criterion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the information criterion.</p>
+<p>Currently supports Akaike and corrected Akaike Information Criterion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Corrected Akaike Information criterion</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.Problem.evonn_problem.EvoNN.select">
 <code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">pop</em>, <em class="sig-param">non_dom_front</em>, <em class="sig-param">selection='min_error'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select target model from the population.</p>
@@ -633,6 +665,11 @@ Possible values: ‘min_error’, ‘akaike_corrected’, ‘manual’</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNN.activate">
+<em class="property">static </em><code class="sig-name descname">activate</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNN.activate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -713,75 +750,6 @@ Possible values: ‘min_error’, ‘akaike_corrected’, ‘manual’</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.create_logfile">
-<code class="sig-name descname">create_logfile</code><span class="sig-paren">(</span><em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.create_logfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a log file containing the parameters for training the model and the EA.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Filename to save the log as.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>log_file</strong> – An external log file.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.fit">
-<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">training_data</em>, <em class="sig-param">target_values</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit data in EvoNN model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>training_data</strong> (<em>ndarray</em><em>, </em><em>shape =</em><em> (</em><em>numbers of samples</em><em>, </em><em>number of variables</em><em>)</em>) – Training data</p></li>
-<li><p><strong>target_values</strong> (<em>ndarray</em>) – Target values</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>returns an instance of self.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">prediction</em>, <em class="sig-param">target</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates and shows a plot for the model’s prediction.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>prediction</strong> (<em>ndarray</em>) – The prediction of the model.</p></li>
-<li><p><strong>target</strong> (<em>ndarray</em>) – The target values.</p></li>
-<li><p><strong>name</strong> (<em>str</em>) – Filename to save the plot as.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predict using the EvoNN model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – The decision variables used for prediction.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>y</strong> – The prediction of the model.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="pyrvea.Problem.evonn_problem.EvoNNModel.set_params">
 <code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoNN_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_nodes=20</em>, <em class="sig-param">prob_omit=0.2</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='akaike_corrected'</em>, <em class="sig-param">recombination_type='evonn_nodeswap_gaussian'</em>, <em class="sig-param">crossover_type='evonn_xover_nodeswap'</em>, <em class="sig-param">mutation_type='evonn_mut_gaussian'</em>, <em class="sig-param">iterations=10</em>, <em class="sig-param">generations_per_iteration=10</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set parameters for the EvoNN model.</p>
@@ -813,6 +781,81 @@ Total number of generations = iterations * generations_per_iteration</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">training_data</em>, <em class="sig-param">target_values</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit data in EvoNN model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_data</strong> (<em>ndarray</em><em>, </em><em>shape =</em><em> (</em><em>numbers of samples</em><em>, </em><em>number of variables</em><em>)</em>) – Training data</p></li>
+<li><p><strong>target_values</strong> (<em>ndarray</em>) – Target values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>self</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>returns an instance of self.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the networks and selects the best model from the non dominated front.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using the EvoNN model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> (<em>ndarray</em>) – The decision variables used for prediction.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – The prediction of the model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">prediction</em>, <em class="sig-param">target</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and shows a plot for the model’s prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prediction</strong> (<em>ndarray</em>) – The prediction of the model.</p></li>
+<li><p><strong>target</strong> (<em>ndarray</em>) – The target values.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Filename to save the plot as.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.create_logfile">
+<code class="sig-name descname">create_logfile</code><span class="sig-paren">(</span><em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.create_logfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a log file containing the parameters for training the model and the EA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Filename to save the log as.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>log_file</strong> – An external log file.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.Problem.evonn_problem.EvoNNModel.single_variable_response">
 <code class="sig-name descname">single_variable_response</code><span class="sig-paren">(</span><em class="sig-param">ploton=False</em>, <em class="sig-param">log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.single_variable_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the model’s response to a single variable.</p>
@@ -826,24 +869,15 @@ Total number of generations = iterations * generations_per_iteration</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyrvea.Problem.evonn_problem.EvoNNModel.train">
-<code class="sig-name descname">train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains the networks and selects the best model from the non dominated front.</p>
 </dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="pyrvea-problem-testproblem-module">
-<h2>pyrvea.Problem.testProblem module<a class="headerlink" href="#pyrvea-problem-testproblem-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-pyrvea.Problem.test_functions">
 <span id="pyrvea-problem-test-functions-module"></span><h2>pyrvea.Problem.test_functions module<a class="headerlink" href="#module-pyrvea.Problem.test_functions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrvea.Problem.test_functions.OptTestFunctions">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.test_functions.</code><code class="sig-name descname">OptTestFunctions</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">num_of_variables=2</em>, <em class="sig-param">num_of_objectives=None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">upper_limits=1</em>, <em class="sig-param">lower_limits=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.test_functions.OptTestFunctions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
 <p>Test functions for single/multi-objective problems to test
 the performance of evolutionary algorithms.</p>
 <p>See: <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">https://en.wikipedia.org/wiki/Test_functions_for_optimization</a></p>
@@ -864,6 +898,23 @@ the performance of evolutionary algorithms.</p>
 </dl>
 </div></blockquote>
 <dl class="method">
+<dt id="pyrvea.Problem.test_functions.OptTestFunctions.objectives">
+<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.test_functions.OptTestFunctions.objectives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this method to calculate objective functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>decision_variables</strong> (<em>np.ndarray</em>) – The decision variables.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>The objective functions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.Problem.test_functions.OptTestFunctions.create_training_data">
 <code class="sig-name descname">create_training_data</code><span class="sig-paren">(</span><em class="sig-param">samples=150</em>, <em class="sig-param">method='random'</em>, <em class="sig-param">seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.test_functions.OptTestFunctions.create_training_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create training data for test functions.</p>
@@ -878,19 +929,74 @@ the performance of evolutionary algorithms.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyrvea.Problem.testproblem">
+<span id="pyrvea-problem-testproblem-module"></span><h2>pyrvea.Problem.testproblem module<a class="headerlink" href="#module-pyrvea.Problem.testproblem" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyrvea.Problem.testproblem.TestProblem">
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.testproblem.</code><code class="sig-name descname">TestProblem</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">num_of_variables=None</em>, <em class="sig-param">num_of_objectives=None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">upper_limits=1</em>, <em class="sig-param">lower_limits=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
+<p>Test functions for single/multi-objective problems to test
+the performance of evolutionary algorithms.</p>
+<p>See: <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">https://en.wikipedia.org/wiki/Test_functions_for_optimization</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the test function.</p></li>
+<li><p><strong>num_of_variables</strong> (<em>int</em>) – Number of decision variables.</p></li>
+<li><p><strong>num_of_objectives</strong> (<em>int</em>) – Number of objectives.</p></li>
+<li><p><strong>num_of_constraints</strong> (<em>int</em>) – Number of constraints.</p></li>
+<li><p><strong>upper_limits</strong> (<em>float</em>) – Upper boundaries for test data.</p></li>
+<li><p><strong>lower_limits</strong> (<em>float</em>) – Lower boundaries for test data.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="method">
-<dt id="pyrvea.Problem.test_functions.OptTestFunctions.objectives">
-<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.test_functions.OptTestFunctions.objectives" title="Permalink to this definition">¶</a></dt>
+<dt id="pyrvea.Problem.testproblem.TestProblem.objectives">
+<code class="sig-name descname">objectives</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem.objectives" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use this method to calculate objective functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>decision_variables</strong> (<em>np.ndarray</em>) – The decision variables.</p>
+<dd class="field-odd"><p><strong>decision_variables</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.testproblem.TestProblem.constraints">
+<code class="sig-name descname">constraints</code><span class="sig-paren">(</span><em class="sig-param">decision_variables</em>, <em class="sig-param">objective_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem.constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate constraint violation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decision_variables</strong> – </p></li>
+<li><p><strong>objective_variables</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Problem.testproblem.TestProblem.create_training_data">
+<code class="sig-name descname">create_training_data</code><span class="sig-paren">(</span><em class="sig-param">samples=150</em>, <em class="sig-param">method='random'</em>, <em class="sig-param">seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem.create_training_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create training data for test functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samples</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method to use in data creation. Possible values random, lhs, linear.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – If a number is given, random data will be seeded.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>The objective functions.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>dataset</strong> (<em>Training data in a Pandas DataFrame, including all variables and objectives.</em>)</p></li>
+<li><p><strong>x</strong> (<em>List of variables</em>)</p></li>
+<li><p><strong>y</strong> (<em>List of objectives</em>)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

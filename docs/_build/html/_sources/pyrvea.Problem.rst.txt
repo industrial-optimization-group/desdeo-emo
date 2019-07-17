@@ -4,10 +4,10 @@ pyrvea.Problem package
 Submodules
 ----------
 
-pyrvea.Problem.baseProblem module
+pyrvea.Problem.baseproblem module
 ---------------------------------
 
-.. automodule:: pyrvea.Problem.baseProblem
+.. automodule:: pyrvea.Problem.baseproblem
    :members:
    :undoc-members:
    :show-inheritance:
@@ -36,18 +36,18 @@ pyrvea.Problem.evonn\_problem module
    :undoc-members:
    :show-inheritance:
 
-pyrvea.Problem.testProblem module
----------------------------------
-
-.. automodule:: pyrvea.Problem.testProblem
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pyrvea.Problem.test\_functions module
 -------------------------------------
 
 .. automodule:: pyrvea.Problem.test_functions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyrvea.Problem.testproblem module
+---------------------------------
+
+.. automodule:: pyrvea.Problem.testproblem
    :members:
    :undoc-members:
    :show-inheritance:

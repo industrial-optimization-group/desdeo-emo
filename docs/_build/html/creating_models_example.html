@@ -34,7 +34,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyrvea package" href="pyrvea.html" />
+    <link rel="prev" title="Welcome to pyrvea’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,8 +84,8 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyrvea.html">pyrvea package</a></li>
 </ul>
 
@@ -170,24 +172,13 @@
 <span class="c1"># f1 = x ** 2</span>
 <span class="c1"># f2 = (x - 2) ** 2</span>
 <span class="n">test_prob</span> <span class="o">=</span> <span class="n">OptTestFunctions</span><span class="p">(</span><span class="s2">&quot;SchafferN1&quot;</span><span class="p">,</span> <span class="n">num_of_variables</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">training_data_input</span><span class="p">,</span> <span class="n">training_data_output</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span>
-    <span class="n">samples</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;random&quot;</span>
-<span class="p">)</span>
 
-<span class="c1"># Convert numpy array to pandas dataframe</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">training_data_input</span><span class="p">,</span> <span class="n">training_data_output</span><span class="p">))</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-<span class="c1"># Set column names: x = variables, y = objectives. These are gotten automatically if importing .csv</span>
-<span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_data_input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-    <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">,</span> <span class="s2">&quot;f2&quot;</span><span class="p">]</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="c1"># Random data for training.</span>
+<span class="c1"># x = list of variable names, y = list of objectives</span>
+<span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>After you have the data, create the DataProblem class and pass the data, variables and objectives.
-x is a list of variable names, y is a list of objectives. The columns in the dataset should match these.</p>
+<p>After you have the data, create the DataProblem class and pass the data, variables and objectives.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span> <span class="o">=</span> <span class="n">DataProblem</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -195,7 +186,13 @@ x is a list of variable names, y is a list of objectives. The columns in the dat
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">train_size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Train the models.</p>
+<p>Set parameters for the Evolutionary Algorithm (as a dict). Check
+ea_parameters = {
+“target_pop_size”: 50,
+“generations_per_iteration”: 10,
+“iterations”: 10,
+}
+Train the models.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;EvoNN&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">PPGA</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">generations_per_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -217,6 +214,15 @@ Training parameters can currently be passed as kwargs. For available parameters,
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyrvea.html" class="btn btn-neutral float-right" title="pyrvea package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to pyrvea’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

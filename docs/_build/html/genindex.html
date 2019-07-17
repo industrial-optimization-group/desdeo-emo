@@ -84,7 +84,6 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyrvea.html">pyrvea package</a></li>
 </ul>
@@ -230,6 +229,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.baseEA.BaseEA">BaseEA (class in pyrvea.EAs.baseEA)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.baseproblem.BaseProblem">BaseProblem (class in pyrvea.Problem.baseproblem)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -240,20 +241,26 @@
 </li>
       <li><a href="pyrvea.Selection.html#pyrvea.Selection.NSGAIII_select.calc_perpendicular_distance">calc_perpendicular_distance() (in module pyrvea.Selection.NSGAIII_select)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.baseproblem.BaseProblem.constraints">constraints() (pyrvea.Problem.baseproblem.BaseProblem method)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.testproblem.TestProblem.constraints">(pyrvea.Problem.testproblem.TestProblem method)</a>
+</li>
+      </ul></li>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution">continue_evolution() (pyrvea.EAs.baseEA.BaseDecompositionEA method)</a>
 
       <ul>
         <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.PPGA.continue_evolution">(pyrvea.EAs.PPGA.PPGA method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration">continue_iteration() (pyrvea.EAs.baseEA.BaseDecompositionEA method)</a>
 
       <ul>
         <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.PPGA.continue_iteration">(pyrvea.EAs.PPGA.PPGA method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.create_logfile">create_logfile() (pyrvea.Problem.evodn2_problem.EvoDN2Model method)</a>
 
       <ul>
@@ -263,7 +270,11 @@
       <li><a href="pyrvea.Population.html#pyrvea.Population.create_individuals.create_new_individuals">create_new_individuals() (in module pyrvea.Population.create_individuals)</a>
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.test_functions.OptTestFunctions.create_training_data">create_training_data() (pyrvea.Problem.test_functions.OptTestFunctions method)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.testproblem.TestProblem.create_training_data">(pyrvea.Problem.testproblem.TestProblem method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -474,14 +485,18 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.dataproblem.DataProblem.objectives">objectives() (pyrvea.Problem.dataproblem.DataProblem method)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.baseproblem.BaseProblem.objectives">objectives() (pyrvea.Problem.baseproblem.BaseProblem method)</a>
 
       <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.dataproblem.DataProblem.objectives">(pyrvea.Problem.dataproblem.DataProblem method)</a>
+</li>
         <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2.objectives">(pyrvea.Problem.evodn2_problem.EvoDN2 method)</a>
 </li>
         <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNN.objectives">(pyrvea.Problem.evonn_problem.EvoNN method)</a>
 </li>
         <li><a href="pyrvea.Problem.html#pyrvea.Problem.test_functions.OptTestFunctions.objectives">(pyrvea.Problem.test_functions.OptTestFunctions method)</a>
+</li>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.testproblem.TestProblem.objectives">(pyrvea.Problem.testproblem.TestProblem method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -554,10 +569,10 @@
 </li>
       <li><a href="pyrvea.OtherTools.html#module-pyrvea.OtherTools.IsNotebook">pyrvea.OtherTools.IsNotebook (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.OtherTools.html#module-pyrvea.OtherTools.newRV">pyrvea.OtherTools.newRV (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.OtherTools.html#module-pyrvea.OtherTools.plotlyanimate">pyrvea.OtherTools.plotlyanimate (module)</a>
 </li>
       <li><a href="pyrvea.OtherTools.html#module-pyrvea.OtherTools.ReferenceVectors">pyrvea.OtherTools.ReferenceVectors (module)</a>
@@ -572,6 +587,8 @@
 </li>
       <li><a href="pyrvea.Problem.html#module-pyrvea.Problem">pyrvea.Problem (module)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.baseproblem">pyrvea.Problem.baseproblem (module)</a>
+</li>
       <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.dataproblem">pyrvea.Problem.dataproblem (module)</a>
 </li>
       <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.evodn2_problem">pyrvea.Problem.evodn2_problem (module)</a>
@@ -579,6 +596,8 @@
       <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.evonn_problem">pyrvea.Problem.evonn_problem (module)</a>
 </li>
       <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.test_functions">pyrvea.Problem.test_functions (module)</a>
+</li>
+      <li><a href="pyrvea.Problem.html#module-pyrvea.Problem.testproblem">pyrvea.Problem.testproblem (module)</a>
 </li>
       <li><a href="pyrvea.Recombination.html#module-pyrvea.Recombination">pyrvea.Recombination (module)</a>
 </li>
@@ -712,6 +731,8 @@
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.dataproblem.DataProblem.testing_score">testing_score() (pyrvea.Problem.dataproblem.DataProblem method)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.testproblem.TestProblem">TestProblem (class in pyrvea.Problem.testproblem)</a>
+</li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.dataproblem.DataProblem.train">train() (pyrvea.Problem.dataproblem.DataProblem method)</a>
 
       <ul>
@@ -734,10 +755,12 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyrvea.Population.html#pyrvea.Population.Population.Population.update_ideal_and_nadir">update_ideal_and_nadir() (pyrvea.Population.Population.Population method)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.baseproblem.BaseProblem.update">update() (pyrvea.Problem.baseproblem.BaseProblem method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyrvea.Population.html#pyrvea.Population.Population.Population.update_ideal_and_nadir">update_ideal_and_nadir() (pyrvea.Population.Population.Population method)</a>
+</li>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.Lattice.update_lattice">update_lattice() (pyrvea.EAs.PPGA.Lattice method)</a>
 </li>
   </ul></td>

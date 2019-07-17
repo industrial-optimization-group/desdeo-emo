@@ -85,7 +85,6 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="pyrvea.html">pyrvea package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="pyrvea.html#subpackages">Subpackages</a><ul class="current">
@@ -189,6 +188,12 @@
 <p>Python Implementation of NSGA-III. Based on the pymoo package.</p>
 <p>[description]</p>
 <dl class="method">
+<dt id="pyrvea.EAs.NSGAIII.NSGAIII.set_params">
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">population_size: int = None</em>, <em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">interact: bool = False</em>, <em class="sig-param">a_priori_preference: bool = False</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the parameters. Save in self.params</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.EAs.NSGAIII.NSGAIII.select">
 <code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe a selection mechanism. Return indices of selected
@@ -207,17 +212,127 @@ information.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyrvea.EAs.NSGAIII.NSGAIII.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">population_size: int = None</em>, <em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">interact: bool = False</em>, <em class="sig-param">a_priori_preference: bool = False</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up the parameters. Save in self.params</p>
-</dd></dl>
-
 </dd></dl>
 
 </div>
 <div class="section" id="module-pyrvea.EAs.PPGA">
 <span id="pyrvea-eas-ppga-module"></span><h2>pyrvea.EAs.PPGA module<a class="headerlink" href="#module-pyrvea.EAs.PPGA" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyrvea.EAs.PPGA.PPGA">
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.PPGA.</code><code class="sig-name descname">PPGA</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">ea_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Predatory-Prey genetic algorithm.</p>
+<p>A population of prey signify the various models or solutions to the problem at hand.
+Weaker prey, i.e. bad models or solutions, are killed by predators.
+The predators and prey are placed in a lattice, in which they are free to roam.</p>
+<p>In each generation, each predator gets a certain number of turns to move about and hunt
+in its neighbourhood, killing the weaker prey, according to a fitness criteria. After this, each
+prey gets a certain number of moves to pursue a random walk and to reproduce with
+other prey. Each reproduction step generates two new prey from two parents, by
+crossing over their attributes and adding random mutations. After each prey has
+completed its move, the whole process starts again.</p>
+<p>As the weaker individuals get eliminated in each generation, the population as a whole becomes more fit,
+i.e. the individuals get closer to the true pareto-optimal solutions.</p>
+<p>If you have any questions about the code, please contact:</p>
+<p>Bhupinder Saini: <a class="reference external" href="mailto:bhupinder&#46;s&#46;saini&#37;&#52;&#48;jyu&#46;fi">bhupinder<span>&#46;</span>s<span>&#46;</span>saini<span>&#64;</span>jyu<span>&#46;</span>fi</a>
+Project researcher at University of Jyväskylä.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> (<em>object</em>) – The population object</p></li>
+<li><p><strong>ea_parameters</strong> (<em>dict</em>) – PPGA specific parameters</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+that code as a basis.
+See references [4] for the study during which the original MATLAB version was created.
+Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.</p>
+<p>For the MATLAB implementation, see:
+N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
+and Materials Domain. In Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to
+Materials Design: Theoretical and Practical Aspects, pp. 346-369, 2016.</p>
+<p class="rubric">References</p>
+<p>[1] Laumanns, Marco, Günter Rudolph, and Hans-Paul Schwefel. “A spatial predator-
+prey approach to multi-objective optimization: A preliminary study.” International
+Conference on Parallel Problem Solving from Nature. Springer, Berlin, Heidelberg, 1998.</p>
+<p>[2] Li X. (2003) A Real-Coded Predator-Prey Genetic Algorithm for Multiobjective Optimization.
+In: Fonseca C.M., Fleming P.J., Zitzler E., Thiele L., Deb K. (eds) Evolutionary Multi-Criterion Optimization.
+EMO 2003. Lecture Notes in Computer Science, vol 2632. Springer, Berlin, Heidelberg</p>
+<p>[3] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
+J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.</p>
+<p>[4] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
+net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.PPGA.set_params">
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">target_pop_size: int = 100</em>, <em class="sig-param">predator_pop_size: int = 50</em>, <em class="sig-param">generations_per_iteration: int = 10</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">logging: list = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval: int = 7</em>, <em class="sig-param">max_rank: int = 20</em>, <em class="sig-param">prob_crossover: float = 0.8</em>, <em class="sig-param">prob_mutation: float = 0.3</em>, <em class="sig-param">mut_strength: float = 0.7</em>, <em class="sig-param">prob_prey_move: float = 0.3</em>, <em class="sig-param">neighbourhood_radius: int = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population object.</p></li>
+<li><p><strong>target_pop_size</strong> (<em>int</em>) – Target population size.</p></li>
+<li><p><strong>predator_pop_size</strong> (<em>int</em>) – Predator population size.</p></li>
+<li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
+<li><p><strong>iterations</strong> (<em>int</em>) – Total number of iterations.</p></li>
+<li><p><strong>logging</strong> (<em>bool</em>) – If true, append parameters to a logfile.</p></li>
+<li><p><strong>logfile</strong> (<em>file</em>) – External log file.</p></li>
+<li><p><strong>opt</strong> (<em>bool</em>) – Whether to use PPGA for training or optimizing. False=training, True=optimizing.</p></li>
+<li><p><strong>kill_interval</strong> (<em>int</em>) – Kill all individuals worse than max_rank in the population every interval generation.</p></li>
+<li><p><strong>max_rank</strong> (<em>int</em>) – Individuals &lt; max_rank will be preserved after kill_interval.</p></li>
+<li><p><strong>prob_crossover</strong> (<em>float</em>) – Probability of crossover occurring.</p></li>
+<li><p><strong>prob_mutation</strong> (<em>float</em>) – Probability of mutation occurring.</p></li>
+<li><p><strong>mut_strength</strong> (<em>float</em>) – Strength of the mutation.</p></li>
+<li><p><strong>prob_prey_move</strong> (<em>float</em>) – Prey move in the lattice based on this probability.</p></li>
+<li><p><strong>neighbourhood_radius</strong> (<em>int</em>) – Radius of neighbourhood, or range of vision for predators.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameters for the algorithm.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.PPGA.select">
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">max_rank=20</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Of the population, individuals lower than max_rank are selected.
+Return indices of selected individuals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Contains the current population and problem
+information.</p></li>
+<li><p><strong>max_rank</strong> (<em>int</em>) – Select only individuals lower than max_rank</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of indices of individuals to be selected.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.PPGA.continue_iteration">
+<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the current iteration should be continued or not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.PPGA.continue_evolution">
+<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_evolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the current iteration should be continued or not.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="pyrvea.EAs.PPGA.Lattice">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.PPGA.</code><code class="sig-name descname">Lattice</code><span class="sig-paren">(</span><em class="sig-param">size_x</em>, <em class="sig-param">size_y</em>, <em class="sig-param">params</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice" title="Permalink to this definition">¶</a></dt>
@@ -314,16 +429,34 @@ and place them in the lattice randomly.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx">
-<em class="property">static </em><code class="sig-name descname">lattice_wrap_idx</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">lattice_shape</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns periodic lattice index
-for a given iterable index.</p>
+<dt id="pyrvea.EAs.PPGA.Lattice.move_prey">
+<code class="sig-name descname">move_prey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_prey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an empty position in prey neighbourhood for the prey to move in,
+and choose a mate for breeding if any available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>mating_pop</strong> – List of parent indices to use for mating</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.Lattice.place_offspring">
+<code class="sig-name descname">place_offspring</code><span class="sig-paren">(</span><em class="sig-param">offspring</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.place_offspring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to place the offsprings to the lattice. If no empty spot found within
+number of max attempts, do not place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>index</strong> (<em>tuple</em>) – one integer for each axis</p></li>
-<li><p><strong>lattice_shape</strong> (<em>tuple</em>) – the shape of the lattice to index to</p></li>
-</ul>
+<dd class="field-odd"><p><strong>offspring</strong> (<em>int</em>) – number of offsprings</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Successfully placed offspring indices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -337,16 +470,27 @@ Repeat until &gt; predator_max_moves.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyrvea.EAs.PPGA.Lattice.move_prey">
-<code class="sig-name descname">move_prey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_prey" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find an empty position in prey neighbourhood for the prey to move in,
-and choose a mate for breeding if any available.</p>
+<dt id="pyrvea.EAs.PPGA.Lattice.update_lattice">
+<code class="sig-name descname">update_lattice</code><span class="sig-paren">(</span><em class="sig-param">selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.update_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update prey positions in the lattice.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>mating_pop</strong> – List of parent indices to use for mating</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>selected</strong> (<em>list</em>) – Indices of preys to be removed from the lattice.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx">
+<em class="property">static </em><code class="sig-name descname">lattice_wrap_idx</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">lattice_shape</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns periodic lattice index
+for a given iterable index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<em>tuple</em>) – one integer for each axis</p></li>
+<li><p><strong>lattice_shape</strong> (<em>tuple</em>) – the shape of the lattice to index to</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -373,151 +517,6 @@ and choose a mate for breeding if any available.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.Lattice.place_offspring">
-<code class="sig-name descname">place_offspring</code><span class="sig-paren">(</span><em class="sig-param">offspring</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.place_offspring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Try to place the offsprings to the lattice. If no empty spot found within
-number of max attempts, do not place.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>offspring</strong> (<em>int</em>) – number of offsprings</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Successfully placed offspring indices.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.Lattice.update_lattice">
-<code class="sig-name descname">update_lattice</code><span class="sig-paren">(</span><em class="sig-param">selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.update_lattice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update prey positions in the lattice.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>selected</strong> (<em>list</em>) – Indices of preys to be removed from the lattice.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyrvea.EAs.PPGA.PPGA">
-<em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.PPGA.</code><code class="sig-name descname">PPGA</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">ea_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Predatory-Prey genetic algorithm.</p>
-<p>A population of prey signify the various models or solutions to the problem at hand.
-Weaker prey, i.e. bad models or solutions, are killed by predators.
-The predators and prey are placed in a lattice, in which they are free to roam.</p>
-<p>In each generation, each predator gets a certain number of turns to move about and hunt
-in its neighbourhood, killing the weaker prey, according to a fitness criteria. After this, each
-prey gets a certain number of moves to pursue a random walk and to reproduce with
-other prey. Each reproduction step generates two new prey from two parents, by
-crossing over their attributes and adding random mutations. After each prey has
-completed its move, the whole process starts again.</p>
-<p>As the weaker individuals get eliminated in each generation, the population as a whole becomes more fit,
-i.e. the individuals get closer to the true pareto-optimal solutions.</p>
-<p>If you have any questions about the code, please contact:</p>
-<p>Bhupinder Saini: <a class="reference external" href="mailto:bhupinder&#46;s&#46;saini&#37;&#52;&#48;jyu&#46;fi">bhupinder<span>&#46;</span>s<span>&#46;</span>saini<span>&#64;</span>jyu<span>&#46;</span>fi</a>
-Project researcher at University of Jyväskylä.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> (<em>object</em>) – The population object</p></li>
-<li><p><strong>ea_parameters</strong> (<em>dict</em>) – PPGA specific parameters</p></li>
-</ul>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>The algorithm has been created earlier in MATLAB, and this Python implementation has been using
-that code as a basis.
-See references [4] for the study during which the original MATLAB version was created.
-Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.</p>
-<p>For the MATLAB implementation, see:
-N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
-and Materials Domain. In Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to
-Materials Design: Theoretical and Practical Aspects, pp. 346-369, 2016.</p>
-<p class="rubric">References</p>
-<p>[1] Laumanns, Marco, Günter Rudolph, and Hans-Paul Schwefel. “A spatial predator-
-prey approach to multi-objective optimization: A preliminary study.” International
-Conference on Parallel Problem Solving from Nature. Springer, Berlin, Heidelberg, 1998.</p>
-<p>[2] Li X. (2003) A Real-Coded Predator-Prey Genetic Algorithm for Multiobjective Optimization.
-In: Fonseca C.M., Fleming P.J., Zitzler E., Thiele L., Deb K. (eds) Evolutionary Multi-Criterion Optimization.
-EMO 2003. Lecture Notes in Computer Science, vol 2632. Springer, Berlin, Heidelberg</p>
-<p>[3] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
-J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.</p>
-<p>[4] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
-net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.PPGA.continue_evolution">
-<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_evolution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether the current iteration should be continued or not.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.PPGA.continue_iteration">
-<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_iteration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether the current iteration should be continued or not.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.PPGA.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">max_rank=20</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.select" title="Permalink to this definition">¶</a></dt>
-<dd><p>Of the population, individuals lower than max_rank are selected.
-Return indices of selected individuals.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Contains the current population and problem
-information.</p></li>
-<li><p><strong>max_rank</strong> (<em>int</em>) – Select only individuals lower than max_rank</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of indices of individuals to be selected.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.EAs.PPGA.PPGA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">target_pop_size: int = 100</em>, <em class="sig-param">predator_pop_size: int = 50</em>, <em class="sig-param">generations_per_iteration: int = 10</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">logging: list = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval: int = 7</em>, <em class="sig-param">max_rank: int = 20</em>, <em class="sig-param">prob_crossover: float = 0.8</em>, <em class="sig-param">prob_mutation: float = 0.3</em>, <em class="sig-param">mut_strength: float = 0.7</em>, <em class="sig-param">prob_prey_move: float = 0.3</em>, <em class="sig-param">neighbourhood_radius: int = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up the parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population object.</p></li>
-<li><p><strong>target_pop_size</strong> (<em>int</em>) – Target population size.</p></li>
-<li><p><strong>predator_pop_size</strong> (<em>int</em>) – Predator population size.</p></li>
-<li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
-<li><p><strong>iterations</strong> (<em>int</em>) – Total number of iterations.</p></li>
-<li><p><strong>logging</strong> (<em>bool</em>) – If true, append parameters to a logfile.</p></li>
-<li><p><strong>logfile</strong> (<em>file</em>) – External log file.</p></li>
-<li><p><strong>opt</strong> (<em>bool</em>) – Whether to use PPGA for training or optimizing. False=training, True=optimizing.</p></li>
-<li><p><strong>kill_interval</strong> (<em>int</em>) – Kill all individuals worse than max_rank in the population every interval generation.</p></li>
-<li><p><strong>max_rank</strong> (<em>int</em>) – Individuals &lt; max_rank will be preserved after kill_interval.</p></li>
-<li><p><strong>prob_crossover</strong> (<em>float</em>) – Probability of crossover occurring.</p></li>
-<li><p><strong>prob_mutation</strong> (<em>float</em>) – Probability of mutation occurring.</p></li>
-<li><p><strong>mut_strength</strong> (<em>float</em>) – Strength of the mutation.</p></li>
-<li><p><strong>prob_prey_move</strong> (<em>float</em>) – Prey move in the lattice based on this probability.</p></li>
-<li><p><strong>neighbourhood_radius</strong> (<em>int</em>) – Radius of neighbourhood, or range of vision for predators.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Parameters for the algorithm.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -536,28 +535,6 @@ Evolutionary Computation, 2016</p>
 <p>If you have any questions about the code, please contact:</p>
 <p>Bhupinder Saini: <a class="reference external" href="mailto:bhupinder&#46;s&#46;saini&#37;&#52;&#48;jyu&#46;fi">bhupinder<span>&#46;</span>s<span>&#46;</span>saini<span>&#64;</span>jyu<span>&#46;</span>fi</a></p>
 <p>Project researcher at University of Jyväskylä.</p>
-<dl class="method">
-<dt id="pyrvea.EAs.RVEA.RVEA.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.select" title="Permalink to this definition">¶</a></dt>
-<dd><p>Describe a selection mechanism. Return indices of selected
-individuals.</p>
-<p># APD Based selection. # This is different from the paper. #
-params.genetations != total number of generations. This is a compromise.
-Also this APD uses an archived ideal point, rather than current, potentially
-worse ideal point.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population information</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list: Indices of selected individuals.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="method">
 <dt id="pyrvea.EAs.RVEA.RVEA.set_params">
 <code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">population_size: int = None</em>, <em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">interact: bool = False</em>, <em class="sig-param">a_priori_preference: bool = False</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">Alpha: float = 2</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="Permalink to this definition">¶</a></dt>
@@ -580,29 +557,52 @@ changed to align with the current structure.</p>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="pyrvea.EAs.RVEA.RVEA.select">
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describe a selection mechanism. Return indices of selected
+individuals.</p>
+<p># APD Based selection. # This is different from the paper. #
+params.genetations != total number of generations. This is a compromise.
+Also this APD uses an archived ideal point, rather than current, potentially
+worse ideal point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population information</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list: Indices of selected individuals.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
 <div class="section" id="module-pyrvea.EAs.baseEA">
 <span id="pyrvea-eas-baseea-module"></span><h2>pyrvea.EAs.baseEA module<a class="headerlink" href="#module-pyrvea.EAs.baseEA" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
+<dt id="pyrvea.EAs.baseEA.BaseEA">
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.baseEA.</code><code class="sig-name descname">BaseEA</code><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class provides the basic structure for Evolutionary algorithms.</p>
+<dl class="method">
+<dt id="pyrvea.EAs.baseEA.BaseEA.set_params">
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the parameters. Save in self.params</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pyrvea.EAs.baseEA.BaseDecompositionEA">
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.baseEA.</code><code class="sig-name descname">BaseDecompositionEA</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">ea_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.EAs.baseEA.BaseEA" title="pyrvea.EAs.baseEA.BaseEA"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.EAs.baseEA.BaseEA</span></code></a></p>
 <p>This class provides the basic structure for decomposition based
 Evolutionary algorithms, such as RVEA or NSGA-III.</p>
-<dl class="method">
-<dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution">
-<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether the current iteration should be continued or not.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration">
-<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether the current iteration should be continued or not.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.select">
 <code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.select" title="Permalink to this definition">¶</a></dt>
@@ -622,17 +622,16 @@ information.</p>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration">
+<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="pyrvea.EAs.baseEA.BaseEA">
-<em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.baseEA.</code><code class="sig-name descname">BaseEA</code><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This class provides the basic structure for Evolutionary algorithms.</p>
 <dl class="method">
-<dt id="pyrvea.EAs.baseEA.BaseEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA.set_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up the parameters. Save in self.params</p>
+<dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution">
+<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
 </dd></dl>

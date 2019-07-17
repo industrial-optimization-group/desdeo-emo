@@ -85,7 +85,6 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="pyrvea.html">pyrvea package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="pyrvea.html#subpackages">Subpackages</a><ul class="current">
@@ -207,6 +206,18 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="pyrvea.Population.Population.Population.evaluate_individual">
+<code class="sig-name descname">evaluate_individual</code><span class="sig-paren">(</span><em class="sig-param">ind: numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.evaluate_individual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate individual.</p>
+<p>Returns objective values, constraint violation, and fitness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ind</strong> (<em>np.ndarray</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyrvea.Population.Population.Population.delete_or_keep">
 <code class="sig-name descname">delete_or_keep</code><span class="sig-paren">(</span><em class="sig-param">indices</em>, <em class="sig-param">delete_or_keep='delete'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.delete_or_keep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove from population individuals which are in indices, or
@@ -217,24 +228,6 @@ keep them and remove all others.</p>
 <li><p><strong>indices</strong> (<em>list</em><em> or </em><em>ndarray</em>) – Indices of individuals to keep</p></li>
 <li><p><strong>delete_or_keep</strong> (<em>str</em>) – Whether to delete indices from current population, or keep them and delete others</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Population.Population.Population.eval_fitness">
-<code class="sig-name descname">eval_fitness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.eval_fitness" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate fitness based on objective values. Fitness = obj if minimized.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyrvea.Population.Population.Population.evaluate_individual">
-<code class="sig-name descname">evaluate_individual</code><span class="sig-paren">(</span><em class="sig-param">ind: numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.evaluate_individual" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate individual.</p>
-<p>Returns objective values, constraint violation, and fitness.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ind</strong> (<em>np.ndarray</em>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -255,26 +248,15 @@ keep them and remove all others.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyrvea.Population.Population.Population.hypervolume">
-<code class="sig-name descname">hypervolume</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.hypervolume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate hypervolume. Uses package pygmo. Add checks to prevent errors.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ref_point</strong> – </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="pyrvea.Population.Population.Population.mate">
 <code class="sig-name descname">mate</code><span class="sig-paren">(</span><em class="sig-param">mating_pop=None</em>, <em class="sig-param">params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.mate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conduct crossover and mutation over the population.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyrvea.Population.Population.Population.non_dominated">
-<code class="sig-name descname">non_dominated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.non_dominated" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fix this. check if nd2 and nds mean the same thing</p>
+<dt id="pyrvea.Population.Population.Population.eval_fitness">
+<code class="sig-name descname">eval_fitness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.eval_fitness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate fitness based on objective values. Fitness = obj if minimized.</p>
 </dd></dl>
 
 <dl class="method">
@@ -306,6 +288,23 @@ keep them and remove all others.</p>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Population.Population.Population.hypervolume">
+<code class="sig-name descname">hypervolume</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.hypervolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate hypervolume. Uses package pygmo. Add checks to prevent errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ref_point</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.Population.Population.Population.non_dominated">
+<code class="sig-name descname">non_dominated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Population.Population.Population.non_dominated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fix this. check if nd2 and nds mean the same thing</p>
 </dd></dl>
 
 <dl class="method">
