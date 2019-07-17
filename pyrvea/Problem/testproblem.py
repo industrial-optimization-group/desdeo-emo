@@ -4,6 +4,7 @@ from pyrvea.Problem.test_functions import OptTestFunctions
 import numpy as np
 import pandas as pd
 from pyDOE import lhs
+from sklearn.preprocessing import minmax_scale
 
 
 class TestProblem(BaseProblem):
@@ -34,8 +35,8 @@ class TestProblem(BaseProblem):
         num_of_variables=None,
         num_of_objectives=None,
         num_of_constraints=0,
-        upper_limits=1,
-        lower_limits=0,
+        upper_limits=1.0,
+        lower_limits=0.0,
     ):
 
         super(TestProblem, self).__init__(
@@ -148,9 +149,13 @@ class TestProblem(BaseProblem):
 
         elif method == "lhs":
 
-            training_data_input = lhs(self.num_of_variables, samples) * (
-                abs(self.upper_limits) + abs(self.lower_limits)
-            ) - abs(self.upper_limits)
+            training_data_input = lhs(self.num_of_variables, samples)
+            training_data_input = np.round(
+                minmax_scale(
+                    training_data_input, (self.lower_limits, self.upper_limits)
+                ),
+                decimals=5,
+            )
 
         elif method == "linear":
 

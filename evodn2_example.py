@@ -1,4 +1,3 @@
-from pyrvea.Problem.test_functions import OptTestFunctions
 from pyrvea.Problem.dataproblem import DataProblem
 from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Population.Population import Population
@@ -11,18 +10,17 @@ import pandas as pd
 import plotly
 import plotly.graph_objs as go
 
-test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2, num_of_objectives=2)
+test_prob = TestProblem(name="ZDT1", num_of_variables=30)
 
 dataset, x, y = test_prob.create_training_data(samples=500, method="lhs")
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
-ea_parameters = {
-    "target_pop_size": 50,
-    "generations_per_iteration": 10,
-    "iterations": 10,
-}
-problem.train(model_type="EvoNN", algorithm=PPGA, ea_parameters=ea_parameters)
+
+
+ea_params = {"target_pop_size": 100, "generations_per_iteration": 10, "iterations": 10}
+
+problem.train(model_type="EvoDN2", algorithm=PPGA, ea_parameters=ea_params)
 
 y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
 problem.models["f1"][0].plot(

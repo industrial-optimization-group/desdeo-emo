@@ -293,8 +293,6 @@ class EvoDN2Model(EvoDN2):
         crossover_type=None,
         mutation_type=None,
         recombination_type="evodn2_gaussian",
-        iterations=10,
-        generations_per_iteration=10,
         logging=False,
         plotting=False,
         ea_parameters=None
@@ -332,11 +330,6 @@ class EvoDN2Model(EvoDN2):
         recombination_type, crossover_type, mutation_type : str
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
-        iterations : int
-            Number of iterations for training.
-        generations_per_iteration : int
-            Number of generations per iteration.
-            Total number of generations = iterations * generations_per_iteration
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -362,8 +355,6 @@ class EvoDN2Model(EvoDN2):
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
             "recombination_type": recombination_type,
-            "iterations": iterations,
-            "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
             "ea_parameters": ea_parameters
