@@ -51,6 +51,20 @@ problem.train(model_type="EvoNN", algorithm=PPGA, num_nodes=25, ea_parameters=ea
 ```
 EvoNN and EvoDN2 models can currently be trained with available algorithms in [pyRVEA/EAs](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html). For explanations of the different EAs, see their respective [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html).
 
+The model's prediction vs. target values can be plotted as follows:
+```
+# Prediction for f1
+f1_y_pred = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
+problem.models["f1"][0].plot(
+    f1_y_pred, np.asarray(problem.data["f1"]), name=test_prob.name + "f1"
+)
+# Prediction for f2
+f2_y_pred = problem.models["f2"][0].predict(np.asarray(problem.data[problem.x]))
+problem.models["f2"][0].plot(
+    f2_y_pred, np.asarray(problem.data["f2"]), name=test_prob.name + "f2"
+)
+```
+
 After the models have been trained, the test problem can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.
 
 ```
