@@ -10,18 +10,18 @@ The basic workflow is as follows:
 First, create the test problem:
 ```python
 import numpy as np
-import pandas as pd
-from pyrvea.Problem.test_functions import OptTestFunctions
+from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Problem.dataproblem import DataProblem
 
-# OptTestFunctions contains a number of testing functions.
+# TestProblem class contains a number of testing functions
 # Schaffer function N.1, -100 <= x <= 100
 # Minimize:
 # f1 = x ** 2
 # f2 = (x - 2) ** 2
-test_prob = OptTestFunctions("SchafferN1", num_of_variables=1)
 
-# Random data for training.
+test_prob = TestProblem(name="SchafferN1")
+
+# Random data for training
 # x = list of variable names, y = list of objectives
 dataset, x, y = test_prob.create_training_data(samples=500, method="random")
 
@@ -34,25 +34,31 @@ Split data into training and testing set:
 ```
 problem.train_test_split(train_size=0.7)
 ```
-Set parameters for the Evolutionary Algorithm (as a dict). Check 
-ea_parameters = {
-    "target_pop_size": 50,
+Select the Evolutionary Algorithm you want to use and set the parameters (or use defaults). Check [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details.
+```
+ea_params = {
+    "target_pop_size": 100,
     "generations_per_iteration": 10,
     "iterations": 10,
 }
-Train the models.
+```
+Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params) and [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params).
 
 ```
-problem.train(model_type="EvoNN", algorithm=PPGA, num_nodes=25, generations_per_iteration=10, iterations=10)
-```
-EvoNN and EvoDN2 models can currently be trained with Predator-Prey (PPGA) or reference vector guided evolutionary algorithms (RVEA). For explanations of the different EAs, see their respective class documentation at pyRVEA/EAs.
-Training parameters can currently be passed as kwargs. For available parameters, see pyrvea.Problem.evonn_problem.EvoNNModel class documentation (a separate documentation page will come later). If no parameters are passed, defaults are used.
+from pyrvea.EAs.PPGA import PPGA
 
-After the models have been trained, the test function can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve (PPGA or RVEA can be used for optimization):
+problem.train(model_type="EvoNN", algorithm=PPGA, num_nodes=25, ea_parameters=ea_params)
+```
+EvoNN and EvoDN2 models can currently be trained with available algorithms in [pyRVEA/EAs](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html). For explanations of the different EAs, see their respective [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html).
+
+After the models have been trained, the test problem can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.
 
 ```
+from pyrvea.EAs.RVEA import RVEA
+
 pop = Population(problem)
-pop.evolve(RVEA)
+opt_params = {"iterations": 10, "generations_per_iteration": 25}
+pop.evolve(EA=RVEA, ea_parameters=opt_params)
 ```
 To show the final pareto plot:
 ```
