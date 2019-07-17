@@ -75,16 +75,18 @@ class PPGA:
         population: "Population",
         target_pop_size: int = 100,
         predator_pop_size: int = 50,
+        prey_max_moves: int = 10,
+        prob_prey_move: float = 0.3,
+        offspring_place_attempts: int = 10,
         generations_per_iteration: int = 10,
         iterations: int = 10,
-        logging: list = False,
+        logging: bool = False,
         logfile=None,
         kill_interval: int = 7,
         max_rank: int = 20,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7,
-        prob_prey_move: float = 0.3,
         neighbourhood_radius: int = 5
     ):
         """Set up the parameters.
@@ -97,6 +99,12 @@ class PPGA:
             Target population size.
         predator_pop_size : int
             Predator population size.
+        prey_max_moves : int
+            Number of turns the prey can try to move.
+        prob_prey_move: float
+            Prey move in the lattice based on this probability.
+        offspring_place_attempts : int
+            Number of tries to place to offspring to the lattice.
         generations_per_iteration : int
             Number of generations per iteration.
         iterations : int
@@ -105,8 +113,6 @@ class PPGA:
             If true, append parameters to a logfile.
         logfile : file
             External log file.
-        opt : bool
-            Whether to use PPGA for training or optimizing. False=training, True=optimizing.
         kill_interval : int
             Kill all individuals worse than max_rank in the population every interval generation.
         max_rank : int
@@ -117,8 +123,6 @@ class PPGA:
             Probability of mutation occurring.
         mut_strength : float
             Strength of the mutation.
-        prob_prey_move: float
-            Prey move in the lattice based on this probability.
         neighbourhood_radius : int
             Radius of neighbourhood, or range of vision for predators.
 
@@ -134,9 +138,9 @@ class PPGA:
             "population_size": population.pop_size,
             "target_pop_size": target_pop_size,
             "predator_pop_size": predator_pop_size,
-            "prey_max_moves": 10,
+            "prey_max_moves": prey_max_moves,
             "prob_prey_move": prob_prey_move,
-            "offspring_place_attempts": 10,
+            "offspring_place_attempts": offspring_place_attempts,
             "generations": generations_per_iteration,
             "iterations": iterations,
             "total_generations": iterations * generations_per_iteration,

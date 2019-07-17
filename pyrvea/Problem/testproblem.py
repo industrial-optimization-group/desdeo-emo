@@ -126,7 +126,7 @@ class TestProblem(BaseProblem):
         samples : int
             Number of samples.
         method : str
-            Method to use in data creation. Possible values random, lhs, linear.
+            Method to use in data creation. Possible values random, lhs (latin hypercube sampling), linear.
         seed : int
             If a number is given, random data will be seeded.
 
@@ -148,6 +148,7 @@ class TestProblem(BaseProblem):
             )
 
         elif method == "lhs":
+            # Latin Hypercube Sampling
 
             training_data_input = lhs(self.num_of_variables, samples)
             training_data_input = np.round(

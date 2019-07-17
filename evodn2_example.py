@@ -12,15 +12,14 @@ import plotly.graph_objs as go
 
 test_prob = TestProblem(name="ZDT1", num_of_variables=30)
 
-dataset, x, y = test_prob.create_training_data(samples=500, method="lhs")
+dataset, x, y = test_prob.create_training_data(samples=1000, method="lhs")
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
 
-
 ea_params = {"target_pop_size": 100, "generations_per_iteration": 10, "iterations": 10}
 
-problem.train(model_type="EvoDN2", algorithm=PPGA, ea_parameters=ea_params)
+problem.train(model_type="EvoDN2", algorithm=PPGA, prob_omit=0.3, ea_parameters=ea_params)
 
 y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
 problem.models["f1"][0].plot(
