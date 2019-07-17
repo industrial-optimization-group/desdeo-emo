@@ -4,7 +4,7 @@ Backup_results/
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.html
 
 # C extensions
 *.so
@@ -71,7 +71,9 @@ instance/
 .scrapy
 
 # Sphinx documentation
-# docs/_build/
+_build/
+_static/
+_templates/
 
 # PyBuilder
 target/
