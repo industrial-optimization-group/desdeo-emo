@@ -1,6 +1,6 @@
 from pyrvea.Problem.test_functions import OptTestFunctions
 from pyrvea.Problem.dataproblem import DataProblem
-from pyrvea.Problem.testProblem import testProblem
+from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
@@ -11,39 +11,28 @@ import pandas as pd
 import plotly
 import plotly.graph_objs as go
 
-
-# test_prob = OptTestFunctions("Sphere", num_of_variables=2)
-
-# test_prob = testProblem(
-#     name="ZDT1",
-#     num_of_variables=30,
-#     num_of_objectives=2,
-#     num_of_constraints=0,
-#     upper_limits=1,
-#     lower_limits=0,
-# )
-
-test_prob = testProblem(name="Sphere", num_of_variables=2)
+test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2, num_of_objectives=2)
 
 dataset, x, y = test_prob.create_training_data(
-    samples=500, method="random"
+    samples=500, method="lhs"
 )
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
-
+ea_params = {"target_pop_size": 50}
 problem.train(
-    model_type="EvoDN2",
+    model_type="EvoNN",
     algorithm=PPGA,
     generations_per_iteration=10,
     iterations=10,
+    ea_params=ea_params
 )
 
-y = problem.models["f1"][0].predict(training_data_input)
-problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
+y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
+problem.models["f1"][0].plot(y, np.asarray(problem.data["f1"]), name=test_prob.name + "f1")
 
-y2 = problem.models["f2"][0].predict(training_data_input)
-problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
+y2 = problem.models["f2"][0].predict(np.asarray(problem.data[problem.x]))
+problem.models["f2"][0].plot(y2, np.asarray(problem.data["f2"]), name=test_prob.name + "f2")
 
 # problem.train(
 #     model_type="EvoNN",

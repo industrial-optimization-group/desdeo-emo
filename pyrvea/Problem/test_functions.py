@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 from pyDOE import lhs
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 
 
-class OptTestFunctions(baseProblem):
+class OptTestFunctions(BaseProblem):
 
     """Test functions for single/multi-objective problems to test
     the performance of evolutionary algorithms.
@@ -56,8 +56,6 @@ class OptTestFunctions(baseProblem):
             "Goldstein-Price": (-2, 2),
             "LeviN13": (-10, 10),
             "SchafferN2": (-100, 100),
-            "min-ex_f1": (0, 1),
-            "min-ex_f2": (0, 5),
             "Coello_ex1": (0, 1),
             "Fonseca-Fleming": (-4, 4),
             "Kursawe": (-5, 5),
@@ -77,6 +75,11 @@ class OptTestFunctions(baseProblem):
         Parameters
         ----------
         decision_variables : np.ndarray
+            The decision variables.
+
+        Returns
+        -------
+        The objective functions.
 
         """
 
@@ -158,12 +161,6 @@ class OptTestFunctions(baseProblem):
             )
 
         # Test functions for multi-objective optimization
-
-        elif self.name == "min-ex":
-            x1 = decision_variables[0]
-            x2 = decision_variables[1]
-
-            self.obj_func = [x1, (1 + x2) / x1]
 
         elif self.name == "Coello_ex1":
             x = np.asarray(decision_variables[0])

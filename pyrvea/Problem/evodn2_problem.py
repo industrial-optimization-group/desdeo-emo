@@ -1,4 +1,4 @@
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from scipy.special import expit
@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import random
 
 
-class EvoDN2(baseProblem):
+class EvoDN2(BaseProblem):
     """Creates Deep Neural Networks (DNN) for the EvoDN2 algorithm.
 
     DNNs have a fixed number of subnets, each of which has a random number of

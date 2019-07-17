@@ -1,4 +1,4 @@
-class baseProblem:
+class BaseProblem:
     """Base class for the problems."""
 
     def __init__(
@@ -45,15 +45,16 @@ class baseProblem:
         """
         pass
 
-    def constraints(self, decision_variables):
+    def constraints(self, decision_variables, objective_variables):
         """Accept a sample and/or corresponding objective values.
 
         Parameters
         ----------
         decision_variables
+        objective_variables
         """
         pass
 
-    def update():
+    def update(self):
         """Update the problem based on new information."""
         pass

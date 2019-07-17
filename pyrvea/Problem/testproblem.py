@@ -1,12 +1,12 @@
 from optproblems import dtlz, zdt
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.Problem.test_functions import OptTestFunctions
 import numpy as np
 import pandas as pd
 from pyDOE import lhs
 
 
-class testProblem(baseProblem):
+class TestProblem(BaseProblem):
     """Defines the problem."""
 
     def __init__(
@@ -28,7 +28,7 @@ class testProblem(baseProblem):
             upper_limits:
             lower_limits:
         """
-        super(testProblem, self).__init__(
+        super(TestProblem, self).__init__(
             name,
             num_of_variables,
             num_of_objectives,
@@ -38,28 +38,23 @@ class testProblem(baseProblem):
         )
         if name == "ZDT1":
             self.obj_func = zdt.ZDT1()
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+
         elif name == "ZDT2":
             self.obj_func = zdt.ZDT2()
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+
         elif name == "ZDT3":
             self.obj_func = zdt.ZDT3()
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+
         elif name == "ZDT4":
             self.obj_func = zdt.ZDT4()
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
         elif name == "ZDT5":
             self.obj_func = zdt.ZDT5()
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+
         elif name == "ZDT6":
             self.obj_func = zdt.ZDT6()
-            self.lower_limits = self.obj_func.min_bounds
-            self.upper_limits = self.obj_func.max_bounds
+
         elif name == "DTLZ1":
             self.obj_func = dtlz.DTLZ1(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
@@ -88,9 +83,12 @@ class testProblem(baseProblem):
             self.obj_func = dtlz.DTLZ7(num_of_objectives, num_of_variables)
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
-        elif name == "Sphere":
-            self.obj_func = OptTestFunctions(name="Sphere")
-            self.num_of_objectives = 1
+        else:
+            self.obj_func = OptTestFunctions(
+                name=self.name,
+                num_of_objectives=self.num_of_objectives
+            )
+            self.num_of_variables = self.obj_func.num_of_variables
             self.lower_limits = self.obj_func.lower_limits
             self.upper_limits = self.obj_func.upper_limits
 
@@ -117,11 +115,11 @@ class testProblem(baseProblem):
         Parameters
         ----------
         samples : int
-            number of samples
+            Number of samples.
         method : str
-            method to use in data creation. Possible values random, lhs, linear.
+            Method to use in data creation. Possible values random, lhs, linear.
         seed : int
-            if a number is given, random data will be seeded
+            If a number is given, random data will be seeded.
         """
 
         np.random.seed(seed)
@@ -150,6 +148,7 @@ class testProblem(baseProblem):
         )
         if self.num_of_objectives == 1:
             training_data_output = training_data_output[:, None]
+
         # Convert numpy array into pandas dataframe, and make columns for it
         data = np.hstack((training_data_input, training_data_output))
         dataset = pd.DataFrame.from_records(data)

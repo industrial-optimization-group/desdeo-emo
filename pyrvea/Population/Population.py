@@ -29,7 +29,7 @@ from pyrvea.Recombination import (
 )
 
 if TYPE_CHECKING:
-    from pyrvea.Problem.baseProblem import baseProblem
+    from pyrvea.Problem.baseproblem import BaseProblem
     from pyrvea.EAs.baseEA import BaseEA
 
 
@@ -38,7 +38,7 @@ class Population:
 
     def __init__(
         self,
-        problem: "baseProblem",
+        problem: "BaseProblem",
         assign_type: str = "RandomDesign",
         plotting: bool = True,
         pop_size=None,
@@ -51,7 +51,7 @@ class Population:
 
         Attributes
         ----------
-        problem : baseProblem
+        problem : BaseProblem
             An object of the class Problem
         assign_type : str, optional
             Define the method of creation of population.

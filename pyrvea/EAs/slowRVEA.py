@@ -1,7 +1,7 @@
 from pyrvea.EAs.RVEA import RVEA
 from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 from typing import TYPE_CHECKING
-from pyrvea.Problem.testProblem import testProblem
+from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Population.create_individuals import create_new_individuals
 import numpy as np
 

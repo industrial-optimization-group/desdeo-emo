@@ -1,4 +1,4 @@
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.Population.Population import Population
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
@@ -8,7 +8,7 @@ import plotly
 import plotly.graph_objs as go
 
 
-class EvoNN(baseProblem):
+class EvoNN(BaseProblem):
     """Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.
 
     These models contain only one hidden node layer. The lower part of the network
@@ -317,6 +317,7 @@ class EvoNNModel(EvoNN):
         generations_per_iteration=10,
         logging=False,
         plotting=False,
+        ea_params=None
     ):
 
         """ Set parameters for the EvoNN model.
@@ -378,6 +379,7 @@ class EvoNNModel(EvoNN):
             "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
+            "ea_params": ea_params
         }
 
         self.name = name

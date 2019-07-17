@@ -85,6 +85,7 @@ class PPGA:
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7,
         prob_prey_move: float = 0.3,
+        neighbourhood_radius: int = 5
     ):
         """Set up the parameters.
 
@@ -118,6 +119,8 @@ class PPGA:
             Strength of the mutation.
         prob_prey_move: float
             Prey move in the lattice based on this probability.
+        neighbourhood_radius : int
+            Radius of neighbourhood, or range of vision for predators.
 
         Returns
         -------
@@ -147,6 +150,7 @@ class PPGA:
             "mut_strength": mut_strength,
             "kill_interval": kill_interval,
             "max_rank": max_rank,
+            "neighbourhood_radius": neighbourhood_radius
         }
 
         # If logging enabled, write params to file
@@ -453,7 +457,7 @@ class Lattice:
 
             for i in range(predator_max_moves):
 
-                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=5)
+                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=self.params["neighbourhood_radius"])
                 targets = neighbours[neighbours > 0]
 
                 # If preys found in the neighbourhood, calculate their fitness and kill the weakest
@@ -588,5 +592,6 @@ class Lattice:
         -------
         The neighbouring cells of x, y in radius n*n. Defaults to Moore neighbourhood (n=3).
         """
+
         arr = np.roll(np.roll(arr, shift=-x + 1, axis=0), shift=-y + 1, axis=1)
         return arr[:n, :n]

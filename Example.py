@@ -4,7 +4,7 @@ An example file demonstrating the use of pyrvea.
 Visit the github/binder page for further information.
 """
 from pyrvea.Population.Population import Population
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.RVEA import RVEA
 from pyrvea.EAs.slowRVEA import slowRVEA
@@ -12,7 +12,7 @@ from pyrvea.EAs.NSGAIII import NSGAIII
 from optproblems import dtlz
 
 
-class newProblem(baseProblem):
+class newProblem(BaseProblem):
     """New problem description."""
 
     def objectives(self, decision_variables):

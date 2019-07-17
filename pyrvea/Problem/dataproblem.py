@@ -6,7 +6,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split as tts
 import numpy as np
 from sklearn.metrics import r2_score
-from pyrvea.Problem.baseProblem import baseProblem
+from pyrvea.Problem.baseproblem import BaseProblem
 import pandas as pd
 from typing import List
 from pyrvea.EAs.PPGA import PPGA
@@ -15,7 +15,7 @@ from pyrvea.EAs.slowRVEA import slowRVEA
 from pyrvea.EAs.NSGAIII import NSGAIII
 
 
-class DataProblem(baseProblem):
+class DataProblem(BaseProblem):
     def __init__(
         self,
         data: pd.DataFrame = None,
@@ -118,8 +118,8 @@ class DataProblem(baseProblem):
                 print("Training run number", train_run, "of", len(self.train_indices))
                 model = model_type(**kwargs)
                 model.fit(
-                    np.array(self.data[self.x])[train_indices],
-                    np.array(self.data[obj])[train_indices],
+                    np.asarray(self.data[self.x])[train_indices],
+                    np.asarray(self.data[obj])[train_indices],
                 )
                 self.models[obj].append(model)
 
