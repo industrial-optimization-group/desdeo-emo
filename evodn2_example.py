@@ -13,26 +13,26 @@ import plotly.graph_objs as go
 
 test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2, num_of_objectives=2)
 
-dataset, x, y = test_prob.create_training_data(
-    samples=500, method="lhs"
-)
+dataset, x, y = test_prob.create_training_data(samples=500, method="lhs")
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
-ea_params = {"target_pop_size": 50}
-problem.train(
-    model_type="EvoNN",
-    algorithm=PPGA,
-    generations_per_iteration=10,
-    iterations=10,
-    ea_params=ea_params
-)
+ea_parameters = {
+    "target_pop_size": 50,
+    "generations_per_iteration": 10,
+    "iterations": 10,
+}
+problem.train(model_type="EvoNN", algorithm=PPGA, ea_parameters=ea_parameters)
 
 y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
-problem.models["f1"][0].plot(y, np.asarray(problem.data["f1"]), name=test_prob.name + "f1")
+problem.models["f1"][0].plot(
+    y, np.asarray(problem.data["f1"]), name=test_prob.name + "f1"
+)
 
 y2 = problem.models["f2"][0].predict(np.asarray(problem.data[problem.x]))
-problem.models["f2"][0].plot(y2, np.asarray(problem.data["f2"]), name=test_prob.name + "f2")
+problem.models["f2"][0].plot(
+    y2, np.asarray(problem.data["f2"]), name=test_prob.name + "f2"
+)
 
 # problem.train(
 #     model_type="EvoNN",
@@ -88,6 +88,24 @@ pop_ppga = Population(
     plotting=False,
 )
 
+ppga_params = {
+    "prob_prey_move": 0.5,
+    "prob_mutation": 0.1,
+    "target_pop_size": 100,
+    "kill_interval": 4,
+    "iterations": 10,
+    "generations_per_iteration": 10,
+}
+
+pop_ppga.evolve(PPGA, ea_parameters=ppga_params)
+
+pop_ppga.plot_pareto(
+    name="Tests/"
+    + problem.models["f1"][0].__class__.__name__
+    + "_ppga_"
+    + test_prob.name
+)
+
 pop_rvea = Population(
     problem,
     assign_type="LHSDesign",
@@ -96,23 +114,10 @@ pop_rvea = Population(
     plotting=False,
 )
 
-pop_ppga.evolve(
-    PPGA,
-    prob_prey_move=0.5,
-    prob_mutation=0.1,
-    target_pop_size=100,
-    kill_interval=4,
-    iterations=10,
-    generations_per_iteration=10,
-)
+rvea_params = {"iterations": 10, "generations_per_iteration": 25}
 
-pop_rvea.evolve(RVEA, iterations=10, generations_per_iteration=25)
-pop_ppga.plot_pareto(
-    name="Tests/"
-    + problem.models["f1"][0].__class__.__name__
-    + "_ppga_"
-    + test_prob.name
-)
+pop_rvea.evolve(RVEA, ea_parameters=rvea_params)
+
 pop_rvea.plot_pareto(
     name="Tests/"
     + problem.models["f1"][0].__class__.__name__

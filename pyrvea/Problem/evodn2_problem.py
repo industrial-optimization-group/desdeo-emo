@@ -297,6 +297,7 @@ class EvoDN2Model(EvoDN2):
         generations_per_iteration=10,
         logging=False,
         plotting=False,
+        ea_parameters=None
     ):
         """ Set parameters for EvoDN2 model.
 
@@ -340,6 +341,8 @@ class EvoDN2Model(EvoDN2):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
+        ea_parameters : dict
+            Contains the parameters needed by EA (Default value = None).
 
         """
         params = {
@@ -363,6 +366,7 @@ class EvoDN2Model(EvoDN2):
             "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
+            "ea_parameters": ea_parameters
         }
 
         self.name = name
@@ -426,11 +430,8 @@ class EvoDN2Model(EvoDN2):
             plotting=self.params["plotting"],
         )
         pop.evolve(
-            self.params["algorithm"],
-            logging=self.params["logging"],
-            logfile=self.log,
-            iterations=self.params["iterations"],
-            generations_per_iteration=self.params["generations_per_iteration"],
+            EA=self.params["algorithm"],
+            ea_parameters=self.params["ea_parameters"]
         )
 
         non_dom_front = pop.non_dominated()

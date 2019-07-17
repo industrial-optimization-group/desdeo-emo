@@ -65,7 +65,7 @@ class PPGA:
 
     """
 
-    def __init__(self, population: "Population", **ea_parameters):
+    def __init__(self, population: "Population", ea_parameters):
 
         self.params = self.set_params(population, **ea_parameters)
         self.lattice = Lattice(60, 60, self.params)

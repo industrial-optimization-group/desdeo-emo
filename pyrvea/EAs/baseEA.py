@@ -36,7 +36,7 @@ class BaseDecompositionEA(BaseEA):
     Evolutionary algorithms, such as RVEA or NSGA-III.
     """
 
-    def __init__(self, population: "Population", **ea_parameters):
+    def __init__(self, population: "Population", ea_parameters):
         """Initialize a Base Decomposition EA.
 
         This will call methods to set up the parameters of RVEA, create

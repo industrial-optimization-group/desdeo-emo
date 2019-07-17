@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class slowRVEA(RVEA):
     """RVEA variant that impliments slow reference vector movement."""
 
-    def __init__(self, population: "Population", **ea_parameters):
+    def __init__(self, population: "Population", ea_parameters):
         """Initialize a Base Decomposition EA.
 
         This will call methods to set up the parameters of RVEA, create

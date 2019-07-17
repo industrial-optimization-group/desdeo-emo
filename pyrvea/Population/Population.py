@@ -216,7 +216,7 @@ class Population:
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
 
-    def evolve(self, EA: "BaseEA" = None, **kwargs):
+    def evolve(self, EA: "BaseEA" = None, ea_parameters: dict = None):
         """Evolve the population with interruptions.
 
         Evolves the population based on the EA sent by the user.
@@ -225,8 +225,8 @@ class Population:
         ----------
         EA: "BaseEA"
             Should be a derivative of BaseEA (Default value = None)
-        **kwargs
-            Parameters passed to the EA
+        ea_parameters: dict
+            Contains the parameters needed by EA (Default value = None)
 
         """
         ##################################
@@ -239,7 +239,7 @@ class Population:
             progressbar = tqdm
         ####################################
         # A basic evolution cycle. Will be updated to optimize() in future versions.
-        ea = EA(self, **kwargs)
+        ea = EA(self, ea_parameters)
         iterations = ea.params["iterations"]
 
         if self.plotting:

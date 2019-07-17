@@ -317,7 +317,7 @@ class EvoNNModel(EvoNN):
         generations_per_iteration=10,
         logging=False,
         plotting=False,
-        ea_params=None
+        ea_parameters=None
     ):
 
         """ Set parameters for the EvoNN model.
@@ -358,6 +358,8 @@ class EvoNNModel(EvoNN):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
+        ea_parameters : dict
+            Contains the parameters needed by EA (Default value = None).
         """
 
         params = {
@@ -379,7 +381,7 @@ class EvoNNModel(EvoNN):
             "generations_per_iteration": generations_per_iteration,
             "logging": logging,
             "plotting": plotting,
-            "ea_params": ea_params
+            "ea_parameters": ea_parameters
         }
 
         self.name = name
@@ -431,10 +433,8 @@ class EvoNNModel(EvoNN):
         )
         pop.evolve(
             EA=self.params["algorithm"],
-            logging=self.params["logging"],
-            logfile=self.log,
-            iterations=self.params["iterations"],
-            generations_per_iteration=self.params["generations_per_iteration"],
+            ea_parameters=self.params["ea_parameters"]
+
         )
 
         non_dom_front = pop.non_dominated()
