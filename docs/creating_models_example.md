@@ -23,7 +23,7 @@ test_prob = TestProblem(name="SchafferN1")
 
 # Random data for training
 # x = list of variable names, y = list of objectives
-dataset, x, y = test_prob.create_training_data(samples=500, method="random")
+dataset, x, y = test_prob.create_training_data(samples=500, method="lhs")
 
 ```
 After you have the data, create the DataProblem class and pass the data, variables and objectives.
@@ -37,6 +37,8 @@ problem.train_test_split(train_size=0.7)
 Select the Evolutionary Algorithm you want to use and set the parameters (or use defaults). Check [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details.
 
 Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params) and [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params).
+
+Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is strongly encouraged.
 
 ```
 from pyrvea.EAs.PPGA import PPGA
