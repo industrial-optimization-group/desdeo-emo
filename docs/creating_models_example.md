@@ -20,23 +20,13 @@ from pyrvea.Problem.dataproblem import DataProblem
 # f1 = x ** 2
 # f2 = (x - 2) ** 2
 test_prob = OptTestFunctions("SchafferN1", num_of_variables=1)
-training_data_input, training_data_output = test_prob.create_training_data(
-    samples=250, method="random"
-)
 
-# Convert numpy array to pandas dataframe
-data = np.hstack((training_data_input, training_data_output))
-dataset = pd.DataFrame.from_records(data)
+# Random data for training.
+# x = list of variable names, y = list of objectives
+dataset, x, y = test_prob.create_training_data(samples=500, method="random")
 
-# Set column names: x = variables, y = objectives. These are gotten automatically if importing .csv
-x = []
-for n in range(training_data_input.shape[1]):
-    x.append("x" + str(n + 1))
-y = ["f1", "f2"]
-dataset.columns = x + y
 ```
 After you have the data, create the DataProblem class and pass the data, variables and objectives.
-x is a list of variable names, y is a list of objectives. The columns in the dataset should match these.
 ```
 problem = DataProblem(data=dataset, x=x, y=y)
 ```
@@ -44,6 +34,12 @@ Split data into training and testing set:
 ```
 problem.train_test_split(train_size=0.7)
 ```
+Set parameters for the Evolutionary Algorithm (as a dict). Check 
+ea_parameters = {
+    "target_pop_size": 50,
+    "generations_per_iteration": 10,
+    "iterations": 10,
+}
 Train the models.
 
 ```
