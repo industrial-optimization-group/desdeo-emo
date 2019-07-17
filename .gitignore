@@ -4,7 +4,7 @@ Backup_results/
 __pycache__/
 *.py[cod]
 *$py.class
-*.html
+
 
 # C extensions
 *.so
@@ -136,4 +136,5 @@ dmypy.json
 
 .tests.py
 Tests/
+my-tests/
 *.csv
