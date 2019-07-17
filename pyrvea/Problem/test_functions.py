@@ -86,6 +86,7 @@ class OptTestFunctions(BaseProblem):
         self.num_of_variables = decision_variables.shape[0]
 
         # Single objective test functions
+        self.num_of_objectives = 1
 
         if self.name == "Sphere":
             # Sphere function, -5 <= x <= 5
@@ -161,8 +162,9 @@ class OptTestFunctions(BaseProblem):
             )
 
         # Test functions for multi-objective optimization
+        self.num_of_objectives = 2
 
-        elif self.name == "Coello_ex1":
+        if self.name == "Coello_ex1":
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             a = 2

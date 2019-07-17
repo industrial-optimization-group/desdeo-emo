@@ -7,7 +7,26 @@ from pyDOE import lhs
 
 
 class TestProblem(BaseProblem):
-    """Defines the problem."""
+    """Test functions for single/multi-objective problems to test
+    the performance of evolutionary algorithms.
+
+    See: https://en.wikipedia.org/wiki/Test_functions_for_optimization
+
+    Parameters
+    ----------
+    name : str
+        Name of the test function.
+    num_of_variables : int
+        Number of decision variables.
+    num_of_objectives : int
+        Number of objectives.
+    num_of_constraints : int
+        Number of constraints.
+    upper_limits : float
+        Upper boundaries for test data.
+    lower_limits : float
+        Lower boundaries for test data.
+    """
 
     def __init__(
         self,
@@ -18,16 +37,7 @@ class TestProblem(BaseProblem):
         upper_limits=1,
         lower_limits=0,
     ):
-        """Pydocstring is ruthless.
 
-        Args:
-            name:
-            num_of_variables:
-            num_of_objectives:
-            num_of_constraints:
-            upper_limits:
-            lower_limits:
-        """
         super(TestProblem, self).__init__(
             name,
             num_of_variables,
@@ -84,11 +94,9 @@ class TestProblem(BaseProblem):
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
         else:
-            self.obj_func = OptTestFunctions(
-                name=self.name,
-                num_of_objectives=self.num_of_objectives
-            )
+            self.obj_func = OptTestFunctions(name=self.name)
             self.num_of_variables = self.obj_func.num_of_variables
+            self.num_of_objectives = self.obj_func.num_of_objectives
             self.lower_limits = self.obj_func.lower_limits
             self.upper_limits = self.obj_func.upper_limits
 
@@ -120,6 +128,13 @@ class TestProblem(BaseProblem):
             Method to use in data creation. Possible values random, lhs, linear.
         seed : int
             If a number is given, random data will be seeded.
+
+        Returns
+        -------
+        dataset : Training data in a Pandas DataFrame, including all variables and objectives.
+        x : List of variables
+        y : List of objectives
+
         """
 
         np.random.seed(seed)
