@@ -9,11 +9,6 @@ from sklearn.metrics import r2_score
 from pyrvea.Problem.baseproblem import BaseProblem
 import pandas as pd
 from typing import List
-from pyrvea.EAs.PPGA import PPGA
-from pyrvea.EAs.RVEA import RVEA
-from pyrvea.EAs.slowRVEA import slowRVEA
-from pyrvea.EAs.NSGAIII import NSGAIII
-
 
 class DataProblem(BaseProblem):
     def __init__(

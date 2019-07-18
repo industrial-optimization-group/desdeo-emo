@@ -55,17 +55,17 @@ def mate(mating_pop, individuals, params):
 
         # Mutation
 
-        connections = offspring1[1:, :].size
+        connections = offspring1.size
 
         mut_val = np.random.normal(0, std_dev, connections)
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        offspring1[1:, :].ravel()[mut] += offspring1[1:, :].ravel()[mut] * mut_val[mut]
+        offspring1.ravel()[mut] += offspring1.ravel()[mut] * mut_val[mut]
 
         mut_val = np.random.normal(0, std_dev, connections)
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        offspring2[1:, :].ravel()[mut] += offspring2[1:, :].ravel()[mut] * mut_val[mut]
+        offspring2.ravel()[mut] += offspring2.ravel()[mut] * mut_val[mut]
 
         offspring.extend((offspring1, offspring2))
 

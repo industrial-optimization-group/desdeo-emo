@@ -162,9 +162,9 @@ class OptTestFunctions(BaseProblem):
             )
 
         # Test functions for multi-objective optimization
-        self.num_of_objectives = 2
 
-        if self.name == "Coello_ex1":
+        elif self.name == "Coello_ex1":
+            self.num_of_objectives = 2
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             a = 2
@@ -179,7 +179,7 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "Kursawe":
-
+            self.num_of_objectives = 2
             x1 = np.asarray(decision_variables[0])
             x2 = np.asarray(decision_variables[1])
             x3 = np.asarray(decision_variables[1])
@@ -197,7 +197,7 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "Fonseca-Fleming":
-
+            self.num_of_objectives = 2
             f1 = 0
             f2 = 0
 
@@ -211,6 +211,7 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "SchafferN1":
+            self.num_of_objectives = 2
             x = np.asarray(decision_variables[0])
 
             f1 = x ** 2

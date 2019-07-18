@@ -303,7 +303,7 @@ class EvoNNModel(EvoNN):
         algorithm=PPGA,
         pop_size=500,
         num_nodes=20,
-        prob_omit=0.2,
+        prob_omit=0.3,
         w_low=-5.0,
         w_high=5.0,
         activation_func="sigmoid",

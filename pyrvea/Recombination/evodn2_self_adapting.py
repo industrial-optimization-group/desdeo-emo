@@ -58,7 +58,7 @@ def mate(mating_pop, individuals, params):
             for layer in range(max(len(sub1), len(sub2))):
 
                 try:
-                    connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
+                    connections = min(sub1[layer].size, sub2[layer].size)
 
                     # Crossover
                     exchange = np.random.choice(
@@ -67,10 +67,10 @@ def mate(mating_pop, individuals, params):
                         replace=False,
                     )
                     tmp = np.copy(sub1[layer])
-                    sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[
+                    sub1[layer].ravel()[exchange] = sub2[layer].ravel()[
                         exchange
                     ]
-                    sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+                    sub2[layer].ravel()[exchange] = tmp.ravel()[exchange]
 
                 except IndexError:
                     pass
@@ -78,34 +78,34 @@ def mate(mating_pop, individuals, params):
                 try:
                     # Mutate first individual
                     connections = min(
-                        sub1[layer][1:, :].size,
-                        sub3[layer][1:, :].size,
-                        sub4[layer][1:, :].size,
+                        sub1[layer].size,
+                        sub3[layer].size,
+                        sub4[layer].size,
                     )
                     mutate = sample(
                         range(connections), np.random.binomial(connections, prob_mut)
                     )
-                    sub1[layer][1:, :].ravel()[mutate] = sub1[layer][1:, :].ravel()[
+                    sub1[layer].ravel()[mutate] = sub1[layer].ravel()[
                         mutate
                     ] + mut_strength * (1 - cur_gen / total_gen) * (
-                        sub3[layer][1:, :].ravel()[mutate]
-                        - sub4[layer][1:, :].ravel()[mutate]
+                        sub3[layer].ravel()[mutate]
+                        - sub4[layer].ravel()[mutate]
                     )
 
                     # Mutate second individual
                     connections = min(
-                        sub2[layer][1:, :].size,
-                        sub3[layer][1:, :].size,
-                        sub4[layer][1:, :].size,
+                        sub2[layer].size,
+                        sub3[layer].size,
+                        sub4[layer].size,
                     )
                     mutate = sample(
                         range(connections), np.random.binomial(connections, prob_mut)
                     )
-                    sub2[layer][1:, :].ravel()[mutate] = sub2[layer][1:, :].ravel()[
+                    sub2[layer].ravel()[mutate] = sub2[layer].ravel()[
                         mutate
                     ] + mut_strength * (1 - cur_gen / total_gen) * (
-                        sub3[layer][1:, :].ravel()[mutate]
-                        - sub4[layer][1:, :].ravel()[mutate]
+                        sub3[layer].ravel()[mutate]
+                        - sub4[layer].ravel()[mutate]
                     )
                 except IndexError:
 

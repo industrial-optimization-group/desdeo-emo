@@ -249,6 +249,26 @@ version = "0.17.1"
 
 [[package]]
 category = "main"
+description = "Genetic Programming in Python, with a scikit-learn inspired API"
+name = "gplearn"
+optional = false
+python-versions = "*"
+version = "0.4.1"
+
+[package.dependencies]
+joblib = ">=0.13.0"
+scikit-learn = ">=0.20.0"
+
+[[package]]
+category = "main"
+description = "Simple Python interface for Graphviz"
+name = "graphviz"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
+version = "0.11.1"
+
+[[package]]
+category = "main"
 description = "Internationalized Domain Names in Applications (IDNA)"
 name = "idna"
 optional = false
@@ -1133,7 +1153,7 @@ python-versions = "*"
 version = "1.11.1"
 
 [metadata]
-content-hash = "cead57952a576dcccc6b9b437f521cd673c8c90af4095ffd543bad0a3adae645"
+content-hash = "84a6836dac2663ce785ec5521aa768f7f949b5c95d5a9280e9b478fa3a0e3d9d"
 python-versions = "^3.6"
 
 [metadata.hashes]
@@ -1162,6 +1182,8 @@ docutils = ["02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6", 
 entrypoints = ["589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19", "c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"]
 flake8 = ["859996073f341f2670741b51ec1e67a01da142831aa1fdc6242dbf88dffbe661", "a796a115208f5c03b18f332f7c11729812c8c3ded6c46319c59b53efd3819da8"]
 future = ["67045236dcfd6816dc439556d009594abf643e5eb48992e36beac09c2ca659b8"]
+gplearn = ["6caf620291a2c9ad769483be6b08ada2ae1951b20d69ecd53ed839d2e77c5da4", "8b439e8337132ad5eb111aa9c30126c1b62299ce66468b9e23f9d0885ec1126f"]
+graphviz = ["6d0f69c107cfdc9bd1df3763fad99569bbcba29d0c52ffcbc6f266621d8bf709", "914b8b124942d82e3e1dcef499c9fe77c10acd3d18a1cfeeb2b9de05f6d24805"]
 idna = ["c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407", "ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"]
 imagesize = ["3f349de3eb99145973fefb7dbe38554414e5c30abd0c8e4b970a7c9d09f3a1d8", "f3832918bc3c66617f92e35f5d70729187676313caa60c187eb0f28b8fe5e3b5"]
 ipykernel = ["346189536b88859937b5f4848a6fd85d1ad0729f01724a411de5cae9b618819c", "f0e962052718068ad3b1d8bcc703794660858f58803c3798628817f492a8769c"]

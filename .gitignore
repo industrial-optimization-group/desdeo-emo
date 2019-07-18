@@ -138,3 +138,9 @@ dmypy.json
 Tests/
 my-tests/
 *.csv
+
+# BioGP stuff
+*.gv
+*.gv.png
+tiny_gp.py
+tiny_gp_plus.py

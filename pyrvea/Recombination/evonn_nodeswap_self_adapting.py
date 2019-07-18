@@ -39,7 +39,6 @@ def mate(mating_pop, individuals, params):
             mating_pop.append([i, np.random.randint(len(individuals))])
 
     offspring = []
-    alternatives = np.array(individuals)[:, 1:, :]
 
     for mates in mating_pop:
 
@@ -58,10 +57,10 @@ def mate(mating_pop, individuals, params):
         # mutate offspring based on current gen and connections of two randomly chosen individuals
 
         # Randomly select two individuals with current match active (=non-zero)
-        connections = offspring1[1:, :].size
-        select = alternatives[
+        connections = offspring1.size
+        select = np.asarray(individuals)[
             np.random.choice(
-                np.nonzero(alternatives)[
+                np.nonzero(np.asarray(individuals))[
                     0
                 ],
                 2,
@@ -69,13 +68,13 @@ def mate(mating_pop, individuals, params):
         ]
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        offspring1[1:, :].ravel()[mut] = offspring1[1:, :].ravel()[mut] + mut_strength * (
+        offspring1.ravel()[mut] = offspring1.ravel()[mut] + mut_strength * (
                     1 - cur_gen / total_gen
                 ) * (select[1].ravel()[mut] - select[0].ravel()[mut])
 
-        select = alternatives[
+        select = np.asarray(individuals)[
             np.random.choice(
-                np.nonzero(alternatives)[
+                np.nonzero(np.asarray(individuals))[
                     0
                 ],
                 2,
@@ -83,7 +82,7 @@ def mate(mating_pop, individuals, params):
         ]
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        offspring2[1:, :].ravel()[mut] = offspring2[1:, :].ravel()[mut] + mut_strength * (
+        offspring2.ravel()[mut] = offspring2.ravel()[mut] + mut_strength * (
                     1 - cur_gen / total_gen
                 ) * (select[1].ravel()[mut] - select[0].ravel()[mut])
 

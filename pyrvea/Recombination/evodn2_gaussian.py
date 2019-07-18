@@ -58,7 +58,7 @@ def mate(mating_pop, individuals, params):
             for layer in range(max(len(sub1), len(sub2))):
 
                 try:
-                    connections = min(sub1[layer][1:, :].size, sub2[layer][1:, :].size)
+                    connections = min(sub1[layer].size, sub2[layer].size)
 
                     # Crossover
                     exchange = np.random.choice(
@@ -67,17 +67,17 @@ def mate(mating_pop, individuals, params):
                         replace=False,
                     )
                     tmp = np.copy(sub1[layer])
-                    sub1[layer][1:, :].ravel()[exchange] = sub2[layer][1:, :].ravel()[
+                    sub1[layer].ravel()[exchange] = sub2[layer].ravel()[
                         exchange
                     ]
-                    sub2[layer][1:, :].ravel()[exchange] = tmp[1:, :].ravel()[exchange]
+                    sub2[layer].ravel()[exchange] = tmp.ravel()[exchange]
 
                 except IndexError:
                     pass
 
                 # Mutate the first offspring
                 try:
-                    connections = sub1[layer][1:, :].size
+                    connections = sub1[layer].size
 
                     mut_val = np.random.normal(0, std_dev, connections)
 
@@ -86,8 +86,8 @@ def mate(mating_pop, individuals, params):
                         np.random.binomial(connections, prob_mutation),
                         replace=False,
                     )
-                    sub1[layer][1:, :].ravel()[mut] += (
-                        sub1[layer][1:, :].ravel()[mut] * mut_val[mut]
+                    sub1[layer].ravel()[mut] += (
+                        sub1[layer].ravel()[mut] * mut_val[mut]
                     )
 
                 except IndexError:
@@ -95,7 +95,7 @@ def mate(mating_pop, individuals, params):
 
                 # Mutate the second offspring
                 try:
-                    connections = sub2[layer][1:, :].size
+                    connections = sub2[layer].size
 
                     mut_val = np.random.normal(0, std_dev, connections)
 
@@ -104,8 +104,8 @@ def mate(mating_pop, individuals, params):
                         np.random.binomial(connections, prob_mutation),
                         replace=False,
                     )
-                    sub2[layer][1:, :].ravel()[mut] += (
-                        sub2[layer][1:, :].ravel()[mut] * mut_val[mut]
+                    sub2[layer].ravel()[mut] += (
+                        sub2[layer].ravel()[mut] * mut_val[mut]
                     )
 
                 except IndexError:

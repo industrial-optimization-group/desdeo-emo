@@ -9,17 +9,22 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
+from gplearn.genetic import SymbolicRegressor
 
-test_prob = TestProblem(name="ZDT1", num_of_variables=30)
+test_prob = TestProblem(name="SchafferN1", num_of_variables=1, num_of_objectives=2)
 
-dataset, x, y = test_prob.create_training_data(samples=1000, method="lhs")
+dataset, x, y = test_prob.create_training_data(samples=1000, method="lhs", seed=5)
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
 
-ea_params = {"target_pop_size": 100, "generations_per_iteration": 10, "iterations": 10}
+ea_params = {"generations_per_iteration": 10, "iterations": 10}
 
-problem.train(model_type="EvoDN2", algorithm=PPGA, prob_omit=0.3, ea_parameters=ea_params)
+problem.train(
+    model_type="EvoNN",
+    algorithm=PPGA,
+    ea_parameters=ea_params,
+)
 
 y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
 problem.models["f1"][0].plot(
@@ -76,6 +81,7 @@ problem.models["f2"][0].plot(
 # problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
 
 # Optimize
+#
 pop_ppga = Population(
     problem,
     pop_size=500,

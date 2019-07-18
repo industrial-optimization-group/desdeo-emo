@@ -40,7 +40,7 @@ def mutate(
 
     for ind in offspring:
 
-        connections = ind[1:, :].size
+        connections = ind.size
 
         # Method : Gaussian
         # Take a random number of connections based on probability and mutate based on
@@ -50,4 +50,4 @@ def mutate(
         mut_val = np.random.normal(0, std_dev, connections)
 
         mut = np.random.choice(connections, np.random.binomial(connections, prob_mutation), replace=False)
-        ind[1:, :].ravel()[mut] += ind[1:, :].ravel()[mut] * mut_val[mut]
+        ind.ravel()[mut] += ind.ravel()[mut] * mut_val[mut]
