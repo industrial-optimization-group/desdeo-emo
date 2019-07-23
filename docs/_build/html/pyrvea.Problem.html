@@ -382,7 +382,7 @@ and calculate the training error.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pop</strong> (<em>obj</em>) – The population object.</p></li>
 <li><p><strong>non_dom_front</strong> (<em>list</em>) – Indices of the models on the non-dominated front.</p></li>
-<li><p><strong>selection</strong> (<em>str</em>) – The selection to use for selecting the model.
+<li><p><strong>selection</strong> (<em>str</em>) – The criterion to use for selecting the model.
 Possible values: ‘min_error’, ‘manual’</p></li>
 </ul>
 </dd>
@@ -424,7 +424,7 @@ Possible values: ‘min_error’, ‘manual’</p></li>
 </dl>
 <dl class="method">
 <dt id="pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoDN2_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_subnets=4</em>, <em class="sig-param">max_layers=8</em>, <em class="sig-param">max_nodes=10</em>, <em class="sig-param">prob_omit=0.2</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='min_error'</em>, <em class="sig-param">crossover_type=None</em>, <em class="sig-param">mutation_type=None</em>, <em class="sig-param">recombination_type='evodn2_gaussian'</em>, <em class="sig-param">iterations=10</em>, <em class="sig-param">generations_per_iteration=10</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoDN2_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_subnets=4</em>, <em class="sig-param">max_layers=8</em>, <em class="sig-param">max_nodes=10</em>, <em class="sig-param">prob_omit=0.3</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='min_error'</em>, <em class="sig-param">crossover_type=None</em>, <em class="sig-param">mutation_type=None</em>, <em class="sig-param">recombination_type='evodn2_gaussian'</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set parameters for EvoDN2 model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -444,9 +444,6 @@ Possible values: ‘min_error’, ‘manual’</p></li>
 <li><p><strong>selection</strong> (<em>str</em>) – The selection to use for selecting the model.</p></li>
 <li><p><strong>crossover_type</strong><strong>, </strong><strong>mutation_type</strong> (<em>recombination_type</em><em>,</em>) – Recombination functions. If recombination_type is specified, crossover and mutation
 will be handled by the same function. If None, they are done separately.</p></li>
-<li><p><strong>iterations</strong> (<em>int</em>) – Number of iterations for training.</p></li>
-<li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.
-Total number of generations = iterations * generations_per_iteration</p></li>
 <li><p><strong>logging</strong> (<em>bool</em>) – True to create a logfile, False otherwise.</p></li>
 <li><p><strong>plotting</strong> (<em>bool</em>) – True to create a plot, False otherwise.</p></li>
 <li><p><strong>ea_parameters</strong> (<em>dict</em>) – Contains the parameters needed by EA (Default value = None).</p></li>
@@ -653,7 +650,7 @@ and calculate the training error.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pop</strong> (<em>obj</em>) – The population object.</p></li>
 <li><p><strong>non_dom_front</strong> (<em>list</em>) – Indices of the models on the non-dominated front.</p></li>
-<li><p><strong>selection</strong> (<em>str</em>) – The selection to use for selecting the model.
+<li><p><strong>selection</strong> (<em>str</em>) – The criterion to use for selecting the model.
 Possible values: ‘min_error’, ‘akaike_corrected’, ‘manual’</p></li>
 </ul>
 </dd>
@@ -751,7 +748,7 @@ Possible values: ‘min_error’, ‘akaike_corrected’, ‘manual’</p></li>
 
 <dl class="method">
 <dt id="pyrvea.Problem.evonn_problem.EvoNNModel.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoNN_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_nodes=20</em>, <em class="sig-param">prob_omit=0.2</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='akaike_corrected'</em>, <em class="sig-param">recombination_type='evonn_nodeswap_gaussian'</em>, <em class="sig-param">crossover_type='evonn_xover_nodeswap'</em>, <em class="sig-param">mutation_type='evonn_mut_gaussian'</em>, <em class="sig-param">iterations=10</em>, <em class="sig-param">generations_per_iteration=10</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">name='EvoNN_Model'</em>, <em class="sig-param">algorithm=&lt;class 'pyrvea.EAs.PPGA.PPGA'&gt;</em>, <em class="sig-param">pop_size=500</em>, <em class="sig-param">num_nodes=20</em>, <em class="sig-param">prob_omit=0.3</em>, <em class="sig-param">w_low=-5.0</em>, <em class="sig-param">w_high=5.0</em>, <em class="sig-param">activation_func='sigmoid'</em>, <em class="sig-param">opt_func='llsq'</em>, <em class="sig-param">loss_func='rmse'</em>, <em class="sig-param">selection='akaike_corrected'</em>, <em class="sig-param">recombination_type='evonn_nodeswap_gaussian'</em>, <em class="sig-param">crossover_type='evonn_xover_nodeswap'</em>, <em class="sig-param">mutation_type='evonn_mut_gaussian'</em>, <em class="sig-param">logging=False</em>, <em class="sig-param">plotting=False</em>, <em class="sig-param">ea_parameters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.evonn_problem.EvoNNModel.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set parameters for the EvoNN model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -769,9 +766,6 @@ Possible values: ‘min_error’, ‘akaike_corrected’, ‘manual’</p></li>
 <li><p><strong>selection</strong> (<em>str</em>) – The selection to use for selecting the model.</p></li>
 <li><p><strong>crossover_type</strong><strong>, </strong><strong>mutation_type</strong> (<em>recombination_type</em><em>,</em>) – Recombination functions. If recombination_type is specified, crossover and mutation
 will be handled by the same function. If None, they are done separately.</p></li>
-<li><p><strong>iterations</strong> (<em>int</em>) – Number of iterations for training.</p></li>
-<li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.
-Total number of generations = iterations * generations_per_iteration</p></li>
 <li><p><strong>logging</strong> (<em>bool</em>) – True to create a logfile, False otherwise.</p></li>
 <li><p><strong>plotting</strong> (<em>bool</em>) – True to create a plot, False otherwise.</p></li>
 <li><p><strong>ea_parameters</strong> (<em>dict</em>) – Contains the parameters needed by EA (Default value = None).</p></li>
@@ -936,7 +930,7 @@ the performance of evolutionary algorithms.</p>
 <span id="pyrvea-problem-testproblem-module"></span><h2>pyrvea.Problem.testproblem module<a class="headerlink" href="#module-pyrvea.Problem.testproblem" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pyrvea.Problem.testproblem.TestProblem">
-<em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.testproblem.</code><code class="sig-name descname">TestProblem</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">num_of_variables=None</em>, <em class="sig-param">num_of_objectives=None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">upper_limits=1</em>, <em class="sig-param">lower_limits=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.Problem.testproblem.</code><code class="sig-name descname">TestProblem</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">num_of_variables=None</em>, <em class="sig-param">num_of_objectives=None</em>, <em class="sig-param">num_of_constraints=0</em>, <em class="sig-param">upper_limits=1.0</em>, <em class="sig-param">lower_limits=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Problem.testproblem.TestProblem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.Problem.baseproblem.BaseProblem" title="pyrvea.Problem.baseproblem.BaseProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.Problem.baseproblem.BaseProblem</span></code></a></p>
 <p>Test functions for single/multi-objective problems to test
 the performance of evolutionary algorithms.</p>
@@ -986,7 +980,7 @@ the performance of evolutionary algorithms.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>samples</strong> (<em>int</em>) – Number of samples.</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – Method to use in data creation. Possible values random, lhs, linear.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Method to use in data creation. Possible values random, lhs (latin hypercube sampling), linear.</p></li>
 <li><p><strong>seed</strong> (<em>int</em>) – If a number is given, random data will be seeded.</p></li>
 </ul>
 </dd>

@@ -162,20 +162,20 @@
 </ol>
 <p>First, create the test problem:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pyrvea.Problem.test_functions</span> <span class="kn">import</span> <span class="n">OptTestFunctions</span>
+<span class="kn">from</span> <span class="nn">pyrvea.Problem.testproblem</span> <span class="kn">import</span> <span class="n">TestProblem</span>
 <span class="kn">from</span> <span class="nn">pyrvea.Problem.dataproblem</span> <span class="kn">import</span> <span class="n">DataProblem</span>
 
-<span class="c1"># OptTestFunctions contains a number of testing functions.</span>
+<span class="c1"># TestProblem class contains a number of testing functions</span>
 <span class="c1"># Schaffer function N.1, -100 &lt;= x &lt;= 100</span>
 <span class="c1"># Minimize:</span>
 <span class="c1"># f1 = x ** 2</span>
 <span class="c1"># f2 = (x - 2) ** 2</span>
-<span class="n">test_prob</span> <span class="o">=</span> <span class="n">OptTestFunctions</span><span class="p">(</span><span class="s2">&quot;SchafferN1&quot;</span><span class="p">,</span> <span class="n">num_of_variables</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># Random data for training.</span>
+<span class="n">test_prob</span> <span class="o">=</span> <span class="n">TestProblem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SchafferN1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Random data for training</span>
 <span class="c1"># x = list of variable names, y = list of objectives</span>
-<span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">)</span>
+<span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lhs&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>After you have the data, create the DataProblem class and pass the data, variables and objectives.</p>
@@ -186,21 +186,40 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">train_size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Set parameters for the Evolutionary Algorithm (as a dict). Check
-ea_parameters = {
-“target_pop_size”: 50,
-“generations_per_iteration”: 10,
-“iterations”: 10,
-}
-Train the models.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;EvoNN&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">PPGA</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">generations_per_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<p>Select the Evolutionary Algorithm you want to use and set the parameters (or use defaults). Check <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">documentation</a> for details.</p>
+<p>Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params">EvoNN parameters</a> and <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params">EvoDN2 parameters</a>.</p>
+<p>Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is strongly encouraged.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyrvea.EAs.PPGA</span> <span class="k">import</span> <span class="n">PPGA</span>
+
+<span class="n">ea_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;target_pop_size&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;generations_per_iteration&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;EvoNN&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">PPGA</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ea_parameters</span><span class="o">=</span><span class="n">ea_params</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>EvoNN and EvoDN2 models can currently be trained with Predator-Prey (PPGA) or reference vector guided evolutionary algorithms (RVEA). For explanations of the different EAs, see their respective class documentation at pyRVEA/EAs.
-Training parameters can currently be passed as kwargs. For available parameters, see pyrvea.Problem.evonn_problem.EvoNNModel class documentation (a separate documentation page will come later). If no parameters are passed, defaults are used.</p>
-<p>After the models have been trained, the test function can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve (PPGA or RVEA can be used for optimization):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pop</span> <span class="o">=</span> <span class="n">Population</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
-<span class="n">pop</span><span class="o">.</span><span class="n">evolve</span><span class="p">(</span><span class="n">RVEA</span><span class="p">)</span>
+<p>EvoNN and EvoDN2 models can currently be trained with available algorithms in <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">pyRVEA/EAs</a>. For explanations of the different EAs, see their respective <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">documentation</a>.</p>
+<p>The model’s prediction vs. target values can be plotted as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prediction for f1</span>
+<span class="n">f1_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">]))</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">f1_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">test_prob</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;f1&quot;</span>
+<span class="p">)</span>
+<span class="c1"># Prediction for f2</span>
+<span class="n">f2_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">]))</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">f2_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">test_prob</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;f2&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>After the models have been trained, the test problem can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyrvea.EAs.RVEA</span> <span class="k">import</span> <span class="n">RVEA</span>
+
+<span class="n">pop</span> <span class="o">=</span> <span class="n">Population</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+<span class="n">opt_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;generations_per_iteration&quot;</span><span class="p">:</span> <span class="mi">25</span><span class="p">}</span>
+<span class="n">pop</span><span class="o">.</span><span class="n">evolve</span><span class="p">(</span><span class="n">EA</span><span class="o">=</span><span class="n">RVEA</span><span class="p">,</span> <span class="n">ea_parameters</span><span class="o">=</span><span class="n">opt_params</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To show the final pareto plot:</p>

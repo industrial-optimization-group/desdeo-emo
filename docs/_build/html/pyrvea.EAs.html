@@ -266,7 +266,7 @@ J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engine
 net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">target_pop_size: int = 100</em>, <em class="sig-param">predator_pop_size: int = 50</em>, <em class="sig-param">generations_per_iteration: int = 10</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">logging: list = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval: int = 7</em>, <em class="sig-param">max_rank: int = 20</em>, <em class="sig-param">prob_crossover: float = 0.8</em>, <em class="sig-param">prob_mutation: float = 0.3</em>, <em class="sig-param">mut_strength: float = 0.7</em>, <em class="sig-param">prob_prey_move: float = 0.3</em>, <em class="sig-param">neighbourhood_radius: int = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">target_pop_size: int = 100</em>, <em class="sig-param">predator_pop_size: int = 50</em>, <em class="sig-param">prey_max_moves: int = 10</em>, <em class="sig-param">prob_prey_move: float = 0.3</em>, <em class="sig-param">offspring_place_attempts: int = 10</em>, <em class="sig-param">generations_per_iteration: int = 10</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval: int = 7</em>, <em class="sig-param">max_rank: int = 20</em>, <em class="sig-param">prob_crossover: float = 0.8</em>, <em class="sig-param">prob_mutation: float = 0.3</em>, <em class="sig-param">mut_strength: float = 0.7</em>, <em class="sig-param">neighbourhood_radius: int = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -274,17 +274,18 @@ net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397
 <li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population object.</p></li>
 <li><p><strong>target_pop_size</strong> (<em>int</em>) – Target population size.</p></li>
 <li><p><strong>predator_pop_size</strong> (<em>int</em>) – Predator population size.</p></li>
+<li><p><strong>prey_max_moves</strong> (<em>int</em>) – Number of turns the prey can try to move.</p></li>
+<li><p><strong>prob_prey_move</strong> (<em>float</em>) – Prey move in the lattice based on this probability.</p></li>
+<li><p><strong>offspring_place_attempts</strong> (<em>int</em>) – Number of tries to place to offspring to the lattice.</p></li>
 <li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
 <li><p><strong>iterations</strong> (<em>int</em>) – Total number of iterations.</p></li>
 <li><p><strong>logging</strong> (<em>bool</em>) – If true, append parameters to a logfile.</p></li>
 <li><p><strong>logfile</strong> (<em>file</em>) – External log file.</p></li>
-<li><p><strong>opt</strong> (<em>bool</em>) – Whether to use PPGA for training or optimizing. False=training, True=optimizing.</p></li>
 <li><p><strong>kill_interval</strong> (<em>int</em>) – Kill all individuals worse than max_rank in the population every interval generation.</p></li>
 <li><p><strong>max_rank</strong> (<em>int</em>) – Individuals &lt; max_rank will be preserved after kill_interval.</p></li>
 <li><p><strong>prob_crossover</strong> (<em>float</em>) – Probability of crossover occurring.</p></li>
 <li><p><strong>prob_mutation</strong> (<em>float</em>) – Probability of mutation occurring.</p></li>
 <li><p><strong>mut_strength</strong> (<em>float</em>) – Strength of the mutation.</p></li>
-<li><p><strong>prob_prey_move</strong> (<em>float</em>) – Prey move in the lattice based on this probability.</p></li>
 <li><p><strong>neighbourhood_radius</strong> (<em>int</em>) – Radius of neighbourhood, or range of vision for predators.</p></li>
 </ul>
 </dd>

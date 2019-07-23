@@ -11,20 +11,20 @@ class OptTestFunctions(BaseProblem):
 
     See: https://en.wikipedia.org/wiki/Test_functions_for_optimization
 
-        Attributes
-        ----------
-        name : str
-            name of the test function
-        num_of_variables : int
-            number of decision variables
-        num_of_objectives : int
-            number of objectives
-        num_of_constraints : int
-            number of constraints
-        upper_limits : float
-            upper boundaries for test data
-        lower_limits : float
-            lower boundaries for test data
+    Parameters
+    ----------
+    name : str
+        name of the test function
+    num_of_variables : int
+        number of decision variables
+    num_of_objectives : int
+        number of objectives
+    num_of_constraints : int
+        number of constraints
+    upper_limits : float
+        upper boundaries for test data
+    lower_limits : float
+        lower boundaries for test data
     """
 
     def __init__(

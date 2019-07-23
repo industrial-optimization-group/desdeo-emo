@@ -10,6 +10,7 @@ from pyrvea.Problem.baseproblem import BaseProblem
 import pandas as pd
 from typing import List
 
+
 class DataProblem(BaseProblem):
     def __init__(
         self,

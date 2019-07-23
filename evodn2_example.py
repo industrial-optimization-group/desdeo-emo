@@ -6,14 +6,10 @@ from pyrvea.EAs.RVEA import RVEA
 from pyrvea.EAs.slowRVEA import slowRVEA
 from pyrvea.EAs.NSGAIII import NSGAIII
 import numpy as np
-import pandas as pd
-import plotly
-import plotly.graph_objs as go
-from gplearn.genetic import SymbolicRegressor
 
 test_prob = TestProblem(name="SchafferN1", num_of_variables=1, num_of_objectives=2)
 
-dataset, x, y = test_prob.create_training_data(samples=1000, method="lhs", seed=5)
+dataset, x, y = test_prob.create_training_data(samples=250)
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
@@ -22,7 +18,7 @@ ea_params = {"generations_per_iteration": 10, "iterations": 10}
 
 problem.train(
     model_type="EvoNN",
-    algorithm=PPGA,
+    algorithm=RVEA,
     ea_parameters=ea_params,
 )
 
@@ -36,52 +32,8 @@ problem.models["f2"][0].plot(
     y2, np.asarray(problem.data["f2"]), name=test_prob.name + "f2"
 )
 
-# problem.train(
-#     model_type="EvoNN",
-#     algorithm=PPGA
-# )
-#
-# y = problem.models["f1"][0].predict(training_data_input)
-# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-#
-# y2 = problem.models["f2"][0].predict(training_data_input)
-# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
-
-
-# Multilayer perceptron
-# problem.train(model_type="MLP", max_iter=10000, n_iter_no_change=100)
-# mlp_reg_y_pred = problem.models["f1"][0].predict(training_data_input)
-#
-# trace0 = go.Scatter(x=mlp_reg_y_pred, y=training_data_output[:, 0], mode="markers")
-# trace1 = go.Scatter(x=training_data_output[:, 0], y=training_data_output[:, 0])
-# data = [trace0, trace1]
-# plotly.offline.plot(
-#         data,
-#         filename="MLP Regressor " + test_prob.name
-#                  + ".html",
-#         auto_open=True,
-# )
-#
-# mlp_reg_y_pred2 = problem.models["f2"][0].predict(training_data_input)
-#
-# trace0 = go.Scatter(x=mlp_reg_y_pred2, y=training_data_output[:, 1], mode="markers")
-# trace1 = go.Scatter(x=training_data_output[:, 1], y=training_data_output[:, 1])
-# data = [trace0, trace1]
-# plotly.offline.plot(
-#         data,
-#         filename="MLP Regressor f2" + test_prob.name
-#                  + ".html",
-#         auto_open=True,
-# )
-
-# y = problem.models["f1"][0].predict(training_data_input)
-# problem.models["f1"][0].plot(y, training_data_output[:, 0], name=test_prob.name + "f1")
-#
-# y2 = problem.models["f2"][0].predict(training_data_input)
-# problem.models["f2"][0].plot(y2, training_data_output[:, 1], name=test_prob.name + "f2")
-
 # Optimize
-#
+# PPGA
 pop_ppga = Population(
     problem,
     pop_size=500,
@@ -109,6 +61,7 @@ pop_ppga.plot_pareto(
     + test_prob.name
 )
 
+# RVEA
 pop_rvea = Population(
     problem,
     assign_type="LHSDesign",

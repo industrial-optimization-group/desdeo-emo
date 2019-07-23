@@ -170,7 +170,7 @@ class EvoNN(BaseProblem):
         non_dom_front : list
             Indices of the models on the non-dominated front.
         selection : str
-            The selection to use for selecting the model.
+            The criterion to use for selecting the model.
             Possible values: 'min_error', 'akaike_corrected', 'manual'
 
         Returns
