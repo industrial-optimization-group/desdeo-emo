@@ -34,7 +34,7 @@ class BioGP:
         self.terminal_set = ["x", "y", 0.26, 0.48]  # Matyas
 
         self.max_depth = 5  # maximum initial random tree depth
-        self.max_roots = 3
+        self.max_subtrees = 3
         self.prob_terminal = 0.5  # probability to make a node terminal
 
     def create_individuals(self, method="ramped_half_and_half"):
@@ -43,54 +43,50 @@ class BioGP:
             for md in range(ceil(self.max_depth / 2), self.max_depth + 1):
                 for i in range(int(self.pop_size / (self.max_depth + 1))):
                     ind = Node()
-                    self.grow_tree(grow=True, max_depth=md, node=ind)  # grow
+                    self.grow_tree(max_depth=md, node=ind, method="grow")
                     self.individuals.append(ind)
                 for i in range(int(self.pop_size / (self.max_depth + 1))):
                     ind = Node()
-                    self.grow_tree(grow=False, max_depth=md, node=ind)  # full
+                    self.grow_tree(max_depth=md, node=ind, method="full")
                     self.individuals.append(ind)
 
-    def grow_tree(self, grow, max_depth, node, depth=0):
+    def grow_tree(self, max_depth, node, method="grow", depth=0):
         """Create a random tree recursively using either grow or full method.
 
         Parameters
         ----------
-        grow : bool
-            True for grow, false for full.
-            For the 'grow' method, nodes are chosen at random from both functions and terminals.
-            The 'full' method chooses nodes from the function set until the max depth is reached,
-            and then terminals are chosen.
         max_depth : int
             The maximum depth of the tree.
         node : obj
             A node object representing a function or terminal node in the tree.
+        method : str
+            Methods: 'grow', 'full'.
+            For the 'grow' method, nodes are chosen at random from both functions and terminals.
+            The 'full' method chooses nodes from the function set until the max depth is reached,
+            and then terminals are chosen.
         depth : int
             Current depth.
 
         """
 
-        if depth < 1:
+        if depth == 0:
             node.value = "linear"
-            for i in range(self.max_roots):
-                root = Node()
+            for i in range(self.max_subtrees):
+                root = Node(depth=depth + 1)
                 node.roots.append(root)
-                self.grow_tree(grow, max_depth, root, depth=depth + 1)
-        elif depth < max_depth and not grow:
-            node.value = self.function_set[randint(0, len(self.function_set) - 1)]
-        elif depth >= max_depth:
+                self.grow_tree(max_depth, root, method, depth=depth + 1)
+
+        # Make terminal node
+        elif depth >= max_depth or method == "grow" and random() > self.prob_terminal:
             node.value = self.terminal_set[randint(0, len(self.terminal_set) - 1)]
-        else:  # intermediate depth, grow
-            if random() > self.prob_terminal:
-                node.value = self.terminal_set[randint(0, len(self.terminal_set) - 1)]
-            else:
-                node.value = self.function_set[randint(0, len(self.function_set) - 1)]
 
-        if node.value in self.function_set:
-
+        # Make function node
+        else:
+            node.value = self.function_set[randint(0, len(self.function_set) - 1)]
             for i in range(len(signature(node.value).parameters)):  # Check arity
-                root = Node()
+                root = Node(depth=depth + 1)
                 node.roots.append(root)
-                self.grow_tree(grow, max_depth, root, depth=depth + 1)
+                self.grow_tree(max_depth, root, method, depth=depth + 1)
 
 
 class Node:
@@ -103,9 +99,11 @@ class Node:
     roots : list
         List of child nodes, or roots, the node spawns.
     """
-    def __init__(self, value=None):
+
+    def __init__(self, value=None, depth=0):
 
         self.value = value
+        self.depth = depth
         self.roots = []
 
     def node_label(self):  # return string label
@@ -129,6 +127,17 @@ class Node:
         count = [0]
         self.draw(dot, count)
         Source(dot[0], filename=name + ".gv", format="png").render()
+
+
+def depth_count(node):
+    if isinstance(node.roots, list):
+        if len(node.roots) == 0:
+            depth = 1
+        else:
+            depth = 1 + max([depth_count(node) for node in node.roots])
+    else:
+        depth = 0
+    return depth
 
 
 def main():
