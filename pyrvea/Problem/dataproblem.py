@@ -2,6 +2,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
 from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
 from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
+from pyrvea.Problem.biogp import BioGPModel as BioGP
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split as tts
 import numpy as np
@@ -102,6 +103,7 @@ class DataProblem(BaseProblem):
             "MLP": MLPRegressor,
             "EvoNN": EvoNN,
             "EvoDN2": EvoDN2,
+            "BioGP": BioGP
         }
         model_type = surrogate_model_options[model_type]
         # Build specific surrogate models

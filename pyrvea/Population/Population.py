@@ -17,6 +17,8 @@ import plotly.graph_objs as go
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
+    biogp_xover_standard,
+    biogp_mut_standard,
     evodn2_self_adapting,
     evodn2_gaussian,
     evonn_nodeswap_gaussian,
@@ -78,6 +80,8 @@ class Population:
         self.non_dom = 0
         self.pop_size = pop_size
         self.recombination_funcs = {
+            "biogp_xover_standard": biogp_xover_standard,
+            "biogp_mut_standard": biogp_mut_standard,
             "evodn2_self_adapting": evodn2_self_adapting,
             "evodn2_gaussian": evodn2_gaussian,
             "evonn_nodeswap_gaussian": evonn_nodeswap_gaussian,
@@ -123,12 +127,12 @@ class Population:
             self.figure = []
             self.plot_init_()
 
-    def add(self, new_pop: np.ndarray):
+    def add(self, new_pop: list):
         """Evaluate and add individuals to the population. Update ideal and nadir point.
 
         Parameters
         ----------
-        new_pop: ndarray
+        new_pop: list
             Decision variable values for new population.
         """
         for i in range(len(new_pop)):

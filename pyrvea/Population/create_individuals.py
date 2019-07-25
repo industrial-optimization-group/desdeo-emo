@@ -134,3 +134,6 @@ def create_new_individuals(design, problem, pop_size=None):
             individuals.append(nets)
 
         return individuals
+
+    elif design == "BioGP":
+        return problem.create_individuals()

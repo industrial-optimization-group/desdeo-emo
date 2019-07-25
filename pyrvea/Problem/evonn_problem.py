@@ -58,18 +58,17 @@ class EvoNN(BaseProblem):
         self.num_samples = num_samples
 
     def objectives(self, decision_variables) -> list:
-
         """ Use this method to calculate objective functions.
 
         Parameters
         ----------
         decision_variables : ndarray
-            Variables from the neural network
+            Variables from the neural network.
 
         Returns
         -------
         obj_func : list
-            The objective function
+            The objective function.
 
         """
 
@@ -87,14 +86,14 @@ class EvoNN(BaseProblem):
         Parameters
         ----------
         non_linear_layer : ndarray
-            Weight matrix of the neural network
+            Weight matrix of the neural network.
 
         Returns
         -------
         activated_layer : ndarray
             The activated non-linear layer before the output.
         complexity : int
-            The model's complexity
+            The model's complexity.
 
         """
         # Calculate the dot product + bias
