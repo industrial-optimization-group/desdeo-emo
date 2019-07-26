@@ -73,6 +73,7 @@ class Population:
             will be handled by the same function. If None, they are done separately.
 
         """
+        self.assign_type = assign_type
         self.num_var = problem.num_of_variables
         self.lower_limits = np.asarray(problem.lower_limits)
         self.upper_limits = np.asarray(problem.upper_limits)

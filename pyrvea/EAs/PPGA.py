@@ -87,7 +87,7 @@ class PPGA:
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.7,
-        neighbourhood_radius: int = 5
+        neighbourhood_radius: int = 5,
     ):
         """Set up the parameters.
 
@@ -154,7 +154,7 @@ class PPGA:
             "mut_strength": mut_strength,
             "kill_interval": kill_interval,
             "max_rank": max_rank,
-            "neighbourhood_radius": neighbourhood_radius
+            "neighbourhood_radius": neighbourhood_radius,
         }
 
         # If logging enabled, write params to file
@@ -207,10 +207,10 @@ class PPGA:
         if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
-            #print(str(len(population.individuals)))  #DEBUG
-            #start = time.process_time()  #DEBUG
+            # print(str(len(population.individuals)))  #DEBUG
+            # start = time.process_time()  #DEBUG
             offspring = population.mate(mating_pop, self.params)
-            #print(time.process_time() - start)  #DEBUG
+            # print(time.process_time() - start)  #DEBUG
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
 
@@ -461,7 +461,9 @@ class Lattice:
 
             for i in range(predator_max_moves):
 
-                neighbours = self.neighbours(self.lattice, pos[0], pos[1], n=self.params["neighbourhood_radius"])
+                neighbours = self.neighbours(
+                    self.lattice, pos[0], pos[1], n=self.params["neighbourhood_radius"]
+                )
                 targets = neighbours[neighbours > 0]
 
                 # If preys found in the neighbourhood, calculate their fitness and kill the weakest

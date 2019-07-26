@@ -17,7 +17,7 @@ problem.train_test_split(train_size=0.7)
 ea_params = {"generations_per_iteration": 10, "iterations": 10}
 
 problem.train(
-    model_type="BioGP",
+    model_type="EvoNN",
     algorithm=PPGA,
     ea_parameters=ea_params,
 )
