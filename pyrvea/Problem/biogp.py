@@ -161,6 +161,14 @@ class BioGPModel(BioGP):
             Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
+        max_depth : int
+            Maximum depth of the tree.
+        max_subtrees : int
+            Maximum number of subtrees the tree can grow.
+        prob_terminal : float
+            The probability of making the node terminal when growing the tree.
+        selection : str
+            The selection method to use.
         recombination_type, crossover_type, mutation_type : str or None
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
@@ -437,6 +445,17 @@ class FunctionNode(Node):
             return 1.0
         else:
             return np.divide(x, y)
+
+    @staticmethod
+    def sqrt(x):
+        return np.sqrt(np.abs(x))
+
+    @staticmethod
+    def log(x):
+        if x <= 0.001:
+            return 0.0
+        else:
+            return np.log(np.abs(x))
 
 
 class TerminalNode(Node):
