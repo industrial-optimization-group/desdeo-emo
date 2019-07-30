@@ -17,8 +17,8 @@ import plotly.graph_objs as go
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
-    biogp_xover_standard,
-    biogp_mut_standard,
+    biogp_xover,
+    biogp_mutation,
     evodn2_self_adapting,
     evodn2_gaussian,
     evonn_nodeswap_gaussian,
@@ -81,8 +81,8 @@ class Population:
         self.non_dom = 0
         self.pop_size = pop_size
         self.recombination_funcs = {
-            "biogp_xover_standard": biogp_xover_standard,
-            "biogp_mut_standard": biogp_mut_standard,
+            "biogp_xover": biogp_xover,
+            "biogp_mut": biogp_mutation,
             "evodn2_self_adapting": evodn2_self_adapting,
             "evodn2_gaussian": evodn2_gaussian,
             "evonn_nodeswap_gaussian": evonn_nodeswap_gaussian,

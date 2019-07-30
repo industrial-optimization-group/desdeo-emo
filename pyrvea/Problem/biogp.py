@@ -150,9 +150,9 @@ class BioGPModel(BioGP):
         prob_terminal=0.5,
         selection="min_error",
         recombination_type=None,
-        crossover_type="biogp_xover_standard",
-        mutation_type="biogp_mut_standard",
-        single_obj_generations=1,
+        crossover_type="biogp_xover",
+        mutation_type="biogp_mut",
+        single_obj_generations=5,
         logging=False,
         plotting=False,
         ea_parameters=None
@@ -384,6 +384,17 @@ class Node:
         else:
             depth = 0
         return depth
+
+    def get_breadth_first_nodes(self):
+        nodes = []
+        stack = [self]
+        while stack:
+            cur_node = stack[0]
+            stack = stack[1:]
+            nodes.append(cur_node)
+            for child in cur_node.roots:
+                stack.append(child)
+        return nodes
 
 
 class LinearNode(Node):

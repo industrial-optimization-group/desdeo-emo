@@ -35,7 +35,8 @@ class bioGP:
         target_pop_size: int = 300,
         generations_per_iteration: int = 10,
         iterations: int = 10,
-        prob_crossover: float = 0.5
+        prob_crossover: float = 0.9,
+        prob_mutation: float = 0.3
     ):
         """Set up the parameters. Save in self.params"""
         params = {
@@ -48,7 +49,8 @@ class bioGP:
             "current_iteration_gen_count": 0,
             "current_total_gen_count": 0,
             "current_iteration_count": 0,
-            "prob_crossover": prob_crossover
+            "prob_crossover": prob_crossover,
+            "prob_mutation": prob_mutation
         }
         return params
 

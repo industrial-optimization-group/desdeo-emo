@@ -14,13 +14,19 @@ dataset, x, y = test_prob.create_training_data(samples=500)
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
 
-ea_params = {"generations_per_iteration": 10, "iterations": 10}
+ea_params = {
+    "generations_per_iteration": 10,
+    "iterations": 10,
+    "predator_pop_size": 100,
+    "prob_prey_move": 0.5,
+    "prob_crossover": 0.9,
+    "prob_mutation": 0.3,
+    "kill_interval": 4,
+    "max_rank": 5
 
-problem.train(
-    model_type="BioGP",
-    algorithm=PPGA,
-    ea_parameters=ea_params,
-)
+}
+
+problem.train(model_type="BioGP", algorithm=PPGA, ea_parameters=ea_params)
 
 y = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
 problem.models["f1"][0].plot(

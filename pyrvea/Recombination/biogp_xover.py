@@ -34,15 +34,15 @@ def mate(mating_pop, individuals, params):
 
         offspring1 = deepcopy(individuals[mates[0]])
         offspring2 = deepcopy(individuals[mates[1]])
+        if np.random.rand() < params["prob_crossover"]:
+            if np.random.rand() < 0.5:
+                rand_subtree = np.random.randint(min(len(offspring1.roots), len(offspring2.roots)))
+                tmp = deepcopy(offspring1.roots[rand_subtree])
+                offspring1.roots[rand_subtree] = offspring2.roots[rand_subtree]
+                offspring2.roots[rand_subtree] = tmp
 
-        if np.random.rand() < 0.5:
-            rand_subtree = np.random.randint(len(offspring1.roots))
-            tmp = deepcopy(offspring1.roots[rand_subtree])
-            offspring1.roots[rand_subtree] = offspring2.roots[rand_subtree]
-            offspring2.roots[rand_subtree] = tmp
-
-        else:
-            height_fair_xover(offspring1.roots, offspring2.roots)
+            else:
+                height_fair_xover(offspring1.roots, offspring2.roots)
 
         offspring.extend((offspring1, offspring2))
 
