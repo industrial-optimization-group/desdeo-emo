@@ -9,7 +9,7 @@ import numpy as np
 
 test_prob = TestProblem(name="Matyas", num_of_variables=2, num_of_objectives=1)
 
-dataset, x, y = test_prob.create_training_data(samples=250)
+dataset, x, y = test_prob.create_training_data(samples=500)
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
@@ -17,7 +17,7 @@ problem.train_test_split(train_size=0.7)
 ea_params = {"generations_per_iteration": 10, "iterations": 10}
 
 problem.train(
-    model_type="EvoNN",
+    model_type="BioGP",
     algorithm=PPGA,
     ea_parameters=ea_params,
 )

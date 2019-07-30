@@ -9,6 +9,7 @@ from math import ceil
 from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.EAs.PPGA import PPGA
+from pyrvea.EAs.bioGP import bioGP
 from pyrvea.Population.Population import Population
 import plotly
 import plotly.graph_objs as go
@@ -44,7 +45,7 @@ class BioGP(BaseProblem):
                     self.total_func_nodes = 0
                     self.grow_tree(max_depth=md, method="grow")
 
-                for i in range(int(self.params["pop_size"]/ (self.params["max_depth"] + 1))):
+                for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
                     self.total_func_nodes = 0
                     self.grow_tree(max_depth=md, method="full")
 
@@ -64,6 +65,8 @@ class BioGP(BaseProblem):
             and then terminals are chosen.
         depth : int
             Current depth.
+        ind : :obj:
+            The starting node from which to begin growing trees.
 
         """
         node = None
@@ -71,7 +74,8 @@ class BioGP(BaseProblem):
         if depth == 0:
             if ind is None:
                 ind = LinearNode(value="linear")
-            for i in range(len(ind.roots), self.params["max_subtrees"]):
+            num_subtrees = randint(1, self.params["max_subtrees"])
+            for i in range(len(ind.roots), num_subtrees):
                 node = self.grow_tree(max_depth, method, depth=depth + 1)
                 ind.roots.append(node)
             ind.num_func_nodes = self.total_func_nodes
@@ -132,6 +136,8 @@ class BioGPModel(BioGP):
         self.name = "BioGP_Model"
         self.linear_node = None
         self.fitness = None
+        self.svr = None
+        self.log = None
         self.set_params(**kwargs)
 
     def set_params(
@@ -139,13 +145,14 @@ class BioGPModel(BioGP):
         name="BioGP_Model",
         algorithm=PPGA,
         pop_size=500,
-        max_depth=5,
+        max_depth=4,
         max_subtrees=3,
         prob_terminal=0.5,
         selection="min_error",
         recombination_type=None,
         crossover_type="biogp_xover_standard",
         mutation_type="biogp_mut_standard",
+        single_obj_generations=1,
         logging=False,
         plotting=False,
         ea_parameters=None
@@ -172,6 +179,8 @@ class BioGPModel(BioGP):
         recombination_type, crossover_type, mutation_type : str or None
             Recombination functions. If recombination_type is specified, crossover and mutation
             will be handled by the same function. If None, they are done separately.
+        single_obj_generations : int
+            How many generations to run minimizing only the training error.
         logging : bool
             True to create a logfile, False otherwise.
         plotting : bool
@@ -191,6 +200,7 @@ class BioGPModel(BioGP):
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
+            "single_obj_generations": single_obj_generations,
             "logging": logging,
             "plotting": plotting,
             "ea_parameters": ea_parameters
@@ -243,6 +253,14 @@ class BioGPModel(BioGP):
             crossover_type=self.params["crossover_type"],
             mutation_type=self.params["mutation_type"],
         )
+
+        # Minimize error for first n generations before switching to bi-objective
+        ea_params = {"generations_per_iteration": self.params["single_obj_generations"], "iterations": 1}
+        pop.evolve(
+                EA=bioGP,
+                ea_parameters=ea_params
+            )
+
         pop.evolve(
             EA=self.params["algorithm"],
             ea_parameters=self.params["ea_parameters"]
@@ -254,16 +272,28 @@ class BioGPModel(BioGP):
         )
 
     def predict(self, decision_variables):
+        """Predict using the BioGP model.
 
+        Parameters
+        ----------
+        decision_variables : ndarray
+            The decision variables used for prediction.
+
+        Returns
+        -------
+        y : ndarray
+            The prediction of the model.
+
+        """
         sub_trees = []
         for root in self.linear_node.roots:
             sub_trees.append([root.predict(x) for x in decision_variables])
 
         f_matrix = np.insert(np.swapaxes(np.asarray(sub_trees), 0, 1), 0, 1, axis=1)
 
-        out = np.dot(f_matrix, self.linear_node.linear)
+        y = np.dot(f_matrix, self.linear_node.linear)
 
-        return out
+        return y
 
     def plot(self, prediction, target, name=None):
         """Creates and shows a plot for the model's prediction.
@@ -407,6 +437,7 @@ class LinearNode(Node):
 
 class FunctionNode(Node):
     def __init__(self, value=None, depth=None):
+        super().__init__()
         self.value = value
         self.depth = depth
         self.function_set = {
@@ -415,7 +446,6 @@ class FunctionNode(Node):
             "mul": self.mul,
             "div": self.div,
         }
-        super().__init__()
 
     def predict(self, decision_variables=None):
         dv = decision_variables
@@ -460,10 +490,10 @@ class FunctionNode(Node):
 
 class TerminalNode(Node):
     def __init__(self, value=None, depth=None):
+        super().__init__()
         self.value = value
         self.depth = depth
         self.terminal_set = ["x1", "x2", 0.26, 0.48]
-        super().__init__()
 
     def predict(self, decision_variables=None):
 

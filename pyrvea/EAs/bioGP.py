@@ -1,7 +1,9 @@
 from pyrvea.EAs.baseEA import BaseEA
 from pyrvea.Population.Population import Population
+from pyrvea.Selection.tournament_select import tour_select
 from random import sample
-
+from operator import attrgetter
+import numpy as np
 
 class bioGP:
     def __init__(self, population: "Population", ea_parameters):
@@ -24,12 +26,30 @@ class bioGP:
         """
 
         self.params = self.set_params(population, **ea_parameters)
-        # print("Using BaseDecompositionEA init")
         self._next_iteration(population)
 
-    def set_params(self, population: "Population", tournament_size: int = 5):
+    def set_params(
+        self,
+        population: "Population",
+        tournament_size: int = 5,
+        target_pop_size: int = 300,
+        generations_per_iteration: int = 10,
+        iterations: int = 10,
+        prob_crossover: float = 0.5
+    ):
         """Set up the parameters. Save in self.params"""
-        params = {"population": population, "tournament_size": tournament_size}
+        params = {
+            "population": population,
+            "tournament_size": tournament_size,
+            "target_pop_size": target_pop_size,
+            "generations": generations_per_iteration,
+            "iterations": iterations,
+            "total_generations": iterations * generations_per_iteration,
+            "current_iteration_gen_count": 0,
+            "current_total_gen_count": 0,
+            "current_iteration_count": 0,
+            "prob_crossover": prob_crossover
+        }
         return params
 
     def _next_iteration(self, population: "Population"):
@@ -62,14 +82,27 @@ class bioGP:
         population: "Population"
             Population object
         """
-        selected = self.select(population)
-        population.delete_or_keep(selected, "keep")
-        offspring = population.mate(mating_pop=selected, params=self.params)
+        print(min(population.fitness[:, 0]))
+        #selected = self.select(population)
+        offspring = population.mate(params=self.params)
+        population.delete_or_keep(np.arange(len(population.individuals)), "delete")
         population.add(offspring)
 
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
         return self.params["current_iteration_gen_count"] <= self.params["generations"]
+
+    def _run_interruption(self, population: "Population"):
+        """Run the interruption phase of PPGA.
+
+        Use this phase to make changes to PPGA.params or other objects.
+
+        Parameters
+        ----------
+        population : Population
+        """
+
+        pass
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected
@@ -83,13 +116,8 @@ class bioGP:
 
         Returns
         -------
-        list
+        parents : list
             List of indices of individuals to be selected.
         """
-        chosen = []
-        for i in range(self.params["tournament_size"]):
+        return tour_select(population.individuals, self.params["tournament_size"])
 
-            aspirants = sample(population.individuals, int(len(population.individuals)*0.1))
-            chosen.append(min(aspirants, key=aspirants.fitness[0]))
-
-        return chosen

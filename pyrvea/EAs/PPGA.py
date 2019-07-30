@@ -244,6 +244,8 @@ class PPGA:
         population : Population
         """
 
+        pass
+
     def select(self, population, max_rank=20) -> list:
         """Of the population, individuals lower than max_rank are selected.
         Return indices of selected individuals.
