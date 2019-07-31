@@ -2,7 +2,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
 from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
 from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
-from pyrvea.Problem.biogp import BioGPModel as BioGP
+from pyrvea.Problem.biogp_problem import BioGPModel as BioGP
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split as tts
 import numpy as np
@@ -90,6 +90,8 @@ class DataProblem(BaseProblem):
 
         for x in range(1):
             train_indices, test_indices = tts(self.all_indices, train_size=train_size)
+            train_indices.sort()
+            test_indices.sort()
             self.train_indices.append(train_indices)
             self.test_indices.append(test_indices)
 
@@ -116,8 +118,8 @@ class DataProblem(BaseProblem):
                 print("Training run number", train_run, "of", len(self.train_indices))
                 model = model_type(**kwargs)
                 model.fit(
-                    np.asarray(self.data[self.x])[train_indices],
-                    np.asarray(self.data[obj])[train_indices],
+                    self.data[self.x].loc[train_indices],
+                    self.data[obj].loc[train_indices],
                 )
                 self.models[obj].append(model)
 

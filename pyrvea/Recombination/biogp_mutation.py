@@ -32,24 +32,23 @@ def mutate(
             # Standard mutation
             rand_subtree = np.random.randint(len(ind.roots))
             del ind.roots[rand_subtree]
-            params["population"].problem.grow_tree(max_depth=ind.depth, method="grow", ind=ind)
+            ind.grow_tree(method="grow", ind=ind)
 
         elif r <= prob_point + prob_stand:
             # Point mutation
-            nodes = ind.get_breadth_first_nodes()
-            for node in nodes:
+
+            for node in ind.nodes:
                 if np.random.rand() < prob_replace and node.__class__.__name__ == "TerminalNode":
                     node.value = choice(node.terminal_set)
                 elif np.random.rand() < prob_replace and node.__class__.__name__ == "FunctionNode":
-                    value = choice(list(node.function_set.values()))
+                    value = choice(node.function_set)
                     while node.value.__code__.co_argcount != value.__code__.co_argcount:
-                        value = choice(list(node.function_set.values()))
+                        value = choice(node.function_set)
                     node.value = value
 
         elif r <= prob_mono + prob_point + prob_stand:
             # Mono parental xover
-            nodes = ind.get_breadth_first_nodes()
-            swap_nodes = sample(nodes, 2)
+            swap_nodes = sample(ind.nodes, 2)
             tmp = swap_nodes[0]
             swap_nodes[0] = swap_nodes[1]
             swap_nodes[1] = tmp

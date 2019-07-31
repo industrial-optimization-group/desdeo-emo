@@ -4,6 +4,7 @@
 from random import random, randint, choice, seed
 from graphviz import Digraph, Source
 import numpy as np
+import pandas as pd
 from inspect import signature
 from math import ceil
 from pyrvea.Problem.baseproblem import BaseProblem
@@ -23,6 +24,8 @@ class BioGP(BaseProblem):
         num_of_objectives=2,
         params=None,
         num_samples=None,
+        terminal_set=None,
+        function_set=None
     ):
         super().__init__()
 
@@ -32,70 +35,38 @@ class BioGP(BaseProblem):
         self.num_of_objectives = num_of_objectives
         self.params = params
         self.num_samples = num_samples
+        self.function_map = {
+            "add": self.add,
+            "sub": self.sub,
+            "mul": self.mul,
+            "div": self.div,
+            "sqrt": self.sqrt,
+            "log": self.log
+        }
+        self.terminal_set = terminal_set
+        self.function_set = function_set
 
         self.individuals = []
-
-        self.total_func_nodes = 0
 
     def create_individuals(self, method="ramped_half_and_half"):
 
         if method == "ramped_half_and_half":
             for md in range(ceil(self.params["max_depth"] / 2), self.params["max_depth"] + 1):
                 for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
-                    self.total_func_nodes = 0
-                    self.grow_tree(max_depth=md, method="grow")
+
+                    ind = LinearNode(value="linear", params=self.params)
+                    ind.grow_tree(max_depth=md, method="grow", ind=ind)
+                    ind.nodes = ind.get_breadth_first_nodes()
+                    self.individuals.append(ind)
 
                 for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
-                    self.total_func_nodes = 0
-                    self.grow_tree(max_depth=md, method="full")
+
+                    ind = LinearNode(value="linear", params=self.params)
+                    ind.grow_tree(max_depth=md, method="full", ind=ind)
+                    ind.nodes = ind.get_breadth_first_nodes()
+                    self.individuals.append(ind)
 
         return self.individuals
-
-    def grow_tree(self, max_depth, method="grow", depth=0, ind=None):
-        """Create a random tree recursively using either grow or full method.
-
-        Parameters
-        ----------
-        max_depth : int
-            The maximum depth of the tree.
-        method : str
-            Methods: 'grow', 'full'.
-            For the 'grow' method, nodes are chosen at random from both functions and terminals.
-            The 'full' method chooses nodes from the function set until the max depth is reached,
-            and then terminals are chosen.
-        depth : int
-            Current depth.
-        ind : :obj:
-            The starting node from which to begin growing trees.
-
-        """
-        node = None
-
-        if depth == 0:
-            if ind is None:
-                ind = LinearNode(value="linear")
-            num_subtrees = randint(1, self.params["max_subtrees"])
-            for i in range(len(ind.roots), num_subtrees):
-                node = self.grow_tree(max_depth, method, depth=depth + 1)
-                ind.roots.append(node)
-            ind.num_func_nodes = self.total_func_nodes
-            self.individuals.append(ind)
-
-        # Make terminal node
-        elif depth >= max_depth or method == "grow" and random() > self.params["prob_terminal"]:
-            node = TerminalNode(depth=depth)
-            node.value = choice(node.terminal_set)
-
-        # Make function node
-        else:
-            node = FunctionNode(depth=depth)
-            self.total_func_nodes += 1
-            node.value = choice(list(node.function_set.values()))
-            for i in range(node.value.__code__.co_argcount):  # Check arity
-                root = self.grow_tree(max_depth, method, depth=depth + 1)
-                node.roots.append(root)
-
-        return node
 
     def objectives(self, decision_variables):
 
@@ -129,6 +100,31 @@ class BioGP(BaseProblem):
 
         return model, fitness
 
+    @staticmethod
+    def add(x, y):
+        return np.add(x, y)
+
+    @staticmethod
+    def sub(x, y):
+        return np.subtract(x, y)
+
+    @staticmethod
+    def mul(x, y):
+        return np.multiply(x, y)
+
+    @staticmethod
+    def div(x, y):
+        y[y == 0] = 1.0
+        return np.divide(x, y)
+
+    @staticmethod
+    def sqrt(x):
+        return np.sqrt(np.abs(x))
+
+    @staticmethod
+    def log(x):
+        np.where(np.abs(x) > 0.001, np.log(np.abs(x)), 0.)
+
 
 class BioGPModel(BioGP):
     def __init__(self, **kwargs):
@@ -145,9 +141,11 @@ class BioGPModel(BioGP):
         name="BioGP_Model",
         algorithm=PPGA,
         pop_size=500,
-        max_depth=4,
+        max_depth=5,
         max_subtrees=3,
         prob_terminal=0.5,
+        complexity_scalar=0.5,
+        error_lim=0.001,
         selection="min_error",
         recombination_type=None,
         crossover_type="biogp_xover",
@@ -155,7 +153,9 @@ class BioGPModel(BioGP):
         single_obj_generations=5,
         logging=False,
         plotting=False,
-        ea_parameters=None
+        ea_parameters=None,
+        function_set=("add", "sub", "mul", "div"),
+        terminal_set=None
     ):
 
         """ Set parameters for the EvoNN model.
@@ -174,6 +174,13 @@ class BioGPModel(BioGP):
             Maximum number of subtrees the tree can grow.
         prob_terminal : float
             The probability of making the node terminal when growing the tree.
+        complexity_scalar : float
+            Complexity of the model is calculated as a weighted aggregate of the maximum depth of the GP tree
+            and the total number of corresponding function nodes. Larger value gives more weight to the depth,
+            lower more weight to the number of function nodes.
+        error_lim : float
+            Used to control bloat. If the error reduction ratio of a subtree is less than this value,
+            then that root is terminated and a new root is grown under the linear node (i.e., parent node).
         selection : str
             The selection method to use.
         recombination_type, crossover_type, mutation_type : str or None
@@ -187,6 +194,11 @@ class BioGPModel(BioGP):
             True to create a plot, False otherwise.
         ea_parameters : dict
             Contains the parameters needed by EA (Default value = None).
+        function_set : iterable
+            The function set to use when creating the trees.
+        terminal_set : iterable
+            The terminals (variables and constants) to use when creating the trees.
+
         """
 
         params = {
@@ -196,6 +208,8 @@ class BioGPModel(BioGP):
             "max_depth": max_depth,
             "max_subtrees": max_subtrees,
             "prob_terminal": prob_terminal,
+            "complexity_scalar": complexity_scalar,
+            "error_lim": error_lim,
             "selection": selection,
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
@@ -203,7 +217,9 @@ class BioGPModel(BioGP):
             "single_obj_generations": single_obj_generations,
             "logging": logging,
             "plotting": plotting,
-            "ea_parameters": ea_parameters
+            "ea_parameters": ea_parameters,
+            "function_set": function_set,
+            "terminal_set": terminal_set
         }
 
         self.name = name
@@ -229,6 +245,11 @@ class BioGPModel(BioGP):
         self.y_train = target_values
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
+        self.terminal_set = self.params["terminal_set"]
+        function_set = []
+        for function in self.params["function_set"]:
+            function_set.append(self.function_map[function])
+        self.params["function_set"] = function_set
 
         # if self.params["logging"]:
         #     self.log = self.create_logfile()
@@ -276,7 +297,7 @@ class BioGPModel(BioGP):
 
         Parameters
         ----------
-        decision_variables : ndarray
+        decision_variables : pd.DataFrame
             The decision variables used for prediction.
 
         Returns
@@ -285,13 +306,25 @@ class BioGPModel(BioGP):
             The prediction of the model.
 
         """
+
         sub_trees = []
+        # Stack outputs of subtrees to form weight matrix
         for root in self.linear_node.roots:
-            sub_trees.append([root.predict(x) for x in decision_variables])
+            sub_tree = root.predict(decision_variables)
+            if sub_tree.size == 1:
+                sub_tree = sub_tree.reshape(1)
+            sub_trees.append(sub_tree)
 
-        f_matrix = np.insert(np.swapaxes(np.asarray(sub_trees), 0, 1), 0, 1, axis=1)
+        sub_trees = np.hstack(sub_trees)
+        axis = None
+        if sub_trees.ndim > 1:
+            axis = 1
+        sub_trees = np.insert(sub_trees, 0, 1, axis=axis)
 
-        y = np.dot(f_matrix, self.linear_node.linear)
+        y = np.dot(sub_trees, self.linear_node.linear)
+
+        if isinstance(y, float):
+            y = np.asarray([y])
 
         return y
 
@@ -343,10 +376,12 @@ class Node:
 
     """
 
-    def __init__(self, value=None, depth=None):
+    def __init__(self, value=None, depth=None, params=None):
 
         self.value = value
         self.depth = depth
+        self.params = params
+        self.nodes = []
         self.roots = []
 
     def predict(self, decision_variables=None):
@@ -367,7 +402,7 @@ class Node:
             dot[0].edge(node_name, str(count[0]))
             node.draw(dot, count)
 
-    def draw_tree(self, name, footer):
+    def draw_tree(self, name="tree", footer=""):
         dot = [Digraph()]
         dot[0].attr(kw="graph", label=footer)
         count = [0]
@@ -396,14 +431,57 @@ class Node:
                 stack.append(child)
         return nodes
 
+    def grow_tree(self, max_depth=None, method="grow", depth=0, ind=None):
+        """Create a random tree recursively using either grow or full method.
+
+        Parameters
+        ----------
+        max_depth : int
+            The maximum depth of the tree.
+        method : str
+            Methods: 'grow', 'full'.
+            For the 'grow' method, nodes are chosen at random from both functions and terminals.
+            The 'full' method chooses nodes from the function set until the max depth is reached,
+            and then terminals are chosen.
+        depth : int
+            Current depth.
+        ind : :obj:
+            The starting node from which to begin growing trees.
+
+        """
+        node = None
+        if max_depth is None:
+            max_depth = self.params["max_depth"]
+        if depth == 0:
+            if ind is None:
+                ind = LinearNode(value="linear")
+            num_subtrees = self.params["max_subtrees"]
+            for i in range(len(ind.roots), num_subtrees):
+                node = self.grow_tree(max_depth, method, depth=depth + 1)
+                ind.roots.append(node)
+
+        # Make terminal node
+        elif depth >= max_depth or method == "grow" and random() > self.params["prob_terminal"]:
+            node = TerminalNode(depth=depth, terminal_set=self.params["terminal_set"])
+            node.value = choice(node.terminal_set)
+
+        # Make function node
+        else:
+            node = FunctionNode(depth=depth, function_set=self.params["function_set"])
+            node.value = choice(node.function_set)
+            for i in range(node.value.__code__.co_argcount):  # Check arity
+                root = self.grow_tree(max_depth, method, depth=depth + 1)
+                node.roots.append(root)
+
+        return node
+
 
 class LinearNode(Node):
-    def __init__(self, value="linear", depth=0, scalar=0.5):
-        super().__init__()
+    def __init__(self, value="linear", depth=0, params=None):
+        super().__init__(params=params)
         self.value = value
         self.depth = depth
-        self.scalar = scalar
-        self.num_func_nodes = 0
+        self.params = params
         self.out = None
         self.complexity = None
         self.fitness = None
@@ -412,31 +490,38 @@ class LinearNode(Node):
     def calculate_linear(self, X_train, y_train):
 
         sub_trees = []
+        # Stack outputs of subtrees to form weight matrix
         for root in self.roots:
-            sub_trees.append([root.predict(x) for x in X_train])
+            sub_trees.append(root.predict(X_train))
 
-        f_matrix = np.insert(np.swapaxes(np.asarray(sub_trees), 0, 1), 0, 1, axis=1)
+        sub_trees = np.hstack(sub_trees)
+        axis = None
+        if sub_trees.ndim > 1:
+            axis = 1
+        sub_trees = np.insert(sub_trees, 0, 1, axis=axis)
 
-        weights, *_ = np.linalg.lstsq(f_matrix, y_train, rcond=None)
+        weights, *_ = np.linalg.lstsq(sub_trees, y_train, rcond=None)
         self.linear = weights
-        out = np.dot(f_matrix, weights)
+        out = np.dot(sub_trees, weights)
 
         # Error reduction ratio
-        #
-        # q, r = np.linalg.qr(fx)
-        #
-        # d_inv = np.linalg.inv(np.matmul(q, q.T))
-        #
-        # #s = np.matmul(d_inv, np.matmul(q.T, y))
-        # s = np.linalg.lstsq(q, y_train)[0]
-        #
-        # error = np.divide((s**2 * np.matmul(q.T, q)), np.matmul(y.T, y))
+        q, r = np.linalg.qr(sub_trees)
+        s = np.linalg.lstsq(q, y_train, rcond=None)[0]
+        error = np.divide((s**2 * np.sum(q*q, axis=0)), np.sum(out*out, axis=0))
+
+        # If error reduction ration < err_lim, delete root and grow new one
+        for i, err in enumerate(error[1:]):
+            if err < self.params["error_lim"]:
+                del self.roots[i]
+                self.grow_tree(max_depth=self.params["max_depth"], method="grow", ind=self)
 
         self.depth = self.depth_count(self)
 
+        num_func_nodes = sum(node.__class__.__name__ == "FunctionNode" for node in self.nodes)
+
         complexity = (
-            self.scalar * self.depth
-            + (1 - self.scalar) * self.num_func_nodes
+            self.params["complexity_scalar"] * self.depth
+            + (1 - self.params["complexity_scalar"]) * num_func_nodes
         )
 
         self.out = out
@@ -447,95 +532,35 @@ class LinearNode(Node):
 
 
 class FunctionNode(Node):
-    def __init__(self, value=None, depth=None):
+    def __init__(self, value=None, depth=None, function_set=None):
         super().__init__()
         self.value = value
         self.depth = depth
-        self.function_set = {
-            "add": self.add,
-            "sub": self.sub,
-            "mul": self.mul,
-            "div": self.div,
-        }
+        self.function_set = function_set
 
     def predict(self, decision_variables=None):
-        dv = decision_variables
 
-        values = [root.predict(dv) for root in self.roots]
+        values = [root.predict(decision_variables) for root in self.roots]
         if self.depth == 0:
             self.value = sum(values)
             return self.value
         else:
             return self.value(*values)
 
-    @staticmethod
-    def add(x, y):
-        return np.add(x, y)
-
-    @staticmethod
-    def sub(x, y):
-        return np.subtract(x, y)
-
-    @staticmethod
-    def mul(x, y):
-        return np.multiply(x, y)
-
-    @staticmethod
-    def div(x, y):
-        if -0.001 <= y <= 0.001:
-            return 1.0
-        else:
-            return np.divide(x, y)
-
-    @staticmethod
-    def sqrt(x):
-        return np.sqrt(np.abs(x))
-
-    @staticmethod
-    def log(x):
-        if x <= 0.001:
-            return 0.0
-        else:
-            return np.log(np.abs(x))
-
 
 class TerminalNode(Node):
-    def __init__(self, value=None, depth=None):
+    def __init__(self, value=None, depth=None, terminal_set=None):
         super().__init__()
         self.value = value
         self.depth = depth
-        self.terminal_set = ["x1", "x2", 0.26, 0.48]
+        self.terminal_set = terminal_set
 
     def predict(self, decision_variables=None):
 
-        if self.value == "x1":
-            return decision_variables[0]
-        elif self.value == "x2":
-            return decision_variables[1]
-        # if isinstance(self.value, str):
-        #     return decision_variables[self.value]
-
+        if isinstance(decision_variables, np.ndarray) and isinstance(self.value, str):
+            return decision_variables[:, int(''.join(filter(str.isdigit, self.value)))-1]
+        if isinstance(self.value, str):
+            return np.asarray(decision_variables[self.value]).reshape(-1, 1)
         else:
-            return self.value
+            return np.full((decision_variables.shape[0], 1), self.value)
 
-
-# def main():
-#
-#     # seed(1)
-#
-#     problem = BioGP()
-#     problem.create_individuals()
-#     problem.individuals[0].draw_tree("f", "tree0")
-#
-#     test_prob = TestProblem("Matyas", num_of_variables=2, num_of_objectives=1)
-#     dataset, x, y = test_prob.create_training_data(3)
-#     X_train = np.asarray(dataset[x])
-#     y_train = np.asarray(dataset[y])
-#     out = problem.individuals[0].calculate_linear(X_train, y_train)
-#     # out = [problem.individuals[0].predict(x) for x in X_train]
-#     # out = np.dot(dataset, problem.individuals[0].predict())
-#     return
-#
-#
-# if __name__ == "__main__":
-#     main()

@@ -5,6 +5,7 @@ from random import sample
 from operator import attrgetter
 import numpy as np
 
+
 class bioGP:
     def __init__(self, population: "Population", ea_parameters):
         """Initialize a Base Decomposition EA.
@@ -26,17 +27,17 @@ class bioGP:
         """
 
         self.params = self.set_params(population, **ea_parameters)
-        self._next_iteration(population)
 
     def set_params(
         self,
         population: "Population",
         tournament_size: int = 5,
-        target_pop_size: int = 300,
+        target_pop_size: int = 100,
         generations_per_iteration: int = 10,
         iterations: int = 10,
         prob_crossover: float = 0.9,
-        prob_mutation: float = 0.3
+        prob_mutation: float = 0.3,
+        min_fitness: float = 0.001
     ):
         """Set up the parameters. Save in self.params"""
         params = {
@@ -50,7 +51,8 @@ class bioGP:
             "current_total_gen_count": 0,
             "current_iteration_count": 0,
             "prob_crossover": prob_crossover,
-            "prob_mutation": prob_mutation
+            "prob_mutation": prob_mutation,
+            "min_fitness": min_fitness
         }
         return params
 
@@ -67,7 +69,7 @@ class bioGP:
             Contains current population
         """
         self.params["current_iteration_gen_count"] = 1
-        while self.continue_iteration():
+        while self.continue_iteration() and min(population.fitness[:, 0]) > self.params["min_fitness"]:
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
             self.params["current_total_gen_count"] += 1
