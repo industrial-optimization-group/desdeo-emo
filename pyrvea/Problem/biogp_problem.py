@@ -499,7 +499,7 @@ class Node:
         elif (
             depth >= max_depth
             or method == "grow"
-            and random() > self.params["prob_terminal"]
+            and random() < self.params["prob_terminal"]
         ):
             node = Node(
                 depth=depth,
