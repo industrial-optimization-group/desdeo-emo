@@ -56,14 +56,12 @@ class BioGP(BaseProblem):
 
                     ind = LinearNode(value="linear", params=self.params)
                     ind.grow_tree(max_depth=md, method="grow", ind=ind)
-                    ind.nodes = ind.get_breadth_first_nodes()
                     self.individuals.append(ind)
 
                 for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
 
                     ind = LinearNode(value="linear", params=self.params)
                     ind.grow_tree(max_depth=md, method="full", ind=ind)
-                    ind.nodes = ind.get_breadth_first_nodes()
                     self.individuals.append(ind)
 
         return self.individuals
@@ -385,7 +383,22 @@ class Node:
         self.roots = []
 
     def predict(self, decision_variables=None):
-        pass
+
+        if callable(self.value):
+            values = [root.predict(decision_variables) for root in self.roots]
+            if self.depth == 0:
+                self.value = sum(values)
+                return self.value
+            else:
+                return self.value(*values)
+
+        else:
+            if isinstance(decision_variables, np.ndarray) and isinstance(self.value, str):
+                return decision_variables[:, int(''.join(filter(str.isdigit, self.value)))-1]
+            if isinstance(self.value, str):
+                return np.asarray(decision_variables[self.value]).reshape(-1, 1)
+            else:
+                return np.full((decision_variables.shape[0], 1), self.value)
 
     def node_label(self):  # return string label
         if callable(self.value):
@@ -409,18 +422,15 @@ class Node:
         self.draw(dot, count)
         Source(dot[0], filename=name + ".gv", format="png").render()
 
-    def depth_count(self, node):
+    def get_sub_nodes(self):
+        """Get all nodes belonging to the subtree under the current node.
 
-        if isinstance(node.roots, list):
-            if len(node.roots) == 0:
-                depth = 1
-            else:
-                depth = 1 + max([self.depth_count(node) for node in node.roots])
-        else:
-            depth = 0
-        return depth
+        Returns
+        -------
+        nodes : list
+            A list of nodes in the subtree.
 
-    def get_breadth_first_nodes(self):
+        """
         nodes = []
         stack = [self]
         while stack:
@@ -462,13 +472,14 @@ class Node:
 
         # Make terminal node
         elif depth >= max_depth or method == "grow" and random() > self.params["prob_terminal"]:
-            node = TerminalNode(depth=depth, terminal_set=self.params["terminal_set"])
-            node.value = choice(node.terminal_set)
+            node = Node(depth=depth)
+            node.value = choice(self.params["terminal_set"])
 
         # Make function node
         else:
-            node = FunctionNode(depth=depth, function_set=self.params["function_set"])
-            node.value = choice(node.function_set)
+            node = Node(depth=depth)
+            node.value = choice(self.params["function_set"])
+
             for i in range(node.value.__code__.co_argcount):  # Check arity
                 root = self.grow_tree(max_depth, method, depth=depth + 1)
                 node.roots.append(root)
@@ -480,8 +491,10 @@ class LinearNode(Node):
     def __init__(self, value="linear", depth=0, params=None):
         super().__init__(params=params)
         self.value = value
-        self.depth = depth
+        self.nodes_at_depth = {}
         self.params = params
+        self.depth = depth
+        self.max_depth = None
         self.out = None
         self.complexity = None
         self.fitness = None
@@ -515,12 +528,19 @@ class LinearNode(Node):
                 del self.roots[i]
                 self.grow_tree(max_depth=self.params["max_depth"], method="grow", ind=self)
 
-        self.depth = self.depth_count(self)
+        self.nodes = self.get_sub_nodes()
+
+        for node in self.nodes:
+            if node.depth not in self.nodes_at_depth:
+                self.nodes_at_depth[node.depth] = []
+            self.nodes_at_depth[node.depth].append(node)
+
+        self.max_depth = max(key for key in self.nodes_at_depth.keys())
 
         num_func_nodes = sum(node.__class__.__name__ == "FunctionNode" for node in self.nodes)
 
         complexity = (
-            self.params["complexity_scalar"] * self.depth
+            self.params["complexity_scalar"] * self.max_depth
             + (1 - self.params["complexity_scalar"]) * num_func_nodes
         )
 

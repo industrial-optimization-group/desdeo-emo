@@ -1,6 +1,7 @@
 from pyrvea.Selection.tournament_select import tour_select
 import numpy as np
 from copy import deepcopy
+from random import choice, sample
 
 
 def height_fair_xover(offspring1, offspring2):
@@ -18,6 +19,9 @@ def height_fair_xover(offspring1, offspring2):
 
 def mate(mating_pop, individuals, params):
 
+    prob_standard = 0.5
+    prob_height_fair = params["prob_crossover"] - prob_standard
+
     if mating_pop is None:
         mating_pop = []
         for i in range(int(len(individuals) / 2)):
@@ -34,7 +38,16 @@ def mate(mating_pop, individuals, params):
 
         offspring1 = deepcopy(individuals[mates[0]])
         offspring2 = deepcopy(individuals[mates[1]])
-        if np.random.rand() < params["prob_crossover"]:
+
+        if np.random.rand() < prob_standard:
+            rand_node1 = np.random.randint(1, len(offspring1.nodes))  # Exclude linear node
+            rand_node2 = np.random.randint(1, len(offspring2.nodes))
+            tmp = deepcopy(offspring1.nodes[rand_node1])
+            offspring1.nodes[rand_node1].value = offspring2.nodes[rand_node2].value
+            offspring1.nodes[rand_node1].roots = offspring2.nodes[rand_node2].roots
+            offspring2.nodes[rand_node2].value = tmp.value
+            offspring2.nodes[rand_node2].roots = tmp.roots
+
             if np.random.rand() < 0.5:
                 rand_subtree = np.random.randint(min(len(offspring1.roots), len(offspring2.roots)))
                 tmp = deepcopy(offspring1.roots[rand_subtree])
