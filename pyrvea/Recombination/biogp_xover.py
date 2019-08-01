@@ -29,7 +29,7 @@ def mate(mating_pop, individuals, params):
 
         # Height-fair xover
         if r <= prob_height_fair:
-            depth = min(offspring1.max_depth, offspring2.max_depth)
+            depth = min(offspring1.total_depth, offspring2.total_depth)
             rand_node1 = choice(offspring1.nodes_at_depth[depth])
             rand_node2 = choice(offspring2.nodes_at_depth[depth])
             tmp_value = rand_node1.value
@@ -38,6 +38,8 @@ def mate(mating_pop, individuals, params):
             rand_node1.roots = rand_node2.roots
             rand_node2.value = tmp_value
             rand_node2.roots = tmp_roots
+            offspring1.nodes = offspring1.get_sub_nodes()
+            offspring2.nodes = offspring2.get_sub_nodes()
 
         # Standard xover
         elif r <= prob_height_fair + prob_standard:
@@ -49,9 +51,11 @@ def mate(mating_pop, individuals, params):
             rand_node1.roots = rand_node2.roots
             rand_node2.value = tmp_value
             rand_node2.roots = tmp_roots
+            offspring1.nodes = offspring1.get_sub_nodes()
+            offspring2.nodes = offspring2.get_sub_nodes()
 
         else:
-            continue
+            pass
 
         offspring.extend((offspring1, offspring2))
 

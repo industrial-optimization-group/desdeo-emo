@@ -15,6 +15,7 @@ from pyrvea.Population.Population import Population
 import plotly
 import plotly.graph_objs as go
 
+
 class BioGP(BaseProblem):
     def __init__(
         self,
@@ -25,7 +26,7 @@ class BioGP(BaseProblem):
         params=None,
         num_samples=None,
         terminal_set=None,
-        function_set=None
+        function_set=None,
     ):
         super().__init__()
 
@@ -41,7 +42,7 @@ class BioGP(BaseProblem):
             "mul": self.mul,
             "div": self.div,
             "sqrt": self.sqrt,
-            "log": self.log
+            "log": self.log,
         }
         self.terminal_set = terminal_set
         self.function_set = function_set
@@ -51,14 +52,20 @@ class BioGP(BaseProblem):
     def create_individuals(self, method="ramped_half_and_half"):
 
         if method == "ramped_half_and_half":
-            for md in range(ceil(self.params["max_depth"] / 2), self.params["max_depth"] + 1):
-                for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
+            for md in range(
+                ceil(self.params["max_depth"] / 2), self.params["max_depth"] + 1
+            ):
+                for i in range(
+                    int(self.params["pop_size"] / (self.params["max_depth"] + 1))
+                ):
 
                     ind = LinearNode(value="linear", params=self.params)
                     ind.grow_tree(max_depth=md, method="grow", ind=ind)
                     self.individuals.append(ind)
 
-                for i in range(int(self.params["pop_size"] / (self.params["max_depth"] + 1))):
+                for i in range(
+                    int(self.params["pop_size"] / (self.params["max_depth"] + 1))
+                ):
 
                     ind = LinearNode(value="linear", params=self.params)
                     ind.grow_tree(max_depth=md, method="full", ind=ind)
@@ -121,7 +128,7 @@ class BioGP(BaseProblem):
 
     @staticmethod
     def log(x):
-        np.where(np.abs(x) > 0.001, np.log(np.abs(x)), 0.)
+        np.where(np.abs(x) > 0.001, np.log(np.abs(x)), 0.0)
 
 
 class BioGPModel(BioGP):
@@ -153,7 +160,7 @@ class BioGPModel(BioGP):
         plotting=False,
         ea_parameters=None,
         function_set=("add", "sub", "mul", "div"),
-        terminal_set=None
+        terminal_set=None,
     ):
 
         """ Set parameters for the EvoNN model.
@@ -217,7 +224,7 @@ class BioGPModel(BioGP):
             "plotting": plotting,
             "ea_parameters": ea_parameters,
             "function_set": function_set,
-            "terminal_set": terminal_set
+            "terminal_set": terminal_set,
         }
 
         self.name = name
@@ -274,15 +281,14 @@ class BioGPModel(BioGP):
         )
 
         # Minimize error for first n generations before switching to bi-objective
-        ea_params = {"generations_per_iteration": self.params["single_obj_generations"], "iterations": 1}
-        pop.evolve(
-                EA=bioGP,
-                ea_parameters=ea_params
-            )
+        ea_params = {
+            "generations_per_iteration": self.params["single_obj_generations"],
+            "iterations": 1,
+        }
+        pop.evolve(EA=bioGP, ea_parameters=ea_params)
 
         pop.evolve(
-            EA=self.params["algorithm"],
-            ea_parameters=self.params["ea_parameters"]
+            EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]
         )
 
         non_dom_front = pop.non_dominated()
@@ -374,12 +380,15 @@ class Node:
 
     """
 
-    def __init__(self, value=None, depth=None, params=None):
-
+    def __init__(self, value=None, depth=None, params=None, terminal_set=None, function_set=None):
         self.value = value
         self.depth = depth
         self.params = params
+        self.function_set = function_set
+        self.terminal_set = terminal_set
         self.nodes = []
+        self.nodes_at_depth = None
+        self.total_depth = None
         self.roots = []
 
     def predict(self, decision_variables=None):
@@ -393,8 +402,12 @@ class Node:
                 return self.value(*values)
 
         else:
-            if isinstance(decision_variables, np.ndarray) and isinstance(self.value, str):
-                return decision_variables[:, int(''.join(filter(str.isdigit, self.value)))-1]
+            if isinstance(decision_variables, np.ndarray) and isinstance(
+                self.value, str
+            ):
+                return decision_variables[
+                    :, int("".join(filter(str.isdigit, self.value))) - 1
+                ]
             if isinstance(self.value, str):
                 return np.asarray(decision_variables[self.value]).reshape(-1, 1)
             else:
@@ -432,13 +445,25 @@ class Node:
 
         """
         nodes = []
+        nodes_at_depth = {}
         stack = [self]
         while stack:
             cur_node = stack[0]
+            depth = cur_node.depth
+            if cur_node.depth not in nodes_at_depth:
+                nodes_at_depth[cur_node.depth] = []
+            nodes_at_depth[cur_node.depth].append(cur_node)
             stack = stack[1:]
             nodes.append(cur_node)
+            if len(cur_node.roots) > 0:
+                depth += 1
             for child in cur_node.roots:
+                child.depth = depth
                 stack.append(child)
+
+        self.nodes_at_depth = nodes_at_depth
+        self.total_depth = max(key for key in self.nodes_at_depth.keys())
+
         return nodes
 
     def grow_tree(self, max_depth=None, method="grow", depth=0, ind=None):
@@ -471,14 +496,26 @@ class Node:
                 ind.roots.append(node)
 
         # Make terminal node
-        elif depth >= max_depth or method == "grow" and random() > self.params["prob_terminal"]:
-            node = Node(depth=depth)
-            node.value = choice(self.params["terminal_set"])
+        elif (
+            depth >= max_depth
+            or method == "grow"
+            and random() > self.params["prob_terminal"]
+        ):
+            node = Node(
+                depth=depth,
+                function_set=self.params["function_set"],
+                terminal_set=self.params["terminal_set"],
+            )
+            node.value = choice(node.terminal_set)
 
         # Make function node
         else:
-            node = Node(depth=depth)
-            node.value = choice(self.params["function_set"])
+            node = Node(
+                depth=depth,
+                function_set=self.params["function_set"],
+                terminal_set=self.params["terminal_set"],
+            )
+            node.value = choice(node.function_set)
 
             for i in range(node.value.__code__.co_argcount):  # Check arity
                 root = self.grow_tree(max_depth, method, depth=depth + 1)
@@ -494,7 +531,7 @@ class LinearNode(Node):
         self.nodes_at_depth = {}
         self.params = params
         self.depth = depth
-        self.max_depth = None
+        self.total_depth = None
         self.out = None
         self.complexity = None
         self.fitness = None
@@ -520,27 +557,24 @@ class LinearNode(Node):
         # Error reduction ratio
         q, r = np.linalg.qr(sub_trees)
         s = np.linalg.lstsq(q, y_train, rcond=None)[0]
-        error = np.divide((s**2 * np.sum(q*q, axis=0)), np.sum(out*out, axis=0))
+        error = np.divide((s ** 2 * np.sum(q * q, axis=0)), np.sum(out * out, axis=0))
 
         # If error reduction ration < err_lim, delete root and grow new one
         for i, err in enumerate(error[1:]):
             if err < self.params["error_lim"]:
                 del self.roots[i]
-                self.grow_tree(max_depth=self.params["max_depth"], method="grow", ind=self)
+                self.grow_tree(
+                    max_depth=self.params["max_depth"], method="grow", ind=self
+                )
 
         self.nodes = self.get_sub_nodes()
 
-        for node in self.nodes:
-            if node.depth not in self.nodes_at_depth:
-                self.nodes_at_depth[node.depth] = []
-            self.nodes_at_depth[node.depth].append(node)
-
-        self.max_depth = max(key for key in self.nodes_at_depth.keys())
-
-        num_func_nodes = sum(node.__class__.__name__ == "FunctionNode" for node in self.nodes)
+        num_func_nodes = sum(
+            node.__class__.__name__ == "FunctionNode" for node in self.nodes
+        )
 
         complexity = (
-            self.params["complexity_scalar"] * self.max_depth
+            self.params["complexity_scalar"] * self.total_depth
             + (1 - self.params["complexity_scalar"]) * num_func_nodes
         )
 
@@ -549,38 +583,3 @@ class LinearNode(Node):
         self.fitness = np.sqrt(((y_train - out) ** 2).mean())
 
         return [self.fitness, self.complexity]
-
-
-class FunctionNode(Node):
-    def __init__(self, value=None, depth=None, function_set=None):
-        super().__init__()
-        self.value = value
-        self.depth = depth
-        self.function_set = function_set
-
-    def predict(self, decision_variables=None):
-
-        values = [root.predict(decision_variables) for root in self.roots]
-        if self.depth == 0:
-            self.value = sum(values)
-            return self.value
-        else:
-            return self.value(*values)
-
-
-class TerminalNode(Node):
-    def __init__(self, value=None, depth=None, terminal_set=None):
-        super().__init__()
-        self.value = value
-        self.depth = depth
-        self.terminal_set = terminal_set
-
-    def predict(self, decision_variables=None):
-
-        if isinstance(decision_variables, np.ndarray) and isinstance(self.value, str):
-            return decision_variables[:, int(''.join(filter(str.isdigit, self.value)))-1]
-        if isinstance(self.value, str):
-            return np.asarray(decision_variables[self.value]).reshape(-1, 1)
-        else:
-            return np.full((decision_variables.shape[0], 1), self.value)
-
