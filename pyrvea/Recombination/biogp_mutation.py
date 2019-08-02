@@ -33,17 +33,16 @@ def mutate(
             #
             # This picks a random subtree anywhere within the tree
             rand_node = choice(ind.nodes[1:])
-            if np.random.rand() < ind.params["prob_terminal"]:
-                rand_node.value = choice(rand_node.terminal_set)
-            rand_node.value = choice(rand_node.function_set)
-            rand_node.roots = []
-            ind.grow_tree(method="grow", ind=rand_node)
+            tree = ind.grow_tree(method="grow", depth=rand_node.depth, ind=rand_node)
+            rand_node.value = tree.value
+            rand_node.roots = tree.roots
 
             # This picks a whole subtree at depth=1 under the linear node
             # rand_subtree = np.random.randint(len(ind.roots))
             # del ind.roots[rand_subtree]
             # ind.grow_tree(method="grow", ind=ind)
-            # ind.nodes = ind.get_sub_nodes()
+
+            ind.nodes = ind.get_sub_nodes()
 
         elif r <= prob_point + prob_stand:
             # Point mutation

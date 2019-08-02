@@ -18,7 +18,8 @@ problem.train_test_split(train_size=0.7)
 ea_params = {
     "generations_per_iteration": 10,
     "iterations": 10,
-    "predator_pop_size": 100,
+    "predator_pop_size": 50,
+    "target_pop_size": 300,
     "prob_prey_move": 0.5,
     "prob_crossover": 0.9,
     "prob_mutation": 0.3,
@@ -37,7 +38,11 @@ problem.train(
     function_set=f_set,
     single_obj_generations=10
 )
-# problem.train(model_type="EvoNN", ea_parameters=ea_params)
+# ea_params_evonn = {
+#     "generations_per_iteration": 10,
+#     "iterations": 10,
+# }
+# problem.train(model_type="EvoNN", ea_parameters=ea_params_evonn)
 
 y = problem.models["f1"][0].predict(problem.data[problem.x])
 problem.models["f1"][0].plot(

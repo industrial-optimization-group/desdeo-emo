@@ -206,16 +206,16 @@ class Population:
             new_cv = self.constraint_violation
 
         if not preserve:
-            self.individuals = list(deleted_pop)
-            self.objectives = deleted_obj
-            self.fitness = deleted_fitness
-            self.constraint_violation = deleted_cv
-
-        else:
             self.individuals = list(new_pop)
             self.objectives = new_obj
             self.fitness = new_fitness
             self.constraint_violation = new_cv
+
+        else:
+            self.individuals = list(deleted_pop)
+            self.objectives = deleted_obj
+            self.fitness = deleted_fitness
+            self.constraint_violation = deleted_cv
 
     def evolve(self, EA: "BaseEA" = None, ea_parameters: dict = None):
         """Evolve the population with interruptions.

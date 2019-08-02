@@ -6,7 +6,7 @@ from operator import attrgetter
 import numpy as np
 
 
-class TournamentGA:
+class TournamentEA:
     def __init__(self, population: "Population", ea_parameters):
         """Run generations of evolutionary algorithm using tournament selection.
 
@@ -29,7 +29,7 @@ class TournamentGA:
         self,
         population: "Population",
         tournament_size: int = 5,
-        target_pop_size: int = 300,
+        target_pop_size: int = 500,
         generations_per_iteration: int = 10,
         iterations: int = 10,
         prob_crossover: float = 0.9,
@@ -154,16 +154,12 @@ class TournamentGA:
         for i in range(int(self.params["target_pop_size"] / 2)):
             parents.append(
                 [
-                    population.individuals[
-                        tour_select(
-                            population.fitness[:, 0], self.params["tournament_size"]
-                        )
-                    ],
-                    population.individuals[
-                        tour_select(
-                            population.fitness[:, 0], self.params["tournament_size"]
-                        )
-                    ],
+                    tour_select(
+                        population.fitness[:, 0], self.params["tournament_size"]
+                    ),
+                    tour_select(
+                        population.fitness[:, 0], self.params["tournament_size"]
+                    ),
                 ]
             )
         return parents

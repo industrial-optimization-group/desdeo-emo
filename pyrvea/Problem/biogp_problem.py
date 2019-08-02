@@ -10,7 +10,7 @@ from math import ceil
 from pyrvea.Problem.baseproblem import BaseProblem
 from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.EAs.PPGA import PPGA
-from pyrvea.EAs.TournamentGA import TournamentGA
+from pyrvea.EAs.TournamentEA import TournamentEA
 from pyrvea.Population.Population import Population
 import plotly
 import plotly.graph_objs as go
@@ -285,7 +285,7 @@ class BioGPModel(BioGP):
             "generations_per_iteration": self.params["single_obj_generations"],
             "iterations": 1,
         }
-        pop.evolve(EA=TournamentGA, ea_parameters=ea_params)
+        pop.evolve(EA=TournamentEA, ea_parameters=ea_params)
 
         pop.evolve(
             EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]
