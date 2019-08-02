@@ -95,7 +95,11 @@ class TestProblem(BaseProblem):
             self.lower_limits = self.obj_func.min_bounds
             self.upper_limits = self.obj_func.max_bounds
         else:
-            self.obj_func = OptTestFunctions(name=self.name)
+            self.obj_func = OptTestFunctions(
+                name=self.name,
+                num_of_objectives=num_of_objectives,
+                num_of_variables=num_of_variables,
+            )
             self.lower_limits = self.obj_func.lower_limits
             self.upper_limits = self.obj_func.upper_limits
 

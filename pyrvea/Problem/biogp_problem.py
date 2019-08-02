@@ -27,6 +27,7 @@ class BioGP(BaseProblem):
         num_samples=None,
         terminal_set=None,
         function_set=None,
+        fitness=None
     ):
         super().__init__()
 
@@ -46,6 +47,7 @@ class BioGP(BaseProblem):
         }
         self.terminal_set = terminal_set
         self.function_set = function_set
+        self.fitness = fitness
 
         self.individuals = []
 
@@ -270,6 +272,7 @@ class BioGPModel(BioGP):
         """Trains the networks and selects the best model from the non dominated front.
 
         """
+        self.fitness = [0]
         pop = Population(
             self,
             assign_type="BioGP",
@@ -285,8 +288,12 @@ class BioGPModel(BioGP):
             "generations_per_iteration": self.params["single_obj_generations"],
             "iterations": 1,
         }
+
         pop.evolve(EA=TournamentEA, ea_parameters=ea_params)
 
+        # Switch to bi-objective (error, complexity)
+        self.fitness = [0, 1]
+        pop.update_fitness()
         pop.evolve(
             EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]
         )
@@ -569,9 +576,7 @@ class LinearNode(Node):
 
         self.nodes = self.get_sub_nodes()
 
-        num_func_nodes = sum(
-            node.__class__.__name__ == "FunctionNode" for node in self.nodes
-        )
+        num_func_nodes = sum(1 for node in self.nodes if callable(node.value))
 
         complexity = (
             self.params["complexity_scalar"] * self.total_depth
