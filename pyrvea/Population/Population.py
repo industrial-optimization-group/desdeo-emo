@@ -174,52 +174,48 @@ class Population:
 
         return (obj, CV, fitness)
 
-    def delete_or_keep(self, indices, delete_or_keep="delete"):
-        """Remove from population individuals which are in indices, or
-        keep them and remove all others.
+    def delete(self, indices, preserve=False):
+        """Remove from population individuals which are in indices if preserve=False, otherwise
+        preserve them and remove all others.
 
         Parameters
         ----------
-        indices: list or ndarray
-            Indices of individuals to keep
-        delete_or_keep: str
-            Whether to delete indices from current population, or keep them and delete others
+        indices: array_like
+            Indices of individuals to keep or delete.
+        preserve: bool
+            Whether to delete individuals at indices from current population, or preserve them and delete others.
         """
 
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
 
-        # new_pop = np.delete(self.individuals, indices, axis=0)
         new_pop = np.array(self.individuals)[mask]
         deleted_pop = np.array(self.individuals)[~mask]
 
-        # new_obj = np.delete(self.objectives, indices, axis=0)
         new_obj = self.objectives[mask]
         deleted_obj = self.objectives[~mask]
 
-        # new_fitness = np.delete(self.fitness, indices, axis=0)
         new_fitness = self.fitness[mask]
         deleted_fitness = self.fitness[~mask]
 
         if len(self.constraint_violation) > 0:
-            # new_cv = np.delete(self.constraint_violation, indices, axis=0)
             new_cv = self.constraint_violation[mask]
             deleted_cv = self.constraint_violation[~mask]
         else:
             deleted_cv = self.constraint_violation
             new_cv = self.constraint_violation
 
-        if delete_or_keep == "delete":
-            self.individuals = list(new_pop)
-            self.objectives = new_obj
-            self.fitness = new_fitness
-            self.constraint_violation = new_cv
-
-        elif delete_or_keep == "keep":
+        if not preserve:
             self.individuals = list(deleted_pop)
             self.objectives = deleted_obj
             self.fitness = deleted_fitness
             self.constraint_violation = deleted_cv
+
+        else:
+            self.individuals = list(new_pop)
+            self.objectives = new_obj
+            self.fitness = new_fitness
+            self.constraint_violation = new_cv
 
     def evolve(self, EA: "BaseEA" = None, ea_parameters: dict = None):
         """Evolve the population with interruptions.

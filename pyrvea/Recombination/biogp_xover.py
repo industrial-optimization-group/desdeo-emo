@@ -1,4 +1,3 @@
-from pyrvea.Selection.tournament_select import tour_select
 import numpy as np
 from copy import deepcopy
 from random import choice
@@ -12,13 +11,8 @@ def mate(mating_pop, individuals, params):
 
     if mating_pop is None:
         mating_pop = []
-        for i in range(int(len(individuals) / 2)):
-            mating_pop.append(
-                [
-                    tour_select(individuals, params["tournament_size"]),
-                    tour_select(individuals, params["tournament_size"]),
-                ]
-            )
+        for i in range(len(individuals)):
+            mating_pop.append([i, np.random.randint(len(individuals))])
 
     offspring = []
 

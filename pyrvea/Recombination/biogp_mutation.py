@@ -30,6 +30,7 @@ def mutate(
     for ind in offspring:
         if r <= prob_stand:
             # Standard mutation
+            #
             # This picks a random subtree anywhere within the tree
             rand_node = choice(ind.nodes[1:])
             if np.random.rand() < ind.params["prob_terminal"]:
@@ -38,7 +39,7 @@ def mutate(
             rand_node.roots = []
             ind.grow_tree(method="grow", ind=rand_node)
 
-            # This picks a whole subtree under the linear node
+            # This picks a whole subtree at depth=1 under the linear node
             # rand_subtree = np.random.randint(len(ind.roots))
             # del ind.roots[rand_subtree]
             # ind.grow_tree(method="grow", ind=ind)

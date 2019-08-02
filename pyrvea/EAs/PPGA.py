@@ -229,7 +229,7 @@ class PPGA:
         ):
             selected = self.select(population, self.params["max_rank"])
             self.lattice.update_lattice(selected)
-            population.delete_or_keep(selected, "delete")
+            population.delete(selected)
 
         # Move predators
         self.lattice.move_predator()
@@ -531,7 +531,7 @@ class Lattice:
                     pos[0], pos[1] = dest_y, dest_x
 
         # Remove killed prey from population
-        self.params["population"].delete_or_keep(to_be_killed, "delete")
+        self.params["population"].delete(to_be_killed)
         self.update_lattice()
 
     def update_lattice(self, selected=None):

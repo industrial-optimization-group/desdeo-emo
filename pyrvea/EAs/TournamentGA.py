@@ -6,19 +6,16 @@ from operator import attrgetter
 import numpy as np
 
 
-class bioGP:
+class TournamentGA:
     def __init__(self, population: "Population", ea_parameters):
-        """Initialize a Base Decomposition EA.
-
-        This will call methods to set up the parameters of RVEA, create
-        Reference Vectors, and (as of Feb 2019) run the first iteration of RVEA.
+        """Run generations of evolutionary algorithm using tournament selection.
 
         Parameters
         ----------
         population : "Population"
             This variable is updated as evolution takes place
-        EA_parameters : dict
-            Takes the EA parameters
+        ea_parameters : dict
+            Takes the EA parameters.
 
         Returns
         -------
@@ -32,14 +29,41 @@ class bioGP:
         self,
         population: "Population",
         tournament_size: int = 5,
-        target_pop_size: int = 100,
+        target_pop_size: int = 300,
         generations_per_iteration: int = 10,
         iterations: int = 10,
         prob_crossover: float = 0.9,
         prob_mutation: float = 0.3,
-        min_fitness: float = 0.001
+        min_fitness: float = 0.001,
     ):
-        """Set up the parameters. Save in self.params"""
+        """Set up the parameters.
+
+        Parameters
+        ----------
+        population : Population
+            Population object.
+        tournament_size : int
+            Number of participants in tournament selection.
+        target_pop_size : int
+            Desired population size.
+        generations_per_iteration : int
+            Number of generations per iteration.
+        iterations : int
+            Total number of iterations.
+        prob_crossover : float
+            Probability of crossover occurring.
+        prob_mutation : float
+            Probability of mutation occurring.
+        min_fitness : float
+            If error of the best solution < min_fitness, stop evolution.
+
+        Returns
+        -------
+        params : dict
+            Parameters for the algorithm.
+
+        """
+
         params = {
             "population": population,
             "tournament_size": tournament_size,
@@ -52,7 +76,7 @@ class bioGP:
             "current_iteration_count": 0,
             "prob_crossover": prob_crossover,
             "prob_mutation": prob_mutation,
-            "min_fitness": min_fitness
+            "min_fitness": min_fitness,
         }
         return params
 
@@ -69,7 +93,10 @@ class bioGP:
             Contains current population
         """
         self.params["current_iteration_gen_count"] = 1
-        while self.continue_iteration() and min(population.fitness[:, 0]) > self.params["min_fitness"]:
+        while (
+            self.continue_iteration()
+            and min(population.fitness[:, 0]) > self.params["min_fitness"]
+        ):
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
             self.params["current_total_gen_count"] += 1
@@ -87,9 +114,9 @@ class bioGP:
             Population object
         """
         print(min(population.fitness[:, 0]))
-        #selected = self.select(population)
-        offspring = population.mate(params=self.params)
-        population.delete_or_keep(np.arange(len(population.individuals)), "delete")
+        selected = self.select(population)
+        offspring = population.mate(mating_pop=selected, params=self.params)
+        population.delete(np.arange(len(population.individuals)))
         population.add(offspring)
 
     def continue_iteration(self):
@@ -109,8 +136,8 @@ class bioGP:
         pass
 
     def select(self, population) -> list:
-        """Describe a selection mechanism. Return indices of selected
-        individuals.
+        """Select parents for recombination using tournament selection.
+        Chooses two parents, which are needed for crossover.
 
         Parameters
         ----------
@@ -123,5 +150,20 @@ class bioGP:
         parents : list
             List of indices of individuals to be selected.
         """
-        return tour_select(population.individuals, self.params["tournament_size"])
-
+        parents = []
+        for i in range(int(self.params["target_pop_size"] / 2)):
+            parents.append(
+                [
+                    population.individuals[
+                        tour_select(
+                            population.fitness[:, 0], self.params["tournament_size"]
+                        )
+                    ],
+                    population.individuals[
+                        tour_select(
+                            population.fitness[:, 0], self.params["tournament_size"]
+                        )
+                    ],
+                ]
+            )
+        return parents
