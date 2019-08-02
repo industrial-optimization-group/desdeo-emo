@@ -108,15 +108,20 @@ class Population:
         self.plotting = plotting
         self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
-        self.fitness = np.empty((0, self.problem.num_of_objectives), float)
+        if problem.fitness is not None:
+            self.fitness = np.empty((0, len(self.problem.fitness)), float)
+            self.ideal_fitness = np.full((1, len(self.problem.fitness)), np.inf)
+            self.worst_fitness = -1 * self.ideal_fitness
+        else:
+            self.fitness = np.empty((0, self.problem.num_of_objectives), float)
+            self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
+        self.worst_fitness = -1 * self.ideal_fitness
         self.constraint_violation = np.empty(
             (0, self.problem.num_of_constraints), float
         )
         self.archive = pd.DataFrame(
             columns=["generation", "decision_variables", "objective_values"]
         )
-        self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
-        self.worst_fitness = -1 * self.ideal_fitness
 
         if not assign_type == "empty":
             individuals = create_new_individuals(
@@ -166,7 +171,7 @@ class Population:
         """
         obj = self.problem.objectives(ind)
         CV = np.empty((0, self.problem.num_of_constraints), float)
-        fitness = obj
+        fitness = self.eval_fitness(obj)
 
         if self.problem.num_of_constraints:
             CV = self.problem.constraints(ind, obj)
@@ -174,13 +179,32 @@ class Population:
 
         return (obj, CV, fitness)
 
+    def eval_fitness(self, obj):
+        """
+        Calculate fitness based on objective values. Fitness = obj if minimized.
+        """
+
+        # fitness = self.objectives * self.problem.objs
+        fitness = np.asarray(obj)[self.problem.fitness].tolist()
+
+        return fitness
+
+    def update_fitness(self):
+
+        self.fitness = self.objectives[:, self.problem.fitness]
+        self.ideal_fitness = np.full((1, len(self.problem.fitness)), np.inf)
+        self.worst_fitness = -1 * self.ideal_fitness
+        # self.ideal_fitness = self.ideal_fitness[:, self.problem.fitness]
+        # self.worst_fitness = -1 * self.ideal_fitness
+        self.update_ideal_and_nadir()
+
     def delete(self, indices, preserve=False):
         """Remove from population individuals which are in indices if preserve=False, otherwise
         preserve them and remove all others.
 
         Parameters
         ----------
-        indices: array_like
+        indices: np.ndarray
             Indices of individuals to keep or delete.
         preserve: bool
             Whether to delete individuals at indices from current population, or preserve them and delete others.
@@ -269,13 +293,6 @@ class Population:
             )
 
         return offspring
-
-    def eval_fitness(self):
-        """
-        Calculate fitness based on objective values. Fitness = obj if minimized.
-        """
-        fitness = self.objectives * self.problem.objs
-        return fitness
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""

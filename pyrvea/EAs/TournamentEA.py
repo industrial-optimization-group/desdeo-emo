@@ -95,7 +95,7 @@ class TournamentEA:
         self.params["current_iteration_gen_count"] = 1
         while (
             self.continue_iteration()
-            and min(population.fitness[:, 0]) > self.params["min_fitness"]
+            and min(population.fitness) > self.params["min_fitness"]
         ):
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
@@ -155,10 +155,10 @@ class TournamentEA:
             parents.append(
                 [
                     tour_select(
-                        population.fitness[:, 0], self.params["tournament_size"]
+                        population.fitness, self.params["tournament_size"]
                     ),
                     tour_select(
-                        population.fitness[:, 0], self.params["tournament_size"]
+                        population.fitness, self.params["tournament_size"]
                     ),
                 ]
             )

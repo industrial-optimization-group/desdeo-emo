@@ -36,7 +36,7 @@ problem.train(
     ea_parameters=ea_params,
     terminal_set=t_set,
     function_set=f_set,
-    single_obj_generations=10
+    single_obj_generations=1
 )
 # ea_params_evonn = {
 #     "generations_per_iteration": 10,
