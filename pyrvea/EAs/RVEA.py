@@ -106,7 +106,7 @@ class RVEA(BaseDecompositionEA):
             ),
             "prob_mutation": 1 / population.num_var,
             "dis_mut": 20,
-            "prob_xover": 1,
+            "prob_crossover": 1,
             "dis_xover": 30
         }
         return rveaparams

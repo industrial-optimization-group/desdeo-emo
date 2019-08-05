@@ -139,6 +139,7 @@ class BioGPModel(BioGP):
         self.name = "BioGP_Model"
         self.linear_node = None
         self.fitness = None
+        self.minimize = None
         self.svr = None
         self.log = None
         self.set_params(**kwargs)
@@ -237,10 +238,10 @@ class BioGPModel(BioGP):
 
         Parameters
         ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
+        training_data : pd.DataFrame, shape = (numbers of samples, number of variables)
+            Training data.
+        target_values : pd.Dataframe
+            Target values.
 
         Returns
         -------
@@ -272,7 +273,7 @@ class BioGPModel(BioGP):
         """Trains the networks and selects the best model from the non dominated front.
 
         """
-        self.fitness = [0]
+        self.minimize = [True, False]
         pop = Population(
             self,
             assign_type="BioGP",
@@ -292,7 +293,7 @@ class BioGPModel(BioGP):
         pop.evolve(EA=TournamentEA, ea_parameters=ea_params)
 
         # Switch to bi-objective (error, complexity)
-        self.fitness = [0, 1]
+        self.minimize = [True, True]
         pop.update_fitness()
         pop.evolve(
             EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]

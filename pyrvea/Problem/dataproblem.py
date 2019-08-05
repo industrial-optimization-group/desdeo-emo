@@ -26,6 +26,7 @@ class DataProblem(BaseProblem):
         upper_limits: List[float] = None,
         name="data_problem",
     ):
+        super().__init__()
         self.raw_data = data
         self.data = data
         self.x = x

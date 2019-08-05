@@ -369,18 +369,18 @@ class EvoDN2Model(EvoDN2):
 
         Parameters
         ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
+        training_data : pd.DataFrame, shape = (numbers of samples, number of variables)
+            Training data.
+        target_values : pd.DataFrame
+            Target values.
 
         Returns
         -------
         self : returns an instance of self.
 
         """
-        self.X_train = training_data
-        self.y_train = target_values
+        self.X_train = np.asarray(training_data)
+        self.y_train = np.asarray(target_values)
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
 
@@ -437,7 +437,7 @@ class EvoDN2Model(EvoDN2):
 
         Parameters
         ----------
-        decision_variables : ndarray
+        decision_variables : pd.DataFrame
             The decision variables used for prediction.
 
         Returns
@@ -450,7 +450,7 @@ class EvoDN2Model(EvoDN2):
 
         for i, subnet in enumerate(self.subnets):
 
-            in_nodes = decision_variables[:, self.subsets[i]]
+            in_nodes = np.asarray(decision_variables)[:, self.subsets[i]]
 
             for layer in subnet:
 

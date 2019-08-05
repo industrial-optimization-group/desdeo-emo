@@ -292,6 +292,7 @@ class EvoNNModel(EvoNN):
         self.non_linear_layer = None
         self.linear_layer = None
         self.fitness = None
+        self.minimize = None
         self.svr = None
         self.log = None
         self.set_params(**kwargs)
@@ -323,7 +324,7 @@ class EvoNNModel(EvoNN):
         ----------
         name : str
             Name of the problem.
-        algorithm : :obj:
+        algorithm : EA object
             Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
@@ -382,10 +383,10 @@ class EvoNNModel(EvoNN):
 
         Parameters
         ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
+        training_data : pd.DataFrame, shape = (numbers of samples, number of variables)
+            Training data.
+        target_values : pd.DataFrame
+            Target values.
 
         Returns
         -------
@@ -393,8 +394,8 @@ class EvoNNModel(EvoNN):
 
         """
 
-        self.X_train = training_data
-        self.y_train = target_values
+        self.X_train = np.asarray(training_data)
+        self.y_train = np.asarray(target_values)
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
 
@@ -440,7 +441,7 @@ class EvoNNModel(EvoNN):
 
         Parameters
         ----------
-        decision_variables : ndarray
+        decision_variables : pd.DataFrame
             The decision variables used for prediction.
 
         Returns
@@ -450,7 +451,7 @@ class EvoNNModel(EvoNN):
 
         """
         out = (
-            np.dot(decision_variables, self.non_linear_layer[1:, :])
+            np.dot(np.asarray(decision_variables), self.non_linear_layer[1:, :])
             + self.non_linear_layer[0]
         )
 

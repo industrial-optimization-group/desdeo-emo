@@ -18,13 +18,6 @@ problem.train_test_split(train_size=0.7)
 ea_params = {
     "generations_per_iteration": 10,
     "iterations": 10,
-    "predator_pop_size": 50,
-    "target_pop_size": 300,
-    "prob_prey_move": 0.5,
-    "prob_crossover": 0.9,
-    "prob_mutation": 0.3,
-    "kill_interval": 4,
-    "max_rank": 5,
 }
 
 f_set = ("add", "sub", "mul", "div", "sqrt")
@@ -32,7 +25,7 @@ t_set = deepcopy(x)
 t_set.extend([1, 2])
 problem.train(
     model_type="BioGP",
-    algorithm=PPGA,
+    algorithm=RVEA,
     ea_parameters=ea_params,
     terminal_set=t_set,
     function_set=f_set,
@@ -42,7 +35,7 @@ problem.train(
 #     "generations_per_iteration": 10,
 #     "iterations": 10,
 # }
-# problem.train(model_type="EvoNN", ea_parameters=ea_params_evonn)
+# problem.train(model_type="EvoNN", algorithm=RVEA, ea_parameters=ea_params_evonn)
 
 y = problem.models["f1"][0].predict(problem.data[problem.x])
 problem.models["f1"][0].plot(

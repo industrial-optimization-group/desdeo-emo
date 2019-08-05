@@ -207,7 +207,7 @@ class PPGA:
         if population.crossover_type == "simulated_binary_crossover":
             offspring = population.mate(params=self.params)
         else:
-            print(str(len(population.individuals)))  #DEBUG
+            # print(str(len(population.individuals)))  #DEBUG
             # start = time.process_time()  #DEBUG
             offspring = population.mate(mating_pop, self.params)
             # print(time.process_time() - start)  #DEBUG

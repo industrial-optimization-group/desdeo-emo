@@ -113,7 +113,7 @@ class TournamentEA:
         population: "Population"
             Population object
         """
-        print(min(population.fitness[:, 0]))
+
         selected = self.select(population)
         offspring = population.mate(mating_pop=selected, params=self.params)
         population.delete(np.arange(len(population.individuals)))

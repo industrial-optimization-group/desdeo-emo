@@ -51,7 +51,7 @@ class Population:
     ):
         """Initialize the population.
 
-        Attributes
+        Parameters
         ----------
         problem : BaseProblem
             An object of the class Problem
@@ -108,9 +108,9 @@ class Population:
         self.plotting = plotting
         self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
-        if problem.fitness is not None:
-            self.fitness = np.empty((0, len(self.problem.fitness)), float)
-            self.ideal_fitness = np.full((1, len(self.problem.fitness)), np.inf)
+        if problem.minimize is not None:
+            self.fitness = self.objectives[:, self.problem.minimize]
+            self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
             self.worst_fitness = -1 * self.ideal_fitness
         else:
             self.fitness = np.empty((0, self.problem.num_of_objectives), float)
@@ -185,17 +185,20 @@ class Population:
         """
 
         # fitness = self.objectives * self.problem.objs
-        fitness = np.asarray(obj)[self.problem.fitness].tolist()
+        if self.problem.minimize is None:
+            self.problem.minimize = [True] * self.problem.num_of_objectives
+        else:
+            assert len(self.problem.minimize) == self.problem.num_of_objectives
+
+        fitness = np.asarray(obj)[np.asarray(self.problem.minimize)]
 
         return fitness
 
     def update_fitness(self):
 
-        self.fitness = self.objectives[:, self.problem.fitness]
-        self.ideal_fitness = np.full((1, len(self.problem.fitness)), np.inf)
+        self.fitness = self.objectives[:, self.problem.minimize]
+        self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
-        # self.ideal_fitness = self.ideal_fitness[:, self.problem.fitness]
-        # self.worst_fitness = -1 * self.ideal_fitness
         self.update_ideal_and_nadir()
 
     def delete(self, indices, preserve=False):

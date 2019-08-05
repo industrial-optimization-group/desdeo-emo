@@ -32,10 +32,10 @@ class BaseProblem:
         self.num_of_variables = num_of_variables
         self.num_of_objectives = num_of_objectives
         self.num_of_constraints = num_of_constraints
-        self.fitness = None
         self.obj_func = []
         self.upper_limits = upper_limits
         self.lower_limits = lower_limits
+        self.minimize = None
 
     def objectives(self, decision_variables):
         """Accept a sample. Return Objective values.
