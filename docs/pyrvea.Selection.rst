@@ -20,6 +20,14 @@ pyrvea.Selection.NSGAIII\_select module
    :undoc-members:
    :show-inheritance:
 
+pyrvea.Selection.tournament\_select module
+------------------------------------------
+
+.. automodule:: pyrvea.Selection.tournament_select
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

@@ -19,7 +19,5 @@ Welcome to pyrvea's documentation!
    :maxdepth: 4 
    :caption: Contents:
     
-   README.md
    creating_models_example.md
    pyrvea
-

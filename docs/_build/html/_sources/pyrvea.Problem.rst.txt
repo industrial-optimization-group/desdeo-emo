@@ -12,6 +12,14 @@ pyrvea.Problem.baseproblem module
    :undoc-members:
    :show-inheritance:
 
+pyrvea.Problem.biogp\_problem module
+------------------------------------
+
+.. automodule:: pyrvea.Problem.biogp_problem
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pyrvea.Problem.dataproblem module
 ---------------------------------
 

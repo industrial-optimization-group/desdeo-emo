@@ -34,9 +34,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyrvea.Population package" href="pyrvea.Population.html" />
-    <link rel="prev" title="pyrvea.EAs package" href="pyrvea.EAs.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -212,7 +210,7 @@
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.ReferenceVectors.shear">
-<code class="sig-prename descclassname">pyrvea.OtherTools.ReferenceVectors.</code><code class="sig-name descname">shear</code><span class="sig-paren">(</span><em class="sig-param">vectors</em>, <em class="sig-param">degrees: float = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.shear" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.ReferenceVectors.</code><code class="sig-name descname">shear</code><span class="sig-paren">(</span><em class="sig-param">vectors</em>, <em class="sig-param">degrees:float=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.shear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shear a set of vectors lying on the plane z=0 towards the z-axis, such that the
 resulting vectors ‘degrees’ angle away from the z axis.</p>
 <p>z is the last element of the vector, and has to be equal to zero.</p>
@@ -243,7 +241,7 @@ Uses Householder reflections twice to achieve this.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.ReferenceVectors.rotate_toward">
-<code class="sig-prename descclassname">pyrvea.OtherTools.ReferenceVectors.</code><code class="sig-name descname">rotate_toward</code><span class="sig-paren">(</span><em class="sig-param">initial_vector</em>, <em class="sig-param">final_vector</em>, <em class="sig-param">other_vectors</em>, <em class="sig-param">degrees: float = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.rotate_toward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.ReferenceVectors.</code><code class="sig-name descname">rotate_toward</code><span class="sig-paren">(</span><em class="sig-param">initial_vector</em>, <em class="sig-param">final_vector</em>, <em class="sig-param">other_vectors</em>, <em class="sig-param">degrees:float=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.rotate_toward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate other_vectors (with the centre at initial_vector) towards final_vector
 by an angle degrees.</p>
 <dl class="field-list simple">
@@ -270,21 +268,48 @@ by an angle degrees.</p>
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.OtherTools.ReferenceVectors.</code><code class="sig-name descname">ReferenceVectors</code><span class="sig-paren">(</span><em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">number_of_objectives: int = None</em>, <em class="sig-param">creation_type: str = 'Uniform'</em>, <em class="sig-param">vector_type: str = 'Spherical'</em>, <em class="sig-param">ref_point: list = None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class object for reference vectors.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.adapt" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.adapt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adapt</span></code></a>(self, fitness)</p></td>
+<td><p>Adapt reference vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.add_edge_vectors" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.add_edge_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edge_vectors</span></code></a>(self)</p></td>
+<td><p>Add edge vectors to the list of reference vectors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.iteractive_adapt_1" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.iteractive_adapt_1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iteractive_adapt_1</span></code></a>(self, ref_point[, …])</p></td>
+<td><p>Adapt reference vectors linearly towards a reference point.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighbouring_angles</span></code></a>(self)</p></td>
+<td><p>Calculate neighbouring angles for normalization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.normalize" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code></a>(self)</p></td>
+<td><p>Normalize the reference vectors to a unit hypersphere.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.slow_interactive_adapt" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.slow_interactive_adapt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slow_interactive_adapt</span></code></a>(self, ref_point)</p></td>
+<td><p>Basically a wrapper around rotate_toward.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.normalize">
-<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.normalize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.normalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the reference vectors to a unit hypersphere.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles">
-<code class="sig-name descname">neighbouring_angles</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">neighbouring_angles</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate neighbouring angles for normalization.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.adapt">
-<code class="sig-name descname">adapt</code><span class="sig-paren">(</span><em class="sig-param">fitness: numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.adapt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">adapt</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">fitness:numpy.ndarray</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.adapt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adapt reference vectors. Then normalize.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -295,7 +320,7 @@ by an angle degrees.</p>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.iteractive_adapt_1">
-<code class="sig-name descname">iteractive_adapt_1</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em>, <em class="sig-param">translation_param=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.iteractive_adapt_1" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">iteractive_adapt_1</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em>, <em class="sig-param">translation_param=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.iteractive_adapt_1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adapt reference vectors linearly towards a reference point. Then normalize.</p>
 <p>The details can be found in the following paper: Hakanen, Jussi &amp;
 Chugh, Tinkle &amp; Sindhya, Karthik &amp; Jin, Yaochu &amp; Miettinen, Kaisa.
@@ -314,7 +339,7 @@ Algorithms.</p>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.slow_interactive_adapt">
-<code class="sig-name descname">slow_interactive_adapt</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.slow_interactive_adapt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">slow_interactive_adapt</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.slow_interactive_adapt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basically a wrapper around rotate_toward. Slowly rotate ref vectors toward
 ref_point. Return a boolean value to tell if the ref_point has been reached.</p>
 <dl class="field-list simple">
@@ -332,7 +357,7 @@ ref_point. Return a boolean value to tell if the ref_point has been reached.</p>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.add_edge_vectors">
-<code class="sig-name descname">add_edge_vectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.add_edge_vectors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_edge_vectors</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.add_edge_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add edge vectors to the list of reference vectors.</p>
 <p>Used to cover the entire orthant when preference information is
 provided.</p>
@@ -348,37 +373,90 @@ provided.</p>
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.OtherTools.newRV.</code><code class="sig-name descname">newRV</code><span class="sig-paren">(</span><em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">number_of_objectives: int = None</em>, <em class="sig-param">creation_type: str = 'Uniform'</em>, <em class="sig-param">vector_type: str = 'Spherical'</em>, <em class="sig-param">ref_point: list = None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors" title="pyrvea.OtherTools.ReferenceVectors.ReferenceVectors"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.OtherTools.ReferenceVectors.ReferenceVectors</span></code></a></p>
 <p>pass</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">adapt</span></code>(self, fitness)</p></td>
+<td><p>Adapt reference vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_edge_vectors</span></code>(self)</p></td>
+<td><p>Add edge vectors to the list of reference vectors.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.OtherTools.newRV.newRV.interact_v2" title="pyrvea.OtherTools.newRV.newRV.interact_v2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interact_v2</span></code></a>(self, ref_point)</p></td>
+<td><p>New kind of interaction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.newRV.newRV.interact_v3" title="pyrvea.OtherTools.newRV.newRV.interact_v3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interact_v3</span></code></a>(self, ref_point)</p></td>
+<td><p>New kind of interaction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">iteractive_adapt_1</span></code>(self, ref_point[, …])</p></td>
+<td><p>Adapt reference vectors linearly towards a reference point.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighbouring_angles</span></code>(self)</p></td>
+<td><p>Calculate neighbouring angles for normalization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize</span></code>(self)</p></td>
+<td><p>Normalize the reference vectors to a unit hypersphere.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.newRV.newRV.project_to_hyperplane" title="pyrvea.OtherTools.newRV.newRV.project_to_hyperplane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_to_hyperplane</span></code></a>(self)</p></td>
+<td><p>Projects the reference vectors to the hyperplane xn = 1.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">slow_interactive_adapt</span></code>(self, ref_point)</p></td>
+<td><p>Basically a wrapper around rotate_toward.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.OtherTools.newRV.newRV.translate_to_hypersphere" title="pyrvea.OtherTools.newRV.newRV.translate_to_hypersphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate_to_hypersphere</span></code></a>(self)</p></td>
+<td><p>Reverse of preject_to_hyperplane().</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 66%" />
+<col style="width: 34%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>revert_rotation</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>rotate_to_axis</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.rotate_to_axis">
-<code class="sig-name descname">rotate_to_axis</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.rotate_to_axis" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rotate_to_axis</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.rotate_to_axis" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.revert_rotation">
-<code class="sig-name descname">revert_rotation</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.revert_rotation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">revert_rotation</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.revert_rotation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.project_to_hyperplane">
-<code class="sig-name descname">project_to_hyperplane</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.project_to_hyperplane" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">project_to_hyperplane</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.project_to_hyperplane" title="Permalink to this definition">¶</a></dt>
 <dd><p>Projects the reference vectors to the hyperplane xn = 1.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.translate_to_hypersphere">
-<code class="sig-name descname">translate_to_hypersphere</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.translate_to_hypersphere" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">translate_to_hypersphere</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.translate_to_hypersphere" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverse of preject_to_hyperplane().</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.interact_v2">
-<code class="sig-name descname">interact_v2</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.interact_v2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">interact_v2</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.interact_v2" title="Permalink to this definition">¶</a></dt>
 <dd><p>New kind of interaction.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.OtherTools.newRV.newRV.interact_v3">
-<code class="sig-name descname">interact_v3</code><span class="sig-paren">(</span><em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.interact_v3" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">interact_v3</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ref_point</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.newRV.newRV.interact_v3" title="Permalink to this definition">¶</a></dt>
 <dd><p>New kind of interaction. More coverage.</p>
 </dd></dl>
 
@@ -420,7 +498,7 @@ Uses Householder reflections twice to achieve this.</p>
 <span id="pyrvea-othertools-plotlyanimate-module"></span><h2>pyrvea.OtherTools.plotlyanimate module<a class="headerlink" href="#module-pyrvea.OtherTools.plotlyanimate" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_init_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_init_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_init_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_init_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename:str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_init_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the first (or zeroth) iteration of a population.</p>
 <p>Intended as a frames object. Plots Scatter for 2D and 3D data.
 Plots parallel coordinate plot for higher dimensional data.</p>
@@ -442,7 +520,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_next_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_next_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure: dict, filename: str, generation: int = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_next_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_next_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure:dict, filename:str, generation:int=None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_next_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the next set of individuals in an animation.</p>
 <p>Plots scatter for 2D and 3D data, parallel coordinate plot for 4D and up.</p>
 <dl class="field-list simple">
@@ -465,7 +543,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_2d_init_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_2d_init_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_2d_init_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_2d_init_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename:str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_2d_init_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate a 2D scatter animation.</p>
 <p>Only for 2D data.</p>
 <dl class="field-list simple">
@@ -486,7 +564,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_2d_next_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_2d_next_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure: dict, filename: str, generation: int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_2d_next_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_2d_next_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure:dict, filename:str, generation:int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_2d_next_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the next set of individuals in a 2D scatter animation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -508,7 +586,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_3d_init_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_3d_init_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_3d_init_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_3d_init_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename:str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_3d_init_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the first (or zeroth) iteration of a population.</p>
 <p>Intended as a frames object. Plots Scatter 3D data.</p>
 <dl class="field-list simple">
@@ -529,7 +607,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_3d_next_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_3d_next_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure: dict, filename: str, generation: int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_3d_next_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_3d_next_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure:dict, filename:str, generation:int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_3d_next_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the next set of individuals in an animation.</p>
 <p>Plots scatter for 3D data.</p>
 <dl class="field-list simple">
@@ -552,7 +630,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_init_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_parallel_coords_init_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_init_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_parallel_coords_init_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], filename:str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_init_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the first (or zeroth) iteration of a population.</p>
 <p>Intended as a frames object. Plots parallel coordinate plot for &gt;3D data.</p>
 <dl class="field-list simple">
@@ -573,7 +651,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_next_">
-<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_parallel_coords_next_</code><span class="sig-paren">(</span><em class="sig-param">data: Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure: dict, filename: str, generation: int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_next_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.plotlyanimate.</code><code class="sig-name descname">animate_parallel_coords_next_</code><span class="sig-paren">(</span><em class="sig-param">data:Union[numpy.ndarray, pandas.core.frame.DataFrame, list], figure:dict, filename:str, generation:int</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pyrvea.OtherTools.plotlyanimate.animate_parallel_coords_next_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the next set of individuals in an animation.</p>
 <p>Plots parallel coordinate plot for 4D and up.</p>
 <dl class="field-list simple">
@@ -609,7 +687,7 @@ Plots parallel coordinate plot for higher dimensional data.</p>
 <span id="pyrvea-othertools-symmetric-vectors-module"></span><h2>pyrvea.OtherTools.symmetric_vectors module<a class="headerlink" href="#module-pyrvea.OtherTools.symmetric_vectors" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pyrvea.OtherTools.symmetric_vectors.shear">
-<code class="sig-prename descclassname">pyrvea.OtherTools.symmetric_vectors.</code><code class="sig-name descname">shear</code><span class="sig-paren">(</span><em class="sig-param">vectors</em>, <em class="sig-param">degrees: float = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.symmetric_vectors.shear" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.symmetric_vectors.</code><code class="sig-name descname">shear</code><span class="sig-paren">(</span><em class="sig-param">vectors</em>, <em class="sig-param">degrees:float=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.symmetric_vectors.shear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shear a set of vectors lying on the plane z=0 towards the z-axis, such that the
 resulting vectors ‘degrees’ angle away from the z axis.</p>
 <p>z is the last element of the vector, and has to be equal to zero.</p>
@@ -652,7 +730,7 @@ Uses Householder reflections twice to achieve this.</p>
 
 <dl class="function">
 <dt id="pyrvea.OtherTools.symmetric_vectors.rotate_toward">
-<code class="sig-prename descclassname">pyrvea.OtherTools.symmetric_vectors.</code><code class="sig-name descname">rotate_toward</code><span class="sig-paren">(</span><em class="sig-param">initial_vector</em>, <em class="sig-param">final_vector</em>, <em class="sig-param">other_vectors</em>, <em class="sig-param">degrees: float = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.symmetric_vectors.rotate_toward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.OtherTools.symmetric_vectors.</code><code class="sig-name descname">rotate_toward</code><span class="sig-paren">(</span><em class="sig-param">initial_vector</em>, <em class="sig-param">final_vector</em>, <em class="sig-param">other_vectors</em>, <em class="sig-param">degrees:float=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.OtherTools.symmetric_vectors.rotate_toward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate other_vectors (with the centre at initial_vector) towards final_vector
 by an angle degrees.</p>
 <dl class="field-list simple">
@@ -690,15 +768,6 @@ by an angle degrees.</p>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="pyrvea.Population.html" class="btn btn-neutral float-right" title="pyrvea.Population package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="pyrvea.EAs.html" class="btn btn-neutral float-left" title="pyrvea.EAs package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

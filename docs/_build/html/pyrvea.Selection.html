@@ -96,6 +96,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Selection.APD_select">pyrvea.Selection.APD_select module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Selection.NSGAIII_select">pyrvea.Selection.NSGAIII_select module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Selection.tournament_select">pyrvea.Selection.tournament_select module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.Selection">Module contents</a></li>
 </ul>
 </li>
@@ -179,7 +180,7 @@
 <span id="pyrvea-selection-apd-select-module"></span><h2>pyrvea.Selection.APD_select module<a class="headerlink" href="#module-pyrvea.Selection.APD_select" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pyrvea.Selection.APD_select.APD_select">
-<code class="sig-prename descclassname">pyrvea.Selection.APD_select.</code><code class="sig-name descname">APD_select</code><span class="sig-paren">(</span><em class="sig-param">fitness: list</em>, <em class="sig-param">vectors: ReferenceVectors</em>, <em class="sig-param">penalty_factor: float</em>, <em class="sig-param">ideal: list = None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.APD_select.APD_select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.Selection.APD_select.</code><code class="sig-name descname">APD_select</code><span class="sig-paren">(</span><em class="sig-param">fitness:list</em>, <em class="sig-param">vectors:'ReferenceVectors'</em>, <em class="sig-param">penalty_factor:float</em>, <em class="sig-param">ideal:list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.APD_select.APD_select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select individuals for mating on basis of Angle penalized distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -206,7 +207,7 @@ Uses the min fitness value if None.</p></li>
 <span id="pyrvea-selection-nsgaiii-select-module"></span><h2>pyrvea.Selection.NSGAIII_select module<a class="headerlink" href="#module-pyrvea.Selection.NSGAIII_select" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pyrvea.Selection.NSGAIII_select.NSGAIII_select">
-<code class="sig-prename descclassname">pyrvea.Selection.NSGAIII_select.</code><code class="sig-name descname">NSGAIII_select</code><span class="sig-paren">(</span><em class="sig-param">fitness: list</em>, <em class="sig-param">ref_dirs: ReferenceVectors</em>, <em class="sig-param">ideal_point: list = None</em>, <em class="sig-param">worst_point: list = None</em>, <em class="sig-param">extreme_points: list = None</em>, <em class="sig-param">n_survive: int = None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.NSGAIII_select.NSGAIII_select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrvea.Selection.NSGAIII_select.</code><code class="sig-name descname">NSGAIII_select</code><span class="sig-paren">(</span><em class="sig-param">fitness:list</em>, <em class="sig-param">ref_dirs:'ReferenceVectors'</em>, <em class="sig-param">ideal_point:list=None</em>, <em class="sig-param">worst_point:list=None</em>, <em class="sig-param">extreme_points:list=None</em>, <em class="sig-param">n_survive:int=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.NSGAIII_select.NSGAIII_select" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -239,6 +240,30 @@ Uses the min fitness value if None.</p></li>
 <dt id="pyrvea.Selection.NSGAIII_select.calc_perpendicular_distance">
 <code class="sig-prename descclassname">pyrvea.Selection.NSGAIII_select.</code><code class="sig-name descname">calc_perpendicular_distance</code><span class="sig-paren">(</span><em class="sig-param">N</em>, <em class="sig-param">ref_dirs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.NSGAIII_select.calc_perpendicular_distance" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</div>
+<div class="section" id="module-pyrvea.Selection.tournament_select">
+<span id="pyrvea-selection-tournament-select-module"></span><h2>pyrvea.Selection.tournament_select module<a class="headerlink" href="#module-pyrvea.Selection.tournament_select" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyrvea.Selection.tournament_select.tour_select">
+<code class="sig-prename descclassname">pyrvea.Selection.tournament_select.</code><code class="sig-name descname">tour_select</code><span class="sig-paren">(</span><em class="sig-param">fitness</em>, <em class="sig-param">tournament_size</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.Selection.tournament_select.tour_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tournament selection. Choose number of individuals to participate
+and select the one with the best fitness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fitness</strong> (<em>array_like</em>) – An array of each individual’s fitness.</p></li>
+<li><p><strong>tournament_size</strong> (<em>int</em>) – Number of participants in the tournament.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The index of the best individual.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-pyrvea.Selection">

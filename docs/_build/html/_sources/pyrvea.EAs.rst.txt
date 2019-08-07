@@ -28,6 +28,14 @@ pyrvea.EAs.RVEA module
    :undoc-members:
    :show-inheritance:
 
+pyrvea.EAs.TournamentEA module
+------------------------------
+
+.. automodule:: pyrvea.EAs.TournamentEA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pyrvea.EAs.baseEA module
 ------------------------
 

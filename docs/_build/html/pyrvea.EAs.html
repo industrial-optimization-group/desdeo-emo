@@ -35,7 +35,6 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyrvea.OtherTools package" href="pyrvea.OtherTools.html" />
     <link rel="prev" title="pyrvea package" href="pyrvea.html" /> 
 </head>
 
@@ -93,6 +92,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.NSGAIII">pyrvea.EAs.NSGAIII module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.PPGA">pyrvea.EAs.PPGA module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.RVEA">pyrvea.EAs.RVEA module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.TournamentEA">pyrvea.EAs.TournamentEA module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.baseEA">pyrvea.EAs.baseEA module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs.slowRVEA">pyrvea.EAs.slowRVEA module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyrvea.EAs">Module contents</a></li>
@@ -187,15 +187,36 @@
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.EAs.baseEA.BaseDecompositionEA" title="pyrvea.EAs.baseEA.BaseDecompositionEA"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.EAs.baseEA.BaseDecompositionEA</span></code></a></p>
 <p>Python Implementation of NSGA-III. Based on the pymoo package.</p>
 <p>[description]</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_evolution</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.NSGAIII.NSGAIII.select" title="pyrvea.EAs.NSGAIII.NSGAIII.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population)</p></td>
+<td><p>Describe a selection mechanism.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="pyrvea.EAs.NSGAIII.NSGAIII.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.NSGAIII.NSGAIII.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">population_size: int = None</em>, <em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">interact: bool = False</em>, <em class="sig-param">a_priori_preference: bool = False</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in self.params</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.EAs.NSGAIII.NSGAIII.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe a selection mechanism. Return indices of selected
 individuals.</p>
 <dl class="field-list simple">
@@ -264,9 +285,30 @@ EMO 2003. Lecture Notes in Computer Science, vol 2632. Springer, Berlin, Heidelb
 J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.</p>
 <p>[4] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
 net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.continue_evolution" title="pyrvea.EAs.PPGA.PPGA.continue_evolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_evolution</span></code></a>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.continue_iteration" title="pyrvea.EAs.PPGA.PPGA.continue_iteration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code></a>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.select" title="pyrvea.EAs.PPGA.PPGA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population[, max_rank])</p></td>
+<td><p>Of the population, individuals lower than max_rank are selected.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="pyrvea.EAs.PPGA.PPGA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">target_pop_size: int = 100</em>, <em class="sig-param">predator_pop_size: int = 50</em>, <em class="sig-param">prey_max_moves: int = 10</em>, <em class="sig-param">prob_prey_move: float = 0.3</em>, <em class="sig-param">offspring_place_attempts: int = 10</em>, <em class="sig-param">generations_per_iteration: int = 10</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval: int = 7</em>, <em class="sig-param">max_rank: int = 20</em>, <em class="sig-param">prob_crossover: float = 0.8</em>, <em class="sig-param">prob_mutation: float = 0.3</em>, <em class="sig-param">mut_strength: float = 0.7</em>, <em class="sig-param">neighbourhood_radius: int = 5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">target_pop_size:int=100</em>, <em class="sig-param">predator_pop_size:int=50</em>, <em class="sig-param">prey_max_moves:int=10</em>, <em class="sig-param">prob_prey_move:float=0.3</em>, <em class="sig-param">offspring_place_attempts:int=10</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval:int=7</em>, <em class="sig-param">max_rank:int=20</em>, <em class="sig-param">prob_crossover:float=0.8</em>, <em class="sig-param">prob_mutation:float=0.3</em>, <em class="sig-param">mut_strength:float=0.7</em>, <em class="sig-param">neighbourhood_radius:int=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -300,7 +342,7 @@ net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">max_rank=20</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population</em>, <em class="sig-param">max_rank=20</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Of the population, individuals lower than max_rank are selected.
 Return indices of selected individuals.</p>
 <dl class="field-list simple">
@@ -322,13 +364,13 @@ information.</p></li>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.continue_iteration">
-<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_iteration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.continue_evolution">
-<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_evolution" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.continue_evolution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
@@ -416,22 +458,55 @@ information.</p></li>
 </dl>
 </dd></dl>
 
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.init_predators" title="pyrvea.EAs.PPGA.Lattice.init_predators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_predators</span></code></a>(self)</p></td>
+<td><p>Initialize the predator population, linearly distributed in [0,1] and place them in the lattice randomly.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.init_prey" title="pyrvea.EAs.PPGA.Lattice.init_prey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_prey</span></code></a>(self)</p></td>
+<td><p>Find an empty position in the lattice and place the prey.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx" title="pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lattice_wrap_idx</span></code></a>(index, lattice_shape)</p></td>
+<td><p>Returns periodic lattice index for a given iterable index.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.move_predator" title="pyrvea.EAs.PPGA.Lattice.move_predator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_predator</span></code></a>(self)</p></td>
+<td><p>Find an empty position in the predator neighbourhood for the predators to move in, move the predator and kill the weakest prey in its neighbourhood, if any.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.move_prey" title="pyrvea.EAs.PPGA.Lattice.move_prey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_prey</span></code></a>(self)</p></td>
+<td><p>Find an empty position in prey neighbourhood for the prey to move in, and choose a mate for breeding if any available.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.neighbours" title="pyrvea.EAs.PPGA.Lattice.neighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighbours</span></code></a>(arr, x, y[, n])</p></td>
+<td><p>Given a 2D-array, returns an n*n array whose “center” element is arr[x,y]</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.place_offspring" title="pyrvea.EAs.PPGA.Lattice.place_offspring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">place_offspring</span></code></a>(self, offspring)</p></td>
+<td><p>Try to place the offsprings to the lattice.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.Lattice.update_lattice" title="pyrvea.EAs.PPGA.Lattice.update_lattice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_lattice</span></code></a>(self[, selected])</p></td>
+<td><p>Update prey positions in the lattice.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.init_predators">
-<code class="sig-name descname">init_predators</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.init_predators" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">init_predators</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.init_predators" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the predator population, linearly distributed in [0,1]
 and place them in the lattice randomly.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.init_prey">
-<code class="sig-name descname">init_prey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.init_prey" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">init_prey</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.init_prey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find an empty position in the lattice and place the prey.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.move_prey">
-<code class="sig-name descname">move_prey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_prey" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">move_prey</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_prey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find an empty position in prey neighbourhood for the prey to move in,
 and choose a mate for breeding if any available.</p>
 <dl class="field-list simple">
@@ -446,7 +521,7 @@ and choose a mate for breeding if any available.</p>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.place_offspring">
-<code class="sig-name descname">place_offspring</code><span class="sig-paren">(</span><em class="sig-param">offspring</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.place_offspring" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">place_offspring</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">offspring</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.place_offspring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try to place the offsprings to the lattice. If no empty spot found within
 number of max attempts, do not place.</p>
 <dl class="field-list simple">
@@ -464,7 +539,7 @@ number of max attempts, do not place.</p>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.move_predator">
-<code class="sig-name descname">move_predator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_predator" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">move_predator</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.move_predator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find an empty position in the predator neighbourhood for the predators to move in,
 move the predator and kill the weakest prey in its neighbourhood, if any.
 Repeat until &gt; predator_max_moves.</p>
@@ -472,7 +547,7 @@ Repeat until &gt; predator_max_moves.</p>
 
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.Lattice.update_lattice">
-<code class="sig-name descname">update_lattice</code><span class="sig-paren">(</span><em class="sig-param">selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.update_lattice" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_lattice</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.Lattice.update_lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update prey positions in the lattice.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -536,9 +611,30 @@ Evolutionary Computation, 2016</p>
 <p>If you have any questions about the code, please contact:</p>
 <p>Bhupinder Saini: <a class="reference external" href="mailto:bhupinder&#46;s&#46;saini&#37;&#52;&#48;jyu&#46;fi">bhupinder<span>&#46;</span>s<span>&#46;</span>saini<span>&#64;</span>jyu<span>&#46;</span>fi</a></p>
 <p>Project researcher at University of Jyväskylä.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_evolution</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA.select" title="pyrvea.EAs.RVEA.RVEA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population)</p></td>
+<td><p>Describe a selection mechanism.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="pyrvea.EAs.RVEA.RVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.RVEA.RVEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">population_size: int = None</em>, <em class="sig-param">lattice_resolution: int = None</em>, <em class="sig-param">interact: bool = False</em>, <em class="sig-param">a_priori_preference: bool = False</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">Alpha: float = 2</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in RVEA.params. Note, this should be
 changed to align with the current structure.</p>
 <dl class="field-list simple">
@@ -560,7 +656,7 @@ changed to align with the current structure.</p>
 
 <dl class="method">
 <dt id="pyrvea.EAs.RVEA.RVEA.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe a selection mechanism. Return indices of selected
 individuals.</p>
 <p># APD Based selection. # This is different from the paper. #
@@ -583,6 +679,84 @@ worse ideal point.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-pyrvea.EAs.TournamentEA">
+<span id="pyrvea-eas-tournamentea-module"></span><h2>pyrvea.EAs.TournamentEA module<a class="headerlink" href="#module-pyrvea.EAs.TournamentEA" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyrvea.EAs.TournamentEA.TournamentEA">
+<em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.TournamentEA.</code><code class="sig-name descname">TournamentEA</code><span class="sig-paren">(</span><em class="sig-param">population: pyrvea.Population.Population.Population</em>, <em class="sig-param">ea_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.TournamentEA.TournamentEA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.TournamentEA.TournamentEA.continue_iteration" title="pyrvea.EAs.TournamentEA.TournamentEA.continue_iteration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code></a>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.TournamentEA.TournamentEA.select" title="pyrvea.EAs.TournamentEA.TournamentEA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population)</p></td>
+<td><p>Select parents for recombination using tournament selection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.TournamentEA.TournamentEA.set_params" title="pyrvea.EAs.TournamentEA.TournamentEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …)</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyrvea.EAs.TournamentEA.TournamentEA.set_params">
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">tournament_size:int=5</em>, <em class="sig-param">target_pop_size:int=500</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">prob_crossover:float=0.9</em>, <em class="sig-param">prob_mutation:float=0.3</em>, <em class="sig-param">min_fitness:float=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.TournamentEA.TournamentEA.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Population object.</p></li>
+<li><p><strong>tournament_size</strong> (<em>int</em>) – Number of participants in tournament selection.</p></li>
+<li><p><strong>target_pop_size</strong> (<em>int</em>) – Desired population size.</p></li>
+<li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
+<li><p><strong>iterations</strong> (<em>int</em>) – Total number of iterations.</p></li>
+<li><p><strong>prob_crossover</strong> (<em>float</em>) – Probability of crossover occurring.</p></li>
+<li><p><strong>prob_mutation</strong> (<em>float</em>) – Probability of mutation occurring.</p></li>
+<li><p><strong>min_fitness</strong> (<em>float</em>) – If error of the best solution &lt; min_fitness, stop evolution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>params</strong> – Parameters for the algorithm.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.TournamentEA.TournamentEA.continue_iteration">
+<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.TournamentEA.TournamentEA.continue_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the current iteration should be continued or not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrvea.EAs.TournamentEA.TournamentEA.select">
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.TournamentEA.TournamentEA.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select parents for recombination using tournament selection.
+Chooses two parents, which are needed for crossover.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>population</strong> (<a class="reference internal" href="pyrvea.Population.html#pyrvea.Population.Population.Population" title="pyrvea.Population.Population.Population"><em>Population</em></a>) – Contains the current population and problem
+information.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>parents</strong> – List of indices of individuals to be selected.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-pyrvea.EAs.baseEA">
 <span id="pyrvea-eas-baseea-module"></span><h2>pyrvea.EAs.baseEA module<a class="headerlink" href="#module-pyrvea.EAs.baseEA" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -590,9 +764,21 @@ worse ideal point.</p>
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.baseEA.</code><code class="sig-name descname">BaseEA</code><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class provides the basic structure for Evolutionary algorithms.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.baseEA.BaseEA.set_params" title="pyrvea.EAs.baseEA.BaseEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self)</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.baseEA.BaseEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseEA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in self.params</p>
 </dd></dl>
 
@@ -604,9 +790,30 @@ worse ideal point.</p>
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.EAs.baseEA.BaseEA" title="pyrvea.EAs.baseEA.BaseEA"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.EAs.baseEA.BaseEA</span></code></a></p>
 <p>This class provides the basic structure for decomposition based
 Evolutionary algorithms, such as RVEA or NSGA-III.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution" title="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_evolution</span></code></a>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration" title="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code></a>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.select" title="pyrvea.EAs.baseEA.BaseDecompositionEA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population)</p></td>
+<td><p>Describe a selection mechanism.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(self)</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.select">
-<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.select" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe a selection mechanism. Return indices of selected
 individuals.</p>
 <dl class="field-list simple">
@@ -625,13 +832,13 @@ information.</p>
 
 <dl class="method">
 <dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration">
-<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">continue_iteration</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution">
-<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">continue_evolution</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_evolution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the current iteration should be continued or not.</p>
 </dd></dl>
 
@@ -645,9 +852,30 @@ information.</p>
 <em class="property">class </em><code class="sig-prename descclassname">pyrvea.EAs.slowRVEA.</code><code class="sig-name descname">slowRVEA</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">ea_parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.slowRVEA.slowRVEA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA" title="pyrvea.EAs.RVEA.RVEA"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyrvea.EAs.RVEA.RVEA</span></code></a></p>
 <p>RVEA variant that impliments slow reference vector movement.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_evolution</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">continue_iteration</span></code>(self)</p></td>
+<td><p>Checks whether the current iteration should be continued or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code>(self, population)</p></td>
+<td><p>Describe a selection mechanism.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="pyrvea.EAs.slowRVEA.slowRVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<td><p>Set up the parameters.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pyrvea.EAs.slowRVEA.slowRVEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">population: Population</em>, <em class="sig-param">generations_per_iteration: int = 100</em>, <em class="sig-param">iterations: int = 10</em>, <em class="sig-param">Alpha: float = 2</em>, <em class="sig-param">plotting: bool = True</em>, <em class="sig-param">logging: bool = False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">ref_point: list = None</em>, <em class="sig-param">old_point: list = None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">ref_point:list=None</em>, <em class="sig-param">old_point:list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in RVEA.params. Note, this should be
 changed to align with the current structure.</p>
 <dl class="field-list simple">
@@ -676,8 +904,6 @@ changed to align with the current structure.</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="pyrvea.OtherTools.html" class="btn btn-neutral float-right" title="pyrvea.OtherTools package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="pyrvea.html" class="btn btn-neutral float-left" title="pyrvea package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

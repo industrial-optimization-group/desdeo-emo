@@ -4,6 +4,22 @@ pyrvea.Recombination package
 Submodules
 ----------
 
+pyrvea.Recombination.biogp\_mutation module
+-------------------------------------------
+
+.. automodule:: pyrvea.Recombination.biogp_mutation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyrvea.Recombination.biogp\_xover module
+----------------------------------------
+
+.. automodule:: pyrvea.Recombination.biogp_xover
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pyrvea.Recombination.bounded\_polynomial\_mutation module
 ---------------------------------------------------------
 
@@ -12,58 +28,18 @@ pyrvea.Recombination.bounded\_polynomial\_mutation module
    :undoc-members:
    :show-inheritance:
 
-pyrvea.Recombination.evodn2\_gaussian module
---------------------------------------------
+pyrvea.Recombination.evodn2\_xover\_mutation module
+---------------------------------------------------
 
-.. automodule:: pyrvea.Recombination.evodn2_gaussian
+.. automodule:: pyrvea.Recombination.evodn2_xover_mutation
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyrvea.Recombination.evodn2\_self\_adapting module
+pyrvea.Recombination.evonn\_xover\_mutation module
 --------------------------------------------------
 
-.. automodule:: pyrvea.Recombination.evodn2_self_adapting
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyrvea.Recombination.evonn\_mut\_gaussian module
-------------------------------------------------
-
-.. automodule:: pyrvea.Recombination.evonn_mut_gaussian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyrvea.Recombination.evonn\_mut\_self\_adapting module
-------------------------------------------------------
-
-.. automodule:: pyrvea.Recombination.evonn_mut_self_adapting
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyrvea.Recombination.evonn\_nodeswap\_gaussian module
------------------------------------------------------
-
-.. automodule:: pyrvea.Recombination.evonn_nodeswap_gaussian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyrvea.Recombination.evonn\_nodeswap\_self\_adapting module
------------------------------------------------------------
-
-.. automodule:: pyrvea.Recombination.evonn_nodeswap_self_adapting
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyrvea.Recombination.evonn\_xover\_nodeswap module
---------------------------------------------------
-
-.. automodule:: pyrvea.Recombination.evonn_xover_nodeswap
+.. automodule:: pyrvea.Recombination.evonn_xover_mutation
    :members:
    :undoc-members:
    :show-inheritance:
