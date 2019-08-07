@@ -73,7 +73,7 @@ class EvoDN2(BaseProblem):
         """
 
         non_linear_layer, complexity = self.activation(decision_variables)
-        _, predicted_values, training_error = self.optimize_layer(non_linear_layer)
+        _, predicted_values, training_error = self.calculate_linear(non_linear_layer)
 
         obj_func = [training_error, complexity]
 
@@ -117,7 +117,7 @@ class EvoDN2(BaseProblem):
 
         return non_linear_layer, complexity
 
-    def optimize_layer(self, activated_layer):
+    def calculate_linear(self, activated_layer):
         """ Apply the linear function to the final output layer
         and calculate the training error.
 
@@ -142,11 +142,14 @@ class EvoDN2(BaseProblem):
 
         if self.params["opt_func"] == "llsq":
             linear_solution = np.linalg.lstsq(activated_layer, self.y_train, rcond=None)
-            predicted_values = np.dot(activated_layer, linear_solution[0])
             linear_layer = linear_solution[0]
+            predicted_values = np.dot(activated_layer, linear_layer)
 
-        if self.params["loss_func"] == "rmse":
-            training_error = np.sqrt(((self.y_train - predicted_values) ** 2).mean())
+        if self.params["loss_func"] == "root_mean_square":
+            training_error = np.sqrt(np.mean(((self.y_train - predicted_values) ** 2)))
+
+        elif self.params["loss_func"] == "root_median_square":
+            training_error = np.sqrt(np.median(((self.y_train - predicted_values) ** 2)))
 
         return linear_layer, predicted_values, training_error
 
@@ -252,9 +255,9 @@ class EvoDN2Model(EvoDN2):
         A list of variables used for each subnet of the model.
     fitness : list
         Fitness of the trained model.
-    non_linear_layer : ndarray
+    non_linear_layer : np.ndarray or None
         The activated layer combining all of the model's subnets.
-    linear_layer : ndarray
+    linear_layer : np.ndarray or None
         The final optimized layer of the network.
     svr : array_like
         Single variable response of the model.
@@ -281,18 +284,18 @@ class EvoDN2Model(EvoDN2):
         algorithm=PPGA,
         pop_size=500,
         num_subnets=4,
-        max_layers=8,
-        max_nodes=10,
-        prob_omit=0.3,
+        max_layers=4,
+        max_nodes=4,
+        prob_omit=0.2,
         w_low=-5.0,
         w_high=5.0,
         activation_func="sigmoid",
         opt_func="llsq",
-        loss_func="rmse",
+        loss_func="root_mean_square",
         selection="min_error",
-        crossover_type=None,
-        mutation_type=None,
-        recombination_type="evodn2_gaussian",
+        recombination_type="evodn2_xover_mutation",
+        crossover_type="standard",
+        mutation_type="gaussian",
         logging=False,
         plotting=False,
         ea_parameters=None
@@ -399,13 +402,12 @@ class EvoDN2Model(EvoDN2):
                     n
                 )
 
-        if self.params["logging"]:
-            self.log = self.create_logfile()
-
         self.train()
 
+        self.single_variable_response(ploton=self.params["plotting"])
+
         if self.params["logging"]:
-            print(self.fitness, file=self.log)
+            self.create_logfile()
 
         return self
 
@@ -430,7 +432,7 @@ class EvoDN2Model(EvoDN2):
             pop, non_dom_front, self.params["selection"]
         )
         self.non_linear_layer, _ = self.activation(self.subnets)
-        self.linear_layer, *_ = self.optimize_layer(self.non_linear_layer)
+        self.linear_layer, *_ = self.calculate_linear(self.non_linear_layer)
 
     def predict(self, decision_variables):
         """Predict using the EvoDN2 model.
@@ -531,53 +533,34 @@ class EvoDN2Model(EvoDN2):
             "a",
         )
 
-        print(
-            "samples: "
-            + str(self.num_samples)
-            + "\n"
-            + "variables: "
-            + str(self.num_of_variables)
-            + "\n"
-            + "number of subnets: "
-            + str(self.params["num_subnets"])
-            + "\n"
-            + "max number of layers: "
-            + str(self.params["max_layers"])
-            + "\n"
-            + "max nodes: "
-            + str(self.params["max_nodes"])
-            + "\n"
-            + "activation: "
-            + self.params["activation_func"]
-            + "\n"
-            + "opt func: "
-            + self.params["opt_func"]
-            + "\n"
-            + "loss func: "
-            + self.params["loss_func"],
-            file=log_file,
-        )
+        for i in self.params:
+            print("", i, ":", self.params[i], file=log_file)
+
+        if self.fitness is not None:
+            print("fitness: " + str(self.fitness), file=log_file)
+
+        if self.svr is not None:
+            print("single variable response: " + str(self.svr), file=log_file)
 
         return log_file
 
-    def single_variable_response(self, ploton=False, log=None):
+    def single_variable_response(self, ploton=False):
         """Get the model's response to a single variable.
 
         Parameters
         ----------
         ploton : bool
             Create and show plot on/off.
-        log : file
-            Write the results in a log file.
 
         """
 
         trend = np.loadtxt("trend")
         avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
         svr = np.empty((0, 2))
+        variables = np.ones((len(trend), 1)) * avg
 
         for i in range(self.num_of_variables):
-            variables = np.ones((len(trend), 1)) * avg
+
             variables[:, i] = trend
 
             out = self.predict(variables)
@@ -604,24 +587,15 @@ class EvoDN2Model(EvoDN2):
             r = np.multiply(p, q)
             r_max = max(r)
             r_min = min(r)
-            response = None
             s = None
             if r_max <= 0 and r_min <= 0:
-                response = -1
                 s = "inverse"
             elif r_max >= 0 and r_min >= 0:
-                response = 1
                 s = "direct"
             elif r_max == 0 and r_min == 0:
-                response = 0
                 s = "nil"
             elif r_min < 0 < r_max:
-                response = 2
                 s = "mixed"
 
-            if log is not None:
-                print(
-                    "x" + str(i + 1) + " response: " + str(response) + " " + s, file=log
-                )
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr

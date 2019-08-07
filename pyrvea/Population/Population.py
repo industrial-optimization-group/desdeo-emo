@@ -19,13 +19,8 @@ from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
     biogp_xover,
     biogp_mutation,
-    evodn2_self_adapting,
-    evodn2_gaussian,
-    evonn_nodeswap_gaussian,
-    evonn_nodeswap_self_adapting,
-    evonn_mut_gaussian,
-    evonn_xover_nodeswap,
-    evonn_mut_self_adapting,
+    evodn2_xover_mutation,
+    evonn_xover_mutation,
     bounded_polynomial_mutation,
     simulated_binary_crossover,
 )
@@ -83,24 +78,17 @@ class Population:
         self.recombination_funcs = {
             "biogp_xover": biogp_xover,
             "biogp_mut": biogp_mutation,
-            "evodn2_self_adapting": evodn2_self_adapting,
-            "evodn2_gaussian": evodn2_gaussian,
-            "evonn_nodeswap_gaussian": evonn_nodeswap_gaussian,
-            "evonn_nodeswap_self_adapting": evonn_nodeswap_self_adapting,
-            "evonn_xover_nodeswap": evonn_xover_nodeswap,
-            "evonn_mut_gaussian": evonn_mut_gaussian,
-            "evonn_mut_self_adapting": evonn_mut_self_adapting,
+            "evodn2_xover_mutation": evodn2_xover_mutation,
+            "evonn_xover_mutation": evonn_xover_mutation,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
-            "simulated_binary_crossover": simulated_binary_crossover
+            "simulated_binary_crossover": simulated_binary_crossover,
         }
         self.crossover_type = crossover_type
         self.mutation_type = mutation_type
-        self.recombination_type = recombination_type
+        self.recombination = self.recombination_funcs.get(recombination_type, None)
         if recombination_type is None:
-            self.crossover = self.recombination_funcs[crossover_type]
-            self.mutation = self.recombination_funcs[mutation_type]
-        else:
-            self.recombination = self.recombination_funcs[recombination_type]
+            self.crossover = self.recombination_funcs.get(crossover_type, None)
+            self.mutation = self.recombination_funcs.get(mutation_type, None)
         self.problem = problem
         self.filename = (
             problem.name + "_" + str(problem.num_of_objectives)
@@ -175,9 +163,9 @@ class Population:
 
         if self.problem.num_of_constraints:
             CV = self.problem.constraints(ind, obj)
-            fitness = self.eval_fitness(ind, obj, self.problem)
+            fitness = self.eval_fitness(obj)
 
-        return (obj, CV, fitness)
+        return obj, CV, fitness
 
     def eval_fitness(self, obj):
         """
@@ -195,7 +183,9 @@ class Population:
         return fitness
 
     def update_fitness(self):
-
+        """Include or exclude objectives from fitness calculation.
+        Problem.minimize should be a list of booleans of same length as the number of objectives.
+        """
         self.fitness = self.objectives[:, self.problem.minimize]
         self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
         self.worst_fitness = -1 * self.ideal_fitness
@@ -207,7 +197,7 @@ class Population:
 
         Parameters
         ----------
-        indices: np.ndarray
+        indices: array_like
             Indices of individuals to keep or delete.
         preserve: bool
             Whether to delete individuals at indices from current population, or preserve them and delete others.
@@ -283,8 +273,14 @@ class Population:
 
         """
 
-        if self.recombination_type is not None:
-            offspring = self.recombination.mate(mating_pop, self.individuals, params)
+        if self.recombination is not None:
+            offspring = self.recombination.mate(
+                mating_pop,
+                self.individuals,
+                params,
+                crossover_type=self.crossover_type,
+                mutation_type=self.mutation_type,
+            )
         else:
             offspring = self.crossover.mate(mating_pop, self.individuals, params)
             self.mutation.mutate(
@@ -331,6 +327,7 @@ class Population:
             name = self.problem.name
 
         ndf = self.non_dominated()
+        #pareto = self.objectives[ndf][self.objectives[ndf].min(axis=1) >= 0, :]
         pareto = self.objectives[ndf]
         pareto_pop = np.asarray(self.individuals)[ndf].tolist()
 
@@ -360,9 +357,7 @@ class Population:
         layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
         plotly.offline.plot(
             {"data": data, "layout": layout},
-            filename=name
-            + "pareto"
-            + ".html",
+            filename=name + "pareto" + ".html",
             auto_open=True,
         )
 

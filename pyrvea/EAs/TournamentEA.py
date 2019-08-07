@@ -93,10 +93,7 @@ class TournamentEA:
             Contains current population
         """
         self.params["current_iteration_gen_count"] = 1
-        while (
-            self.continue_iteration()
-            and min(population.fitness) > self.params["min_fitness"]
-        ):
+        while self.continue_iteration():
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
             self.params["current_total_gen_count"] += 1

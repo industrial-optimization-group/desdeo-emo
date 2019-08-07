@@ -3,10 +3,36 @@ from copy import deepcopy
 from random import choice
 
 
-def mate(mating_pop, individuals, params):
+def mate(mating_pop, individuals: list, params):
+    """Perform BioGP crossover functions. Produce two offsprings by swapping genetic
+    material of the two parents.
+
+    Standard crossover:
+    Swap two random subtrees between the parents.
+
+    Height-fair crossover:
+    Swap two random subtrees between the parents at the selected depth.
+
+    Parameters
+    ----------
+    mating_pop : list
+        List of indices of individuals to mate. If None, choose from population randomly.
+        Each entry should contain two indices, one for each parent.
+    individuals : list
+        List of all individuals.
+    params : dict
+        Parameters for evolution. If None, use defaults.
+
+    Returns
+    -------
+    offspring : list
+        The offsprings produced as a result of crossover.
+    """
+
+    prob_crossover = params.get("prob_crossover", 1.0)
 
     prob_standard = 0.5
-    prob_height_fair = params["prob_crossover"] - prob_standard
+    prob_height_fair = prob_crossover - prob_standard
     r = np.random.rand()
 
     if mating_pop is None:

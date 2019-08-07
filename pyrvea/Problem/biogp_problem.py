@@ -150,11 +150,12 @@ class BioGPModel(BioGP):
         algorithm=PPGA,
         pop_size=500,
         max_depth=5,
-        max_subtrees=3,
+        max_subtrees=4,
         prob_terminal=0.5,
         complexity_scalar=0.5,
         error_lim=0.001,
         selection="min_error",
+        loss_func="root_mean_square",
         recombination_type=None,
         crossover_type="biogp_xover",
         mutation_type="biogp_mut",
@@ -166,7 +167,7 @@ class BioGPModel(BioGP):
         terminal_set=None,
     ):
 
-        """ Set parameters for the EvoNN model.
+        """ Set parameters for the BioGP model.
 
         Parameters
         ----------
@@ -202,9 +203,9 @@ class BioGPModel(BioGP):
             True to create a plot, False otherwise.
         ea_parameters : dict
             Contains the parameters needed by EA (Default value = None).
-        function_set : iterable
+        function_set : tuple
             The function set to use when creating the trees.
-        terminal_set : iterable
+        terminal_set : list
             The terminals (variables and constants) to use when creating the trees.
 
         """
@@ -219,6 +220,7 @@ class BioGPModel(BioGP):
             "complexity_scalar": complexity_scalar,
             "error_lim": error_lim,
             "selection": selection,
+            "loss_func": loss_func,
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
@@ -234,7 +236,7 @@ class BioGPModel(BioGP):
         self.params = params
 
     def fit(self, training_data, target_values):
-        """Fit data in EvoNN model.
+        """Fit data in BioGP model.
 
         Parameters
         ----------
@@ -259,13 +261,12 @@ class BioGPModel(BioGP):
             function_set.append(self.function_map[function])
         self.params["function_set"] = function_set
 
-        # if self.params["logging"]:
-        #     self.log = self.create_logfile()
-
         self.train()
 
-        # if self.params["logging"]:
-        #     print(self.fitness, file=self.log)
+        self.single_variable_response(ploton=self.params["plotting"])
+
+        if self.params["logging"]:
+            self.create_logfile()
 
         return self
 
@@ -273,7 +274,16 @@ class BioGPModel(BioGP):
         """Trains the networks and selects the best model from the non dominated front.
 
         """
+
+        # Minimize only error for first n generations before switching to bi-objective
+        ea_params = {
+            "generations_per_iteration": 1,
+            "iterations": self.params["single_obj_generations"],
+        }
         self.minimize = [True, False]
+
+        print("Minimizing error for " + str(self.params["single_obj_generations"]) + " generations...")
+
         pop = Population(
             self,
             assign_type="BioGP",
@@ -284,17 +294,14 @@ class BioGPModel(BioGP):
             mutation_type=self.params["mutation_type"],
         )
 
-        # Minimize error for first n generations before switching to bi-objective
-        ea_params = {
-            "generations_per_iteration": self.params["single_obj_generations"],
-            "iterations": 1,
-        }
-
         pop.evolve(EA=TournamentEA, ea_parameters=ea_params)
 
         # Switch to bi-objective (error, complexity)
         self.minimize = [True, True]
         pop.update_fitness()
+
+        print("Switching to bi-objective mode")
+
         pop.evolve(
             EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]
         )
@@ -314,7 +321,7 @@ class BioGPModel(BioGP):
 
         Returns
         -------
-        y : ndarray
+        y : np.ndarray
             The prediction of the model.
 
         """
@@ -345,9 +352,9 @@ class BioGPModel(BioGP):
 
         Parameters
         ----------
-        prediction : ndarray
+        prediction : np.ndarray
             The prediction of the model.
-        target : ndarray
+        target : np.ndarray
             The target values.
         name : str
             Filename to save the plot as.
@@ -374,6 +381,107 @@ class BioGPModel(BioGP):
             + ".html",
             auto_open=True,
         )
+
+    def create_logfile(self, name=None):
+        """Create a log file containing the parameters for training the model and the EA.
+
+        Parameters
+        ----------
+        name : str
+            Filename to save the log as.
+
+        Returns
+        -------
+        log_file : file
+            An external log file.
+        """
+
+        if name is None:
+            name = self.name
+
+        # Save params to log file
+        log_file = open(
+            "Tests/"
+            + self.params["algorithm"].__name__
+            + self.__class__.__name__
+            + name
+            + "_var"
+            + str(self.num_of_variables)
+            + "_depth"
+            + str(self.params["max_depth"])
+            + "_subtrees"
+            + str(self.params["max_subtrees"])
+            + ".log",
+            "a",
+        )
+
+        for i in self.params:
+            print("", i, ":", self.params[i], file=log_file)
+
+        if self.fitness is not None:
+            print("fitness: " + str(self.fitness), file=log_file)
+
+        if self.svr is not None:
+            print("single variable response: " + str(self.svr), file=log_file)
+
+        return log_file
+
+    def single_variable_response(self, ploton=False):
+        """Get the model's response to a single variable.
+
+        Parameters
+        ----------
+        ploton : bool
+            Create and show plot on/off.
+        """
+
+        trend = np.loadtxt("trend")
+        avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
+        svr = np.empty((0, 2))
+        variables = np.ones((len(trend), 1)) * avg
+        dataset = pd.DataFrame.from_records(variables)
+        dataset.columns = self.X_train.columns
+
+        for i in range(self.num_of_variables):
+
+            dataset.iloc[:, i] = trend
+
+            out = self.predict(dataset)
+
+            if min(out) == max(out):
+                out = 0.5 * np.ones(out.size)
+            else:
+                out = (out - min(out)) / (max(out) - min(out))
+
+            if ploton:
+                trace0 = go.Scatter(
+                    x=np.arange(len(variables[:, 1])), y=variables[:, i], name="input"
+                )
+                trace1 = go.Scatter(
+                    x=np.arange(len(variables[:, 1])), y=out, name="output"
+                )
+                data = [trace0, trace1]
+                plotly.offline.plot(
+                    data, filename="x" + str(i + 1) + "_response.html", auto_open=True
+                )
+
+            p = np.diff(out)
+            q = np.diff(trend)
+            r = np.multiply(p, q)
+            r_max = max(r)
+            r_min = min(r)
+            s = None
+            if r_max <= 0 and r_min <= 0:
+                s = "inverse"
+            elif r_max >= 0 and r_min >= 0:
+                s = "direct"
+            elif r_max == 0 and r_min == 0:
+                s = "nil"
+            elif r_min < 0 < r_max:
+                s = "mixed"
+
+            svr = np.vstack((svr, ["x" + str(i + 1), s]))
+            self.svr = svr
 
 
 class Node:
@@ -586,6 +694,12 @@ class LinearNode(Node):
 
         self.out = out
         self.complexity = complexity
-        self.fitness = np.sqrt(((y_train - out) ** 2).mean())
+        training_error = None
 
-        return [self.fitness, self.complexity]
+        if self.params["loss_func"] == "root_mean_square":
+            training_error = np.sqrt(np.mean(((y_train - out) ** 2)))
+
+        elif self.params["loss_func"] == "root_median_square":
+            training_error = np.sqrt(np.median(((y_train - out) ** 2)))
+
+        return [training_error, self.complexity]

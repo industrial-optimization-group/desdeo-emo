@@ -183,6 +183,6 @@ class TestProblem(BaseProblem):
             y.append("f" + str(obj + 1))
         dataset.columns = x + y
 
-        np.random.seed(None)
+        #np.random.seed(None)
 
         return dataset, x, y

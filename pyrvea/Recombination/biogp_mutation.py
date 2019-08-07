@@ -8,7 +8,17 @@ def mutate(
     params,
     *args
 ):
-    """ Perform mutation based on standard deviation on the offspring.
+    """Perform BioGP mutation functions.
+
+    Standard mutation:
+    Randomly select and regrow a subtree of an individual.
+
+    Small mutation:
+    Randomly select a node within a tree and replace it with either a function of the same arity,
+    or another value from the terminal set.
+
+    Mono parental:
+    Randomly swap two subtrees within the same individual.
 
     Parameters
     ----------
@@ -20,7 +30,8 @@ def mutate(
         Parameters for breeding. If None, use defaults.
 
     """
-    prob_mut = params["prob_mutation"]
+
+    prob_mut = params.get("prob_mutation", 0.3)
     prob_stand = 1/3 * prob_mut
     prob_point = 1/3 * prob_mut
     prob_mono = prob_mut - prob_stand - prob_point
@@ -45,7 +56,7 @@ def mutate(
             ind.nodes = ind.get_sub_nodes()
 
         elif r <= prob_point + prob_stand:
-            # Point mutation
+            # Small mutation
             for node in ind.nodes[1:]:
                 if np.random.rand() < prob_replace and callable(node.value):
                     value = choice(node.function_set)
@@ -57,7 +68,7 @@ def mutate(
             ind.nodes = ind.get_sub_nodes()
 
         elif r <= prob_mono + prob_point + prob_stand:
-            # Mono parental xover
+            # Mono parental
             swap_nodes = sample(ind.nodes[1:], 2)
             tmp_value = swap_nodes[0].value
             tmp_roots = swap_nodes[0].roots
