@@ -138,9 +138,8 @@ dmypy.json
 Tests/
 my-tests/
 *.csv
+*.xls
 
-# BioGP stuff
+# Graphviz files
 *.gv
 *.gv.png
-tiny_gp.py
-tiny_gp_plus.py
