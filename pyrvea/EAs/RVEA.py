@@ -40,7 +40,8 @@ class RVEA(BaseDecompositionEA):
         Alpha: float = 2,
         plotting: bool = True,
         logging: bool = False,
-        logfile=None
+        logfile=None,
+        **kwargs
     ):
         """Set up the parameters. Save in RVEA.params. Note, this should be
         changed to align with the current structure.
@@ -105,10 +106,8 @@ class RVEA(BaseDecompositionEA):
                 lattice_resolution, population.problem.num_of_objectives
             ),
             "prob_mutation": 1 / population.num_var,
-            "dis_mut": 20,
-            "prob_xover": 1,
-            "dis_xover": 30
         }
+        rveaparams.update(kwargs)
         return rveaparams
 
     def _run_interruption(self, population: "Population"):

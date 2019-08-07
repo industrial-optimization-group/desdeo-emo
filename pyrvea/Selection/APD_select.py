@@ -39,6 +39,7 @@ def APD_select(
     fitness_norm = np.repeat(fitness_norm, len(translated_fitness[0, :])).reshape(
         len(fitness), len(fitness[0, :])
     )
+    fitness_norm[fitness_norm == 0] = np.finfo(float).eps
     normalized_fitness = np.divide(translated_fitness, fitness_norm)  # Checked, works.
     cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
     if cosine[np.where(cosine > 1)].size:
@@ -53,6 +54,7 @@ def APD_select(
     assigned_vectors = np.argmax(cosine, axis=1)
     selection = np.array([], dtype=int)
     # Selection
+    refV[refV == 0] = np.finfo(float).eps
     for i in range(0, len(vectors.values)):
         sub_population_index = np.atleast_1d(
             np.squeeze(np.where(assigned_vectors == i))

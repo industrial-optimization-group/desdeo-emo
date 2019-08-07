@@ -17,15 +17,10 @@ import plotly.graph_objs as go
 from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
 from pyrvea.OtherTools.IsNotebook import IsNotebook
 from pyrvea.Recombination import (
-    biogp_xover_standard,
-    biogp_mut_standard,
-    evodn2_self_adapting,
-    evodn2_gaussian,
-    evonn_nodeswap_gaussian,
-    evonn_nodeswap_self_adapting,
-    evonn_mut_gaussian,
-    evonn_xover_nodeswap,
-    evonn_mut_self_adapting,
+    biogp_xover,
+    biogp_mutation,
+    evodn2_xover_mutation,
+    evonn_xover_mutation,
     bounded_polynomial_mutation,
     simulated_binary_crossover,
 )
@@ -51,7 +46,7 @@ class Population:
     ):
         """Initialize the population.
 
-        Attributes
+        Parameters
         ----------
         problem : BaseProblem
             An object of the class Problem
@@ -81,26 +76,19 @@ class Population:
         self.non_dom = 0
         self.pop_size = pop_size
         self.recombination_funcs = {
-            "biogp_xover_standard": biogp_xover_standard,
-            "biogp_mut_standard": biogp_mut_standard,
-            "evodn2_self_adapting": evodn2_self_adapting,
-            "evodn2_gaussian": evodn2_gaussian,
-            "evonn_nodeswap_gaussian": evonn_nodeswap_gaussian,
-            "evonn_nodeswap_self_adapting": evonn_nodeswap_self_adapting,
-            "evonn_xover_nodeswap": evonn_xover_nodeswap,
-            "evonn_mut_gaussian": evonn_mut_gaussian,
-            "evonn_mut_self_adapting": evonn_mut_self_adapting,
+            "biogp_xover": biogp_xover,
+            "biogp_mut": biogp_mutation,
+            "evodn2_xover_mutation": evodn2_xover_mutation,
+            "evonn_xover_mutation": evonn_xover_mutation,
             "bounded_polynomial_mutation": bounded_polynomial_mutation,
-            "simulated_binary_crossover": simulated_binary_crossover
+            "simulated_binary_crossover": simulated_binary_crossover,
         }
         self.crossover_type = crossover_type
         self.mutation_type = mutation_type
-        self.recombination_type = recombination_type
+        self.recombination = self.recombination_funcs.get(recombination_type, None)
         if recombination_type is None:
-            self.crossover = self.recombination_funcs[crossover_type]
-            self.mutation = self.recombination_funcs[mutation_type]
-        else:
-            self.recombination = self.recombination_funcs[recombination_type]
+            self.crossover = self.recombination_funcs.get(crossover_type, None)
+            self.mutation = self.recombination_funcs.get(mutation_type, None)
         self.problem = problem
         self.filename = (
             problem.name + "_" + str(problem.num_of_objectives)
@@ -108,15 +96,20 @@ class Population:
         self.plotting = plotting
         self.individuals = []
         self.objectives = np.empty((0, self.problem.num_of_objectives), float)
-        self.fitness = np.empty((0, self.problem.num_of_objectives), float)
+        if problem.minimize is not None:
+            self.fitness = self.objectives[:, self.problem.minimize]
+            self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
+            self.worst_fitness = -1 * self.ideal_fitness
+        else:
+            self.fitness = np.empty((0, self.problem.num_of_objectives), float)
+            self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
+        self.worst_fitness = -1 * self.ideal_fitness
         self.constraint_violation = np.empty(
             (0, self.problem.num_of_constraints), float
         )
         self.archive = pd.DataFrame(
             columns=["generation", "decision_variables", "objective_values"]
         )
-        self.ideal_fitness = np.full((1, self.problem.num_of_objectives), np.inf)
-        self.worst_fitness = -1 * self.ideal_fitness
 
         if not assign_type == "empty":
             individuals = create_new_individuals(
@@ -166,56 +159,76 @@ class Population:
         """
         obj = self.problem.objectives(ind)
         CV = np.empty((0, self.problem.num_of_constraints), float)
-        fitness = obj
+        fitness = self.eval_fitness(obj)
 
         if self.problem.num_of_constraints:
             CV = self.problem.constraints(ind, obj)
-            fitness = self.eval_fitness(ind, obj, self.problem)
+            fitness = self.eval_fitness(obj)
 
-        return (obj, CV, fitness)
+        return obj, CV, fitness
 
-    def delete_or_keep(self, indices, delete_or_keep="delete"):
-        """Remove from population individuals which are in indices, or
-        keep them and remove all others.
+    def eval_fitness(self, obj):
+        """
+        Calculate fitness based on objective values. Fitness = obj if minimized.
+        """
+
+        # fitness = self.objectives * self.problem.objs
+        if self.problem.minimize is None:
+            self.problem.minimize = [True] * self.problem.num_of_objectives
+        else:
+            assert len(self.problem.minimize) == self.problem.num_of_objectives
+
+        fitness = np.asarray(obj)[np.asarray(self.problem.minimize)]
+
+        return fitness
+
+    def update_fitness(self):
+        """Include or exclude objectives from fitness calculation.
+        Problem.minimize should be a list of booleans of same length as the number of objectives.
+        """
+        self.fitness = self.objectives[:, self.problem.minimize]
+        self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
+        self.worst_fitness = -1 * self.ideal_fitness
+        self.update_ideal_and_nadir()
+
+    def delete(self, indices, preserve=False):
+        """Remove from population individuals which are in indices if preserve=False, otherwise
+        preserve them and remove all others.
 
         Parameters
         ----------
-        indices: list or ndarray
-            Indices of individuals to keep
-        delete_or_keep: str
-            Whether to delete indices from current population, or keep them and delete others
+        indices: array_like
+            Indices of individuals to keep or delete.
+        preserve: bool
+            Whether to delete individuals at indices from current population, or preserve them and delete others.
         """
 
         mask = np.ones(len(self.individuals), dtype=bool)
         mask[indices] = False
 
-        # new_pop = np.delete(self.individuals, indices, axis=0)
         new_pop = np.array(self.individuals)[mask]
         deleted_pop = np.array(self.individuals)[~mask]
 
-        # new_obj = np.delete(self.objectives, indices, axis=0)
         new_obj = self.objectives[mask]
         deleted_obj = self.objectives[~mask]
 
-        # new_fitness = np.delete(self.fitness, indices, axis=0)
         new_fitness = self.fitness[mask]
         deleted_fitness = self.fitness[~mask]
 
         if len(self.constraint_violation) > 0:
-            # new_cv = np.delete(self.constraint_violation, indices, axis=0)
             new_cv = self.constraint_violation[mask]
             deleted_cv = self.constraint_violation[~mask]
         else:
             deleted_cv = self.constraint_violation
             new_cv = self.constraint_violation
 
-        if delete_or_keep == "delete":
+        if not preserve:
             self.individuals = list(new_pop)
             self.objectives = new_obj
             self.fitness = new_fitness
             self.constraint_violation = new_cv
 
-        elif delete_or_keep == "keep":
+        else:
             self.individuals = list(deleted_pop)
             self.objectives = deleted_obj
             self.fitness = deleted_fitness
@@ -260,8 +273,14 @@ class Population:
 
         """
 
-        if self.recombination_type is not None:
-            offspring = self.recombination.mate(mating_pop, self.individuals, params)
+        if self.recombination is not None:
+            offspring = self.recombination.mate(
+                mating_pop,
+                self.individuals,
+                params,
+                crossover_type=self.crossover_type,
+                mutation_type=self.mutation_type,
+            )
         else:
             offspring = self.crossover.mate(mating_pop, self.individuals, params)
             self.mutation.mutate(
@@ -273,13 +292,6 @@ class Population:
             )
 
         return offspring
-
-    def eval_fitness(self):
-        """
-        Calculate fitness based on objective values. Fitness = obj if minimized.
-        """
-        fitness = self.objectives * self.problem.objs
-        return fitness
 
     def plot_init_(self):
         """Initialize animation objects. Return figure"""
@@ -315,6 +327,7 @@ class Population:
             name = self.problem.name
 
         ndf = self.non_dominated()
+        #pareto = self.objectives[ndf][self.objectives[ndf].min(axis=1) >= 0, :]
         pareto = self.objectives[ndf]
         pareto_pop = np.asarray(self.individuals)[ndf].tolist()
 
@@ -344,9 +357,7 @@ class Population:
         layout = go.Layout(xaxis=dict(title="f1"), yaxis=dict(title="f2"))
         plotly.offline.plot(
             {"data": data, "layout": layout},
-            filename=name
-            + "pareto"
-            + ".html",
+            filename=name + "pareto" + ".html",
             auto_open=True,
         )
 

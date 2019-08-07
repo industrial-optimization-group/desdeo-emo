@@ -233,6 +233,7 @@ class ReferenceVectors:
         norm_1 = np.repeat(norm_1, self.number_of_objectives).reshape(
             self.number_of_vectors, self.number_of_objectives
         )
+        norm_2[norm_2 == 0] = np.finfo(float).eps
         self.values = np.divide(self.values, norm_2)
         self.values_planar = np.divide(self.values_planar, norm_1)
 
@@ -241,6 +242,7 @@ class ReferenceVectors:
         cosvv = np.dot(self.values, self.values.transpose())
         cosvv.sort(axis=1)
         cosvv = np.flip(cosvv, 1)
+        cosvv[cosvv > 1] = 1
         acosvv = np.arccos(cosvv[:, 1])
         self.neighbouring_angles_current = acosvv
         return acosvv

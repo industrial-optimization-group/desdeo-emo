@@ -18,11 +18,7 @@ def mutate(offspring, individuals, params, lower_limits, upper_limits):
         Problem upper bounds.
 
     """
-    try:
-        dis_mut = params["dis_mut"]
-
-    except KeyError:
-        dis_mut = 20
+    dis_mutation = params.get("dis_mutation", 20)
 
     prob_mutation = 1 / np.array(individuals).shape[1]
 
@@ -37,9 +33,9 @@ def mutate(offspring, individuals, params, lower_limits, upper_limits):
         * (
             (
                 2 * miu[temp]
-                + (1 - 2 * miu[temp]) * (1 - offspring_scaled[temp]) ** (dis_mut + 1)
+                + (1 - 2 * miu[temp]) * (1 - offspring_scaled[temp]) ** (dis_mutation + 1)
             )
-            ** (1 / (dis_mut + 1))
+            ** (1 / (dis_mutation + 1))
             - 1
         )
     )
@@ -50,9 +46,9 @@ def mutate(offspring, individuals, params, lower_limits, upper_limits):
             1
             - (
                 2 * (1 - miu[temp])
-                + 2 * (miu[temp] - 0.5) * offspring_scaled[temp] ** (dis_mut + 1)
+                + 2 * (miu[temp] - 0.5) * offspring_scaled[temp] ** (dis_mutation + 1)
             )
-            ** (1 / (dis_mut + 1))
+            ** (1 / (dis_mutation + 1))
         )
     )
     offspring[offspring > max_val] = max_val[offspring > max_val]

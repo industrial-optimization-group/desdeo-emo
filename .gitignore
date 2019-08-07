@@ -5,6 +5,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.html
+*.xls
 
 # C extensions
 *.so
@@ -139,8 +140,6 @@ Tests/
 my-tests/
 *.csv
 
-# BioGP stuff
+# Graphviz files
 *.gv
 *.gv.png
-tiny_gp.py
-tiny_gp_plus.py

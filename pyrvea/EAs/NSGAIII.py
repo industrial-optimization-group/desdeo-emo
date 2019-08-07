@@ -27,7 +27,8 @@ class NSGAIII(BaseDecompositionEA):
         iterations: int = 10,
         plotting: bool = True,
         logging: bool = False,
-        logfile = None
+        logfile = None,
+        **kwargs
     ):
         lattice_resolution_options = {
             "2": 49,
@@ -66,6 +67,7 @@ class NSGAIII(BaseDecompositionEA):
             "reference_vectors": reference_vectors,
             "extreme_points": None,
         }
+        nsga3params.update(kwargs)
         return nsga3params
 
     def select(self, population: "Population"):

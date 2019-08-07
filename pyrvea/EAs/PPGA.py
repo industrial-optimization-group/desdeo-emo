@@ -197,27 +197,15 @@ class PPGA:
         # Move prey and select neighbours for breeding
         mating_pop = self.lattice.move_prey()
 
-        # Calculate standard deviation
-        self.params["std_dev"] = (5 / 3) * (
-            1
-            - self.params["current_total_gen_count"] / self.params["total_generations"]
-        )
+        offspring = population.mate(mating_pop, self.params)
 
-        # If optimizing instead of training, perform crossover over the entire pop at once
-        if population.crossover_type == "simulated_binary_crossover":
-            offspring = population.mate(params=self.params)
-        else:
-            # print(str(len(population.individuals)))  #DEBUG
-            # start = time.process_time()  #DEBUG
-            offspring = population.mate(mating_pop, self.params)
-            # print(time.process_time() - start)  #DEBUG
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
 
         # Remove from offsprings the ones that didn't get placed
         mask = np.ones(len(offspring), dtype=bool)
         mask[placed_indices] = False
-        offspring = np.array(offspring)[~mask]
+        offspring = np.asarray(offspring)[~mask]
 
         # Add the successfully placed offspring to the population
         population.add(offspring)
@@ -229,7 +217,7 @@ class PPGA:
         ):
             selected = self.select(population, self.params["max_rank"])
             self.lattice.update_lattice(selected)
-            population.delete_or_keep(selected, "delete")
+            population.delete(selected)
 
         # Move predators
         self.lattice.move_predator()
@@ -243,6 +231,8 @@ class PPGA:
         ----------
         population : Population
         """
+
+        pass
 
     def select(self, population, max_rank=20) -> list:
         """Of the population, individuals lower than max_rank are selected.
@@ -529,7 +519,7 @@ class Lattice:
                     pos[0], pos[1] = dest_y, dest_x
 
         # Remove killed prey from population
-        self.params["population"].delete_or_keep(to_be_killed, "delete")
+        self.params["population"].delete(to_be_killed)
         self.update_lattice()
 
     def update_lattice(self, selected=None):

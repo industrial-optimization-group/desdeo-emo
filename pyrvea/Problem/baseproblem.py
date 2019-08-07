@@ -35,6 +35,7 @@ class BaseProblem:
         self.obj_func = []
         self.upper_limits = upper_limits
         self.lower_limits = lower_limits
+        self.minimize = None
 
     def objectives(self, decision_variables):
         """Accept a sample. Return Objective values.

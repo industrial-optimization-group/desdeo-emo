@@ -6,7 +6,8 @@ from scipy.special import expit
 import numpy as np
 import plotly
 import plotly.graph_objs as go
-
+from sklearn.preprocessing import minmax_scale
+from scipy.optimize import lsq_linear
 
 class EvoNN(BaseProblem):
     """Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.
@@ -19,9 +20,9 @@ class EvoNN(BaseProblem):
     ----------
     name : str
         Name of the problem.
-    X_train : ndarray
+    X_train : np.ndarray
         Training data input.
-    y_train : ndarray
+    y_train : np.ndarray
         Training data target values.
     params : dict
         Parameters for model training.
@@ -62,7 +63,7 @@ class EvoNN(BaseProblem):
 
         Parameters
         ----------
-        decision_variables : ndarray
+        decision_variables : np.ndarray
             Variables from the neural network.
 
         Returns
@@ -72,8 +73,8 @@ class EvoNN(BaseProblem):
 
         """
 
-        non_linear_layer, complexity = self.activation(decision_variables)
-        _, _, predicted_values, training_error = self.optimize_layer(non_linear_layer)
+        activated_layer, complexity = self.activation(decision_variables)
+        _, _, training_error = self.calculate_linear(activated_layer)
 
         obj_func = [training_error, complexity]
 
@@ -85,12 +86,12 @@ class EvoNN(BaseProblem):
 
         Parameters
         ----------
-        non_linear_layer : ndarray
+        non_linear_layer : np.ndarray
             Weight matrix of the neural network.
 
         Returns
         -------
-        activated_layer : ndarray
+        activated_layer : np.ndarray
             The activated non-linear layer before the output.
         complexity : int
             The model's complexity.
@@ -103,30 +104,26 @@ class EvoNN(BaseProblem):
 
         return activated_layer, complexity
 
-    def optimize_layer(self, non_linear_layer):
+    def calculate_linear(self, non_linear_layer):
         """ Apply the linear function to the activated layer
         and calculate the training error.
 
         Parameters
         ----------
-        non_linear_layer : ndarray
+        non_linear_layer : np.ndarray
             Output of the activation function
 
         Returns
         -------
-        linear_layer : ndarray
+        linear_layer : np.ndarray
             The optimized weight matrix of the upper part of the network
-        rss : float
-            Sum of residuals
-        predicted_values : ndarray
+        predicted_values : np.ndarray
             The prediction of the model
         training_error : float
             The model's training error
         """
 
         linear_layer = None
-        rss = None
-        predicted_values = None
         training_error = None
 
         if self.params["opt_func"] == "llsq":
@@ -134,13 +131,19 @@ class EvoNN(BaseProblem):
                 non_linear_layer, self.y_train, rcond=None
             )
             linear_layer = linear_solution[0]
-            rss = linear_solution[1]
-            predicted_values = np.dot(non_linear_layer, linear_layer)
 
-        if self.params["loss_func"] == "rmse":
-            training_error = np.sqrt(((self.y_train - predicted_values) ** 2).mean())
+        elif self.params["opt_func"] == "llsq_constrained":
+            linear_layer = lsq_linear(non_linear_layer, self.y_train, method='bvls', bounds=(0, 1)).x
 
-        return linear_layer, rss, predicted_values, training_error
+        predicted_values = np.dot(non_linear_layer, linear_layer)
+
+        if self.params["loss_func"] == "root_mean_square":
+            training_error = np.sqrt(np.mean(((self.y_train - predicted_values) ** 2)))
+            
+        elif self.params["loss_func"] == "root_median_square":
+            training_error = np.sqrt(np.median(((self.y_train - predicted_values) ** 2)))
+
+        return linear_layer, predicted_values, training_error
 
     def information_criterion(self, decision_variables):
         """Calculate the information criterion.
@@ -151,8 +154,9 @@ class EvoNN(BaseProblem):
         -------
         Corrected Akaike Information criterion
         """
-        non_linear_layer, complexity = self.activation(decision_variables)
-        linear_layer, rss, _, _ = self.optimize_layer(non_linear_layer)
+        activated_layer, complexity = self.activation(decision_variables)
+        linear_layer, predicted_values, _ = self.calculate_linear(activated_layer)
+        rss = np.sum(((predicted_values - self.y_train) ** 2))
         k = complexity + np.count_nonzero(linear_layer)
         aic = 2 * k + self.num_samples * np.log(rss / self.num_samples)
         aicc = aic + (2 * k * (k + 1) / (self.num_samples - k - 1))
@@ -273,13 +277,13 @@ class EvoNNModel(EvoNN):
     ----------
     name : str
         Name of the model.
-    non_linear_layer : ndarray
+    non_linear_layer : np.ndarray
         The weight matrix of the lower part of the network.
-    linear_layer : ndarray
+    linear_layer : np.ndarray
         The linear layer of the upper part of the network.
     fitness : list
         Fitness of the trained model.
-    svr : ndarray
+    svr : np.ndarray
         Single variable response of the model.
     log : file
         If logging set to True in params, external log file is stored here.
@@ -292,6 +296,7 @@ class EvoNNModel(EvoNN):
         self.non_linear_layer = None
         self.linear_layer = None
         self.fitness = None
+        self.minimize = None
         self.svr = None
         self.log = None
         self.set_params(**kwargs)
@@ -302,16 +307,16 @@ class EvoNNModel(EvoNN):
         algorithm=PPGA,
         pop_size=500,
         num_nodes=20,
-        prob_omit=0.3,
+        prob_omit=0.2,
         w_low=-5.0,
         w_high=5.0,
         activation_func="sigmoid",
         opt_func="llsq",
-        loss_func="rmse",
+        loss_func="root_median_square",
         selection="akaike_corrected",
-        recombination_type="evonn_nodeswap_gaussian",
-        crossover_type="evonn_xover_nodeswap",
-        mutation_type="evonn_mut_gaussian",
+        recombination_type="evonn_xover_mutation",
+        crossover_type="standard",
+        mutation_type="gaussian",
         logging=False,
         plotting=False,
         ea_parameters=None
@@ -323,7 +328,7 @@ class EvoNNModel(EvoNN):
         ----------
         name : str
             Name of the problem.
-        algorithm : :obj:
+        algorithm : EA object
             Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
@@ -382,10 +387,10 @@ class EvoNNModel(EvoNN):
 
         Parameters
         ----------
-        training_data : ndarray, shape = (numbers of samples, number of variables)
-            Training data
-        target_values : ndarray
-            Target values
+        training_data : pd.DataFrame, shape = (numbers of samples, number of variables)
+            Training data.
+        target_values : pd.DataFrame
+            Target values.
 
         Returns
         -------
@@ -393,18 +398,17 @@ class EvoNNModel(EvoNN):
 
         """
 
-        self.X_train = training_data
-        self.y_train = target_values
+        self.X_train = np.asarray(training_data)
+        self.y_train = np.asarray(target_values)
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
 
-        if self.params["logging"]:
-            self.log = self.create_logfile()
-
         self.train()
 
+        self.single_variable_response(ploton=self.params["plotting"])
+
         if self.params["logging"]:
-            print(self.fitness, file=self.log)
+            self.create_logfile()
 
         return self
 
@@ -433,24 +437,24 @@ class EvoNNModel(EvoNN):
         )
 
         activated_layer, _ = self.activation(self.non_linear_layer)
-        self.linear_layer, *_ = self.optimize_layer(activated_layer)
+        self.linear_layer, *_ = self.calculate_linear(activated_layer)
 
     def predict(self, decision_variables):
         """Predict using the EvoNN model.
 
         Parameters
         ----------
-        decision_variables : ndarray
+        decision_variables : pd.DataFrame
             The decision variables used for prediction.
 
         Returns
         -------
-        y : ndarray
+        y : np.ndarray
             The prediction of the model.
 
         """
         out = (
-            np.dot(decision_variables, self.non_linear_layer[1:, :])
+            np.dot(np.asarray(decision_variables), self.non_linear_layer[1:, :])
             + self.non_linear_layer[0]
         )
 
@@ -465,9 +469,9 @@ class EvoNNModel(EvoNN):
 
         Parameters
         ----------
-        prediction : ndarray
+        prediction : np.ndarray
             The prediction of the model.
-        target : ndarray
+        target : np.ndarray
             The target values.
         name : str
             Filename to save the plot as.
@@ -524,46 +528,33 @@ class EvoNNModel(EvoNN):
             "a",
         )
 
-        print(
-            "samples: "
-            + str(self.num_samples)
-            + "\n"
-            + "variables: "
-            + str(self.num_of_variables)
-            + "\n"
-            + "nodes: "
-            + str(self.params["num_nodes"])
-            + "\n"
-            + "activation: "
-            + self.params["activation_func"]
-            + "\n"
-            + "opt func: "
-            + self.params["opt_func"]
-            + "\n"
-            + "loss func: "
-            + self.params["loss_func"],
-            file=log_file,
-        )
+        for i in self.params:
+            print("", i, ":", self.params[i], file=log_file)
+
+        if self.fitness is not None:
+            print("fitness: " + str(self.fitness), file=log_file)
+
+        if self.svr is not None:
+            print("single variable response: " + str(self.svr), file=log_file)
+
         return log_file
 
-    def single_variable_response(self, ploton=False, log=None):
+    def single_variable_response(self, ploton=False):
         """Get the model's response to a single variable.
 
         Parameters
         ----------
         ploton : bool
             Create and show plot on/off.
-        log : file
-            Write the results in a log file.
-
         """
 
         trend = np.loadtxt("trend")
-        avg = np.ones((1, self.non_linear_layer[1:].shape[0])) * (0 + 1) / 2
+        avg = np.ones((1, self.num_of_variables)) * (np.finfo(float).eps + 1) / 2
         svr = np.empty((0, 2))
+        variables = np.ones((len(trend), 1)) * avg
 
-        for i in range(self.non_linear_layer[1:].shape[0]):
-            variables = np.ones((len(trend), 1)) * avg
+        for i in range(self.num_of_variables):
+
             variables[:, i] = trend
 
             out = self.predict(variables)
@@ -590,24 +581,15 @@ class EvoNNModel(EvoNN):
             r = np.multiply(p, q)
             r_max = max(r)
             r_min = min(r)
-            response = None
             s = None
             if r_max <= 0 and r_min <= 0:
-                response = -1
                 s = "inverse"
             elif r_max >= 0 and r_min >= 0:
-                response = 1
                 s = "direct"
             elif r_max == 0 and r_min == 0:
-                response = 0
                 s = "nil"
             elif r_min < 0 < r_max:
-                response = 2
                 s = "mixed"
 
-            if log is not None:
-                print(
-                    "x" + str(i + 1) + " response: " + str(response) + " " + s, file=log
-                )
             svr = np.vstack((svr, ["x" + str(i + 1), s]))
             self.svr = svr
