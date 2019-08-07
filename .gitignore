@@ -5,6 +5,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.html
+*.xls
 
 # C extensions
 *.so
@@ -138,7 +139,6 @@ dmypy.json
 Tests/
 my-tests/
 *.csv
-*.xls
 
 # Graphviz files
 *.gv
