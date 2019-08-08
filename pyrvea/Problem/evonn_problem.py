@@ -6,8 +6,8 @@ from scipy.special import expit
 import numpy as np
 import plotly
 import plotly.graph_objs as go
-from sklearn.preprocessing import minmax_scale
 from scipy.optimize import lsq_linear
+
 
 class EvoNN(BaseProblem):
     """Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.
@@ -24,12 +24,19 @@ class EvoNN(BaseProblem):
         Training data input.
     y_train : np.ndarray
         Training data target values.
+    num_of_objectives : int
+        The number of objectives.
     params : dict
         Parameters for model training.
     num_samples : int
         The number of data points, or samples.
-    num_of_objectives : int
-        The number of objectives.
+
+    Notes
+    -----
+    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    that code as a basis.
+
+    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
 
     References
     ----------

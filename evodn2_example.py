@@ -56,12 +56,16 @@ ea_params_evonn = {
     "prob_mutation": 0.3,
     "predator_pop_size": 60,
     "target_pop_size": 100,
+    "mut_strength": 0.5
 }
 
 problem.train(
-    model_type="EvoDN2",
+    model_type="EvoNN",
     algorithm=RVEA,
-    selection="min_error",
+    mutation_type="gaussian",
+    num_nodes=25,
+    opt_func="llsq_constrained",
+    loss_func="root_mean_square",
     activation_func="sigmoid",
     ea_parameters=ea_params_evonn,
 )

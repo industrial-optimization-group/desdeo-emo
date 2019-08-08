@@ -15,6 +15,13 @@ class EvoDN2(BaseProblem):
     layers, and a random number of nodes in each layer, dependant on max layers
     and max nodes set by user.
 
+    Notes
+    -----
+    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    that code as a basis.
+
+    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+
     Parameters
     ----------
     name : str

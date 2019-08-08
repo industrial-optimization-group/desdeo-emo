@@ -86,7 +86,7 @@ class PPGA:
         max_rank: int = 20,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
-        mut_strength: float = 0.7,
+        mut_strength: float = 0.9,
         neighbourhood_radius: int = 5,
     ):
         """Set up the parameters.

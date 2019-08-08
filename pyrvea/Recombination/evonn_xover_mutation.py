@@ -49,13 +49,13 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
                 offspring2[:, i] = tmp
 
         if mutation_type == "gaussian" or mutation_type is None:
-            # Method : Gaussian
+            # Method : Gaussian (default)
             # Take a random number of connections based on probability and mutate based on
             # standard deviation, calculated once per generation.
 
             connections = offspring1.size
 
-            mut_val = np.random.normal(0, std_dev, connections)
+            mut_val = np.random.normal(0, std_dev, connections) * mut_strength
 
             mut = np.random.choice(
                 connections,
@@ -64,7 +64,7 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
             )
             offspring1.ravel()[mut] += offspring1.ravel()[mut] * mut_val[mut]
 
-            mut_val = np.random.normal(0, std_dev, connections)
+            mut_val = np.random.normal(0, std_dev, connections) * mut_strength
 
             mut = np.random.choice(
                 connections,
@@ -72,8 +72,6 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
                 replace=False,
             )
             offspring2.ravel()[mut] += offspring2.ravel()[mut] * mut_val[mut]
-
-            offspring.extend((offspring1, offspring2))
 
         elif mutation_type == "self-adapting":
             # Method: Self adapting mutation
@@ -108,9 +106,9 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
                 1 - cur_gen / total_gen
             ) * (select[1].ravel()[mut] - select[0].ravel()[mut])
 
-            offspring.extend((offspring1, offspring2))
-
         else:
             pass
+
+        offspring.extend((offspring1, offspring2))
 
     return offspring

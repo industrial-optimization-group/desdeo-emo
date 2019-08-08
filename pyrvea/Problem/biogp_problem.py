@@ -1,14 +1,9 @@
-# BioGP algorithm for pyRVEA, by Niko Rissanen
-# For graphics output, install graphviz https://pypi.org/project/graphviz/
-
 from random import random, randint, choice, seed
 from graphviz import Digraph, Source
 import numpy as np
 import pandas as pd
-from inspect import signature
 from math import ceil
 from pyrvea.Problem.baseproblem import BaseProblem
-from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.TournamentEA import TournamentEA
 from pyrvea.Population.Population import Population
@@ -17,6 +12,50 @@ import plotly.graph_objs as go
 
 
 class BioGP(BaseProblem):
+    """Creates syntax tree models to use for genetic programming through bi-objective genetic algorithms.
+
+    The BioGP technique initially minimizes training error through a single objective optimization procedure and then a
+    trade-off between complexity and accuracy is worked out through a genetic algorithm based bi-objective
+    optimization strategy.
+
+    The benefit of the BioGP approach is that an expert user or a decision maker (DM) can
+    flexibly select the mathematical operations involved to construct a meta-model of desired complexity or
+    accuracy. It is also designed to combat bloat – a perennial problem in genetic programming along with
+    over fitting and under fitting problems.
+
+    Notes
+    -----
+    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    that code as a basis.
+
+    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+
+    Parameters
+    ----------
+    name : str
+        Name of the problem.
+    X_train : np.ndarray
+        Training data input.
+    y_train : np.ndarray
+        Training data target values.
+    num_of_objectives : int
+        The number of objectives.
+    params : dict
+        Parameters for model training.
+    num_samples : int
+        The number of data points, or samples.
+    function_set : array_like
+        The function set to use when creating the trees.
+    terminal_set : array_like
+        The terminals (variables and constants) to use when creating the trees.
+
+    References
+    ----------
+    [1] B. K. Giri, J. Hakanen, K. Miettinen, N. Chakraborti. Genetic programming through bi-objective
+    genetic algorithms with a study of a simulated moving bed process involving multiple objectives.
+    Applied Soft Computing, Volume 13, Issue 5. 2013. Pages 2613-2623.
+    """
+
     def __init__(
         self,
         name=None,
@@ -25,9 +64,8 @@ class BioGP(BaseProblem):
         num_of_objectives=2,
         params=None,
         num_samples=None,
-        terminal_set=None,
         function_set=None,
-        fitness=None
+        terminal_set=None,
     ):
         super().__init__()
 
@@ -47,7 +85,6 @@ class BioGP(BaseProblem):
         }
         self.terminal_set = terminal_set
         self.function_set = function_set
-        self.fitness = fitness
 
         self.individuals = []
 
@@ -190,6 +227,8 @@ class BioGPModel(BioGP):
         error_lim : float
             Used to control bloat. If the error reduction ratio of a subtree is less than this value,
             then that root is terminated and a new root is grown under the linear node (i.e., parent node).
+        loss_func : str
+            The loss function to use.
         selection : str
             The selection method to use.
         recombination_type, crossover_type, mutation_type : str or None
@@ -219,8 +258,8 @@ class BioGPModel(BioGP):
             "prob_terminal": prob_terminal,
             "complexity_scalar": complexity_scalar,
             "error_lim": error_lim,
-            "selection": selection,
             "loss_func": loss_func,
+            "selection": selection,
             "recombination_type": recombination_type,
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
@@ -242,7 +281,7 @@ class BioGPModel(BioGP):
         ----------
         training_data : pd.DataFrame, shape = (numbers of samples, number of variables)
             Training data.
-        target_values : pd.Dataframe
+        target_values : pd.DataFrame
             Target values.
 
         Returns
@@ -491,12 +530,18 @@ class Node:
     ----------
     value : function, str or float
         A function node has as its value a function. Terminal nodes contain variables which are either float or str.
-    depth = int
+    depth : int
         The depth the node is at.
+    params : None or dict
+        The parameters of the model.
+    function_set : array_like
+        The function set to use when creating the trees.
+    terminal_set : array_like
+        The terminals (variables and constants) to use when creating the trees.
 
     """
 
-    def __init__(self, value=None, depth=None, params=None, terminal_set=None, function_set=None):
+    def __init__(self, value=None, depth=None, params=None, function_set=None, terminal_set=None):
         self.value = value
         self.depth = depth
         self.params = params
@@ -641,6 +686,20 @@ class Node:
 
 
 class LinearNode(Node):
+    """The parent node of the tree, from which a number of subtrees emerge, as defined
+    by the user. The linear node takes a weighted sum of the output from the subtrees and
+    also uses a bias value. The weights and the bias are calculated by the linear least
+    square technique.
+
+    Parameters
+    ----------
+    value : function, str or float
+        A function node has as its value a function. Terminal nodes contain variables which are either float or str.
+    depth : int
+        The depth the node is at.
+    params : None or dict
+        Parameters of the model.
+    """
     def __init__(self, value="linear", depth=0, params=None):
         super().__init__(params=params)
         self.value = value
