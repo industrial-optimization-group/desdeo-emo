@@ -1,6 +1,11 @@
 # Evolutionary algorithms in pyRVEA
 
-[EvoNN](#what-is-evonn)
+- [EvoNN](#what-is-evonn)
+- [EvoDN2](#what-is-evodn2)
+- [BioGP](#what-is-biogp)
+- [PPGA](#what-is-ppga)
+- [Notes](#notes)
+- [References](#references)
 
 ## Introduction
 The engineering and scientific data that one receives from experiments or simulations from any industry is often very noisy, one needs to have a model to process them effectively. It is, however, very difficult to build a model which captures only the correct trends in the data while devoid of any implicit noise. The models can easily be overfitted so that they capture every fluctuation in the data set, both significant and noisy, or underfitted where some major trends may remain undetected or unrepresented.
