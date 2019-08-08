@@ -64,7 +64,7 @@ problem.train(
     algorithm=RVEA,
     mutation_type="gaussian",
     num_nodes=25,
-    opt_func="llsq_constrained",
+    opt_func="llsq",
     loss_func="root_mean_square",
     activation_func="sigmoid",
     ea_parameters=ea_params_evonn,

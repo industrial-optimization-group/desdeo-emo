@@ -29,7 +29,7 @@ def mate(mating_pop, individuals: list, params):
         The offsprings produced as a result of crossover.
     """
 
-    prob_crossover = params.get("prob_crossover", 1.0)
+    prob_crossover = params.get("prob_crossover", 0.9)
 
     prob_standard = 0.5
     prob_height_fair = prob_crossover - prob_standard

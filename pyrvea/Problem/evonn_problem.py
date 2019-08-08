@@ -106,7 +106,7 @@ class EvoNN(BaseProblem):
         """
         # Calculate the dot product + bias
         out = np.dot(self.X_train, non_linear_layer[1:, :]) + non_linear_layer[0]
-        complexity = np.count_nonzero(non_linear_layer[1:, :])
+        complexity = np.count_nonzero(non_linear_layer)
         activated_layer = self.activate(self.params["activation_func"], out)
 
         return activated_layer, complexity
