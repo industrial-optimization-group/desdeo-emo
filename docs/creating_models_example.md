@@ -21,11 +21,13 @@ test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2)
 # x = list of variable names, y = list of objectives
 dataset, x, y = test_prob.create_training_data(samples=500)
 ```
-Or you can import a data set, here an example data set for [ZDT1](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) problem with 30 variables and 1000 samples is used:
+Or you can import a data set, here an example data set for [ZDT1](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) problem with 30 variables and 1000 samples is used. The DataProblem class requires the names of the variables and objectives as lists. If your data set does not contain them in the header, you will have to create them yourself.
 ```
 dataset = pd.read_excel("ZDT1_1000.xls", header=0)
 x = dataset.columns[0:30].tolist()
+# x = ['x1', 'x2', 'x3', ...]
 y = dataset.columns[30:].tolist()
+# y = ['f1', 'f2']
 ```
 After you have the data, create the DataProblem class and pass the data, variables and objectives.
 ```
