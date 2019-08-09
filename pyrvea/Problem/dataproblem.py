@@ -57,8 +57,8 @@ class DataProblem(BaseProblem):
 
         # self.models = dict.fromkeys(self.y, [])  # This method duplicates models in each key, why?
         self.models = {}                           # This works..
-        for x in self.y:
-            self.models[x] = []
+        for obj in self.y:
+            self.models[obj] = []
 
         self.metrics = []
         # Defining bounds in the decision space

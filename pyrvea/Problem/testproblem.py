@@ -39,7 +39,7 @@ class TestProblem(BaseProblem):
         lower_limits=0.0,
     ):
 
-        super(TestProblem, self).__init__(
+        super().__init__(
             name,
             num_of_variables,
             num_of_objectives,
@@ -97,11 +97,12 @@ class TestProblem(BaseProblem):
         else:
             self.obj_func = OptTestFunctions(
                 name=self.name,
-                num_of_objectives=num_of_objectives,
                 num_of_variables=num_of_variables,
             )
             self.lower_limits = self.obj_func.lower_limits
             self.upper_limits = self.obj_func.upper_limits
+            self.num_of_variables = self.obj_func.num_of_variables
+            self.num_of_objectives = self.obj_func.num_of_objectives
 
     def objectives(self, decision_variables) -> list:
         """Use this method to calculate objective functions.
@@ -120,7 +121,7 @@ class TestProblem(BaseProblem):
         """
         print("Error: Constraints not supported yet.")
 
-    def create_training_data(self, samples=150, method="random", seed=None):
+    def create_training_data(self, samples=500, method="random", seed=None):
         """Create training data for test functions.
 
         Parameters
@@ -183,6 +184,6 @@ class TestProblem(BaseProblem):
             y.append("f" + str(obj + 1))
         dataset.columns = x + y
 
-        #np.random.seed(None)
+        np.random.seed(None)
 
         return dataset, x, y

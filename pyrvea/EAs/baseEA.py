@@ -54,7 +54,10 @@ class BaseDecompositionEA(BaseEA):
         Population:
             Returns the Population after evolution.
         """
-        self.params = self.set_params(population, **ea_parameters)
+        if ea_parameters:
+            self.params = self.set_params(population, **ea_parameters)
+        else:
+            self.params = self.set_params(population)
         # print("Using BaseDecompositionEA init")
         self._next_iteration(population)
 

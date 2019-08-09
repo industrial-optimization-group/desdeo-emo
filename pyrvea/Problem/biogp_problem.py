@@ -75,6 +75,7 @@ class BioGP(BaseProblem):
         self.num_of_objectives = num_of_objectives
         self.params = params
         self.num_samples = num_samples
+        # These functions should be moved to their own separate package maybe
         self.function_map = {
             "add": self.add,
             "sub": self.sub,
@@ -82,6 +83,10 @@ class BioGP(BaseProblem):
             "div": self.div,
             "sqrt": self.sqrt,
             "log": self.log,
+            "sin": self.sin,
+            "cos": self.cos,
+            "tan": self.tan,
+            "neg": self.neg
         }
         self.terminal_set = terminal_set
         self.function_set = function_set
@@ -167,8 +172,23 @@ class BioGP(BaseProblem):
 
     @staticmethod
     def log(x):
-        np.where(np.abs(x) > 0.001, np.log(np.abs(x)), 0.0)
+        return np.where(np.abs(x) > 0.001, np.log(np.abs(x)), 0.0)
 
+    @staticmethod
+    def sin(x):
+        return np.sin(x)
+
+    @staticmethod
+    def cos(x):
+        return np.cos(x)
+
+    @staticmethod
+    def tan(x):
+        return np.tan(x)
+
+    @staticmethod
+    def neg(x):
+        return np.negative(x)
 
 class BioGPModel(BioGP):
     def __init__(self, **kwargs):
@@ -196,7 +216,7 @@ class BioGPModel(BioGP):
         recombination_type=None,
         crossover_type="biogp_xover",
         mutation_type="biogp_mut",
-        single_obj_generations=5,
+        single_obj_generations=10,
         logging=False,
         plotting=False,
         ea_parameters=None,
@@ -294,7 +314,9 @@ class BioGPModel(BioGP):
         self.y_train = target_values
         self.num_samples = target_values.shape[0]
         self.num_of_variables = training_data.shape[1]
-        self.terminal_set = self.params["terminal_set"]
+        terminal_set = self.X_train.columns.tolist()
+        if self.params["terminal_set"]:
+            self.params["terminal_set"].extend(terminal_set)
         function_set = []
         for function in self.params["function_set"]:
             function_set.append(self.function_map[function])
@@ -393,12 +415,12 @@ class BioGPModel(BioGP):
         ----------
         prediction : np.ndarray
             The prediction of the model.
-        target : np.ndarray
+        target : pd.DataFrame
             The target values.
         name : str
             Filename to save the plot as.
         """
-
+        target = np.asarray(target)
         if name is None:
             name = self.name
 

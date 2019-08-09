@@ -4,7 +4,7 @@ from pyDOE import lhs
 from pyrvea.Problem.baseproblem import BaseProblem
 
 
-class OptTestFunctions(BaseProblem):
+class OptTestFunctions:
 
     """Test functions for single/multi-objective problems to test
     the performance of evolutionary algorithms.
@@ -27,44 +27,33 @@ class OptTestFunctions(BaseProblem):
         lower boundaries for test data
     """
 
-    def __init__(
-        self,
-        name=None,
-        num_of_variables=2,
-        num_of_objectives=None,
-        num_of_constraints=0,
-        upper_limits=1,
-        lower_limits=0,
-    ):
-
-        super(OptTestFunctions, self).__init__(
-            name,
-            num_of_variables,
-            num_of_objectives,
-            num_of_constraints,
-            upper_limits,
-            lower_limits,
-        )
-
+    def __init__(self, name=None, num_of_variables=None):
+        self.name = name
+        self.num_of_variables = num_of_variables
         # Define search domain for test functions
-        self.test_f_limits = {
-            "Sphere": (-5, 5),
-            "Matyas": (-10, 10),
-            "Himmelblau": (-5, 5),
-            "Rastigrin": (-5.12, 5.12),
-            "Three-hump camel": (-5, 5),
-            "Goldstein-Price": (-2, 2),
-            "LeviN13": (-10, 10),
-            "SchafferN2": (-100, 100),
-            "Coello_ex1": (0, 1),
-            "Fonseca-Fleming": (-4, 4),
-            "Kursawe": (-5, 5),
-            "SchafferN1": (-100, 100),
+        test_f_params = {
+            # Single objective functions
+            "Sphere": {"var": 2, "obj": 1, "bounds": (-5, 5)},
+            "Matyas": {"var": 2, "obj": 1, "bounds": (-10, 10)},
+            "Himmelblau": {"var": 2, "obj": 1, "bounds": (-5, 5)},
+            "Rastigrin": {"var": 2, "obj": 1, "bounds": (-5.12, 5.12)},
+            "Three-hump camel": {"var": 2, "obj": 1, "bounds": (-5, 5)},
+            "Goldstein-Price": {"var": 2, "obj": 1, "bounds": (-2, 2)},
+            "LeviN13": {"var": 2, "obj": 1, "bounds": (-10, 10)},
+            "SchafferN2": {"var": 2, "obj": 1, "bounds": (-100, 100)},
+            # Multi-objective functions
+            "Coello_ex1": {"var": 2, "obj": 2, "bounds": (0, 1)},
+            "Fonseca-Fleming": {"var": 2, "obj": 2, "bounds": (-4, 4)},
+            "Kursawe": {"var": 2, "obj": 2, "bounds": (-5, 5)},
+            "SchafferN1": {"var": 1, "obj": 2, "bounds": (-100, 100)},
         }
 
-        if self.name in self.test_f_limits.keys():
-            self.lower_limits = self.test_f_limits[self.name][0]
-            self.upper_limits = self.test_f_limits[self.name][1]
+        if self.name in test_f_params.keys():
+            if self.num_of_variables is None:
+                self.num_of_variables = test_f_params[self.name]["var"]
+            self.num_of_objectives = test_f_params[self.name]["obj"]
+            self.lower_limits = test_f_params[self.name]["bounds"][0]
+            self.upper_limits = test_f_params[self.name]["bounds"][1]
 
     def __call__(self, x):
         return self.objectives(x)
@@ -82,11 +71,7 @@ class OptTestFunctions(BaseProblem):
         The objective functions.
 
         """
-
-        self.num_of_variables = decision_variables.shape[0]
-
         # Single objective test functions
-        self.num_of_objectives = 1
 
         if self.name == "Sphere":
             # Sphere function, -5 <= x <= 5
@@ -95,7 +80,6 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = sum(x ** 2)
 
         elif self.name == "Matyas":
-
             # Matyas function, -10 <= x, y <= 10
 
             x = np.asarray(decision_variables[0])
@@ -103,7 +87,6 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = 0.26 * (x ** 2 + y ** 2) - 0.48 * x * y
 
         elif self.name == "Himmelblau":
-
             # Himmelblau's function, -5 <= x, y <= 5
 
             x = np.asarray(decision_variables[0])
@@ -164,7 +147,6 @@ class OptTestFunctions(BaseProblem):
         # Test functions for multi-objective optimization
 
         elif self.name == "Coello_ex1":
-            self.num_of_objectives = 2
             x = np.asarray(decision_variables[0])
             y = np.asarray(decision_variables[1])
             a = 2
@@ -179,7 +161,6 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "Kursawe":
-            self.num_of_objectives = 2
             x1 = np.asarray(decision_variables[0])
             x2 = np.asarray(decision_variables[1])
             x3 = np.asarray(decision_variables[1])
@@ -197,13 +178,16 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "Fonseca-Fleming":
-            self.num_of_objectives = 2
             f1 = 0
             f2 = 0
 
             for n in range(len(decision_variables)):
-                f1 += (decision_variables[n] - 1 / np.sqrt(len(decision_variables))) ** 2
-                f2 += (decision_variables[n] + 1 / np.sqrt(len(decision_variables))) ** 2
+                f1 += (
+                    decision_variables[n] - 1 / np.sqrt(len(decision_variables))
+                ) ** 2
+                f2 += (
+                    decision_variables[n] + 1 / np.sqrt(len(decision_variables))
+                ) ** 2
 
             f1 = 1 - np.exp(-f1)
             f2 = 1 - np.exp(-f2)
@@ -211,7 +195,6 @@ class OptTestFunctions(BaseProblem):
             self.obj_func = [f1, f2]
 
         elif self.name == "SchafferN1":
-            self.num_of_objectives = 2
             x = np.asarray(decision_variables[0])
 
             f1 = x ** 2

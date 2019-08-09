@@ -429,6 +429,7 @@ class EvoDN2Model(EvoDN2):
             mutation_type=self.params["mutation_type"],
             plotting=self.params["plotting"],
         )
+
         pop.evolve(
             EA=self.params["algorithm"],
             ea_parameters=self.params["ea_parameters"]
@@ -478,14 +479,14 @@ class EvoDN2Model(EvoDN2):
 
         Parameters
         ----------
-        prediction : ndarray
+        prediction : np.ndarray
             The prediction of the model.
-        target : ndarray
+        target : pd.DataFrame
             The target values.
         name : str
             Filename to save the plot as.
         """
-
+        target = np.asarray(target)
         if name is None:
             name = self.name
 

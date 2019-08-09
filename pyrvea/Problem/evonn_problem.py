@@ -478,12 +478,12 @@ class EvoNNModel(EvoNN):
         ----------
         prediction : np.ndarray
             The prediction of the model.
-        target : np.ndarray
+        target : pd.DataFrame
             The target values.
         name : str
             Filename to save the plot as.
         """
-
+        target = np.asarray(target)
         if name is None:
             name = self.name
 
