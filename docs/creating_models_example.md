@@ -94,5 +94,5 @@ pop.evolve(EA=RVEA, ea_parameters=opt_params)
 ```
 To show the final pareto plot:
 ```
-pop.plot_pareto(filename="my-test-function")
+pop.plot_pareto(name="my-test-function")
 ```
