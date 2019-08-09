@@ -84,14 +84,13 @@ class PPGA:
         offspring_place_attempts: int = 10,
         generations_per_iteration: int = 10,
         iterations: int = 10,
-        logging: bool = False,
-        logfile=None,
         kill_interval: int = 7,
         max_rank: int = 20,
         prob_crossover: float = 0.8,
         prob_mutation: float = 0.3,
         mut_strength: float = 0.9,
         neighbourhood_radius: int = 5,
+        **kwargs
     ):
         """Set up the parameters.
 
@@ -113,10 +112,6 @@ class PPGA:
             Number of generations per iteration.
         iterations : int
             Total number of iterations.
-        logging : bool
-            If true, append parameters to a logfile.
-        logfile : file
-            External log file.
         kill_interval : int
             Kill all individuals worse than max_rank in the population every interval generation.
         max_rank : int
@@ -148,8 +143,6 @@ class PPGA:
             "generations": generations_per_iteration,
             "iterations": iterations,
             "total_generations": iterations * generations_per_iteration,
-            "logging": logging,
-            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_total_gen_count": 0,
             "current_iteration_count": 0,
@@ -161,11 +154,7 @@ class PPGA:
             "neighbourhood_radius": neighbourhood_radius,
         }
 
-        # If logging enabled, write params to file
-        if ppgaparams["logging"]:
-            for k, v in ppgaparams.items():
-                print(k, v, file=ppgaparams["logfile"])
-
+        ppgaparams.update(kwargs)
         return ppgaparams
 
     def _next_iteration(self, population: "Population"):

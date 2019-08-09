@@ -38,9 +38,6 @@ class RVEA(BaseDecompositionEA):
         generations_per_iteration: int = 10,
         iterations: int = 10,
         Alpha: float = 2,
-        plotting: bool = True,
-        logging: bool = False,
-        logfile=None,
         **kwargs
     ):
         """Set up the parameters. Save in RVEA.params. Note, this should be
@@ -64,8 +61,6 @@ class RVEA(BaseDecompositionEA):
             Total Number of iterations.
         Alpha : float
             The alpha parameter of APD selection.
-        plotting : bool
-            Useless really.
         Returns
         -------
 
@@ -95,9 +90,6 @@ class RVEA(BaseDecompositionEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "Alpha": Alpha,
-            "ploton": plotting,
-            "logging": logging,
-            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
             "current_total_gen_count": 0,

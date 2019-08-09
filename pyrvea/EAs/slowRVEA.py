@@ -30,7 +30,10 @@ class slowRVEA(RVEA):
         Population:
             Returns the Population after evolution.
         """
-        self.params = self.set_params(population, **ea_parameters)
+        if ea_parameters:
+            self.params = self.set_params(population, **ea_parameters)
+        else:
+            self.params = self.set_params(population)
         # if population.individuals.shape[0] == 0:
         #     create_new_individuals(pop_size=self.params["population_size"])
         # # print("Using BaseDecompositionEA init")
@@ -39,14 +42,12 @@ class slowRVEA(RVEA):
     def set_params(
         self,
         population: "Population",
-        generations_per_iteration: int = 100,
+        generations_per_iteration: int = 10,
         iterations: int = 10,
         Alpha: float = 2,
-        plotting: bool = True,
-        logging: bool = False,
-        logfile = None,
         ref_point: list = None,
         old_point: list = None,
+        **kwargs
     ):
         """Set up the parameters. Save in RVEA.params. Note, this should be
         changed to align with the current structure.
@@ -76,15 +77,13 @@ class slowRVEA(RVEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "Alpha": Alpha,
-            "ploton": plotting,
-            "logging": logging,
-            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
             "current_total_gen_count": 0,
             "total_generations": iterations * generations_per_iteration,
             "ref_point": ref_point,
         }
+        rveaparams.update(kwargs)
         return rveaparams
 
     def _run_interruption(self, population: "Population"):
