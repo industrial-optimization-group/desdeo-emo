@@ -41,9 +41,9 @@ class EvoDN2(BaseProblem):
 
     References
     ----------
-    [1] Swagata Roy, Bhupinder Singh Saini, Debalay Chakrabarti and Nirupam Chakraborti.
-    A new Deep Neural Network algorithm employed in the study of mechanical properties of
-    micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indian Institute of Technology, 2019.
+    [1] Swagata R., Bhupinder S., Chakrabarti, N. and Chakraborti, N. (2019). A new Deep Neural Network algorithm
+    employed in the study of mechanical properties of micro-alloyed steel.
+    Department of Metallurgical and Materials Engineering, Indian Institute of Technology.
     """
 
     def __init__(
@@ -254,6 +254,13 @@ class EvoDN2Model(EvoDN2):
 
     Parameters
     ----------
+    model_parameters : dict
+        Parameters passed for the model.
+    ea_parameters : dict
+        Parameters passed for the genetic algorithm.
+
+    Attributes
+    ----------
     name : str
         Name of the problem
     subnets : array_like
@@ -273,7 +280,7 @@ class EvoDN2Model(EvoDN2):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, model_parameters, ea_parameters):
         super().__init__()
         self.name = "EvoDN2_Model"
         self.subnets = None
@@ -283,12 +290,16 @@ class EvoDN2Model(EvoDN2):
         self.linear_layer = None
         self.svr = None
         self.log = None
-        self.set_params(**kwargs)
+        self.ea_params = ea_parameters
+        if model_parameters:
+            self.set_params(**model_parameters)
+        else:
+            self.set_params()
 
     def set_params(
         self,
         name="EvoDN2_Model",
-        algorithm=PPGA,
+        training_algorithm=PPGA,
         pop_size=500,
         num_subnets=4,
         max_layers=4,
@@ -304,8 +315,7 @@ class EvoDN2Model(EvoDN2):
         crossover_type="standard",
         mutation_type="gaussian",
         logging=False,
-        plotting=False,
-        ea_parameters=None
+        plotting=False
     ):
         """ Set parameters for EvoDN2 model.
 
@@ -313,7 +323,7 @@ class EvoDN2Model(EvoDN2):
         ----------
         name : str
             Name of the problem.
-        algorithm : :obj:
+        training_algorithm : EA
             Which training algorithm to use.
         pop_size : int
             Population size.
@@ -344,13 +354,11 @@ class EvoDN2Model(EvoDN2):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
-        ea_parameters : dict
-            Contains the parameters needed by EA (Default value = None).
 
         """
         params = {
             "name": name,
-            "algorithm": algorithm,
+            "training_algorithm": training_algorithm,
             "pop_size": pop_size,
             "num_subnets": num_subnets,
             "max_layers": max_layers,
@@ -366,8 +374,7 @@ class EvoDN2Model(EvoDN2):
             "mutation_type": mutation_type,
             "recombination_type": recombination_type,
             "logging": logging,
-            "plotting": plotting,
-            "ea_parameters": ea_parameters
+            "plotting": plotting
         }
 
         self.name = name
@@ -431,8 +438,8 @@ class EvoDN2Model(EvoDN2):
         )
 
         pop.evolve(
-            EA=self.params["algorithm"],
-            ea_parameters=self.params["ea_parameters"]
+            EA=self.params["training_algorithm"],
+            ea_parameters=self.ea_params
         )
 
         non_dom_front = pop.non_dominated()
@@ -496,7 +503,7 @@ class EvoDN2Model(EvoDN2):
         plotly.offline.plot(
             data,
             filename="Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"
@@ -526,7 +533,7 @@ class EvoDN2Model(EvoDN2):
         # Save params to log file
         log_file = open(
             "Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"

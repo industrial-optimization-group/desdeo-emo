@@ -40,10 +40,10 @@ class EvoNN(BaseProblem):
 
     References
     ----------
-    [1] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
-    J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.
-    [2] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
-    net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.
+    [1] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in chemical and metallurgical Systems.
+    In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer, Cham.
+    [2] Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based multi-objective neural net
+    applied to noisy blast furnace data. Applied Soft Computing, 7(1), 387-397.
 
     """
 
@@ -273,12 +273,14 @@ class EvoNN(BaseProblem):
 
 
 class EvoNNModel(EvoNN):
-    """The class for the surrogate model.
+    """The class for the EvoNN surrogate model.
 
     Parameters
     ----------
-    **kwargs
+    model_parameters : dict
         Parameters passed for the model.
+    ea_parameters : dict
+        Parameters passed for the genetic algorithm.
 
     Attributes
     ----------
@@ -297,21 +299,24 @@ class EvoNNModel(EvoNN):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, model_parameters=None, ea_parameters=None):
         super().__init__()
         self.name = "EvoNN_Model"
         self.non_linear_layer = None
         self.linear_layer = None
         self.fitness = None
-        self.minimize = None
         self.svr = None
         self.log = None
-        self.set_params(**kwargs)
+        self.ea_params = ea_parameters
+        if model_parameters:
+            self.set_params(**model_parameters)
+        else:
+            self.set_params()
 
     def set_params(
         self,
         name="EvoNN_Model",
-        algorithm=PPGA,
+        training_algorithm=PPGA,
         pop_size=500,
         num_nodes=20,
         prob_omit=0.2,
@@ -326,7 +331,6 @@ class EvoNNModel(EvoNN):
         mutation_type="gaussian",
         logging=False,
         plotting=False,
-        ea_parameters=None
     ):
 
         """ Set parameters for the EvoNN model.
@@ -335,7 +339,7 @@ class EvoNNModel(EvoNN):
         ----------
         name : str
             Name of the problem.
-        algorithm : EA object
+        training_algorithm : EA
             Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
@@ -362,13 +366,11 @@ class EvoNNModel(EvoNN):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
-        ea_parameters : dict
-            Contains the parameters needed by EA (Default value = None).
         """
 
         params = {
             "name": name,
-            "algorithm": algorithm,
+            "training_algorithm": training_algorithm,
             "pop_size": pop_size,
             "num_nodes": num_nodes,
             "prob_omit": prob_omit,
@@ -382,11 +384,9 @@ class EvoNNModel(EvoNN):
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
             "logging": logging,
-            "plotting": plotting,
-            "ea_parameters": ea_parameters
+            "plotting": plotting
         }
 
-        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):
@@ -433,8 +433,8 @@ class EvoNNModel(EvoNN):
             mutation_type=self.params["mutation_type"],
         )
         pop.evolve(
-            EA=self.params["algorithm"],
-            ea_parameters=self.params["ea_parameters"]
+            EA=self.params["training_algorithm"],
+            ea_parameters=self.ea_params
 
         )
 
@@ -493,7 +493,7 @@ class EvoNNModel(EvoNN):
         plotly.offline.plot(
             data,
             filename="Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"
@@ -524,7 +524,7 @@ class EvoNNModel(EvoNN):
         # Save params to log file
         log_file = open(
             "Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"

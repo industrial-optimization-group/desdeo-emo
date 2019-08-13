@@ -37,7 +37,7 @@ class Population:
         self,
         problem: "BaseProblem",
         assign_type: str = "RandomDesign",
-        plotting: bool = True,
+        plotting: bool = False,
         pop_size=None,
         recombination_type=None,
         crossover_type="simulated_binary_crossover",

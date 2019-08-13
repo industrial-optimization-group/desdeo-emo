@@ -51,9 +51,9 @@ class BioGP(BaseProblem):
 
     References
     ----------
-    [1] B. K. Giri, J. Hakanen, K. Miettinen, N. Chakraborti. Genetic programming through bi-objective
+    [1] Giri, B. K., Hakanen, J., Miettinen, K., & Chakraborti, N. (2013). Genetic programming through bi-objective
     genetic algorithms with a study of a simulated moving bed process involving multiple objectives.
-    Applied Soft Computing, Volume 13, Issue 5. 2013. Pages 2613-2623.
+    Applied Soft Computing, 13(5), 2613-2623.
     """
 
     def __init__(
@@ -86,16 +86,16 @@ class BioGP(BaseProblem):
             "sin": self.sin,
             "cos": self.cos,
             "tan": self.tan,
-            "neg": self.neg
+            "neg": self.neg,
         }
         self.terminal_set = terminal_set
         self.function_set = function_set
 
         self.individuals = []
 
-    def create_individuals(self, method="ramped_half_and_half"):
+    def create_individuals(self):
 
-        if method == "ramped_half_and_half":
+        if self.params["init_method"] == "ramped_half_and_half":
             for md in range(
                 ceil(self.params["max_depth"] / 2), self.params["max_depth"] + 1
             ):
@@ -114,6 +114,18 @@ class BioGP(BaseProblem):
                     ind = LinearNode(value="linear", params=self.params)
                     ind.grow_tree(max_depth=md, method="full", ind=ind)
                     self.individuals.append(ind)
+
+        elif self.params["init_method"] == "full":
+            for i in range(self.params["pop_size"]):
+                ind = LinearNode(value="linear", params=self.params)
+                ind.grow_tree(method="full", ind=ind)
+                self.individuals.append(ind)
+
+        elif self.params["init_method"] == "grow":
+            for i in range(self.params["pop_size"]):
+                ind = LinearNode(value="linear", params=self.params)
+                ind.grow_tree(method="grow", ind=ind)
+                self.individuals.append(ind)
 
         return self.individuals
 
@@ -190,8 +202,34 @@ class BioGP(BaseProblem):
     def neg(x):
         return np.negative(x)
 
+
 class BioGPModel(BioGP):
-    def __init__(self, **kwargs):
+    """The class for the BioGP surrogate model.
+
+    Parameters
+    ----------
+    model_parameters : dict
+        Parameters passed for the model.
+    ea_parameters : dict
+        Parameters passed for the genetic algorithm.
+
+    Attributes
+    ----------
+    name : str
+        Name of the model.
+    linear_node : LinearNode
+        The parent node of the tree containing the linear values.
+    fitness : list
+        Fitness of the trained model.
+    minimize : list (bool)
+        List of which objectives to minimize.
+    svr : np.ndarray
+        Single variable response of the model.
+    log : file
+        If logging set to True in params, external log file is stored here.
+
+    """
+    def __init__(self, model_parameters, ea_parameters):
         super().__init__()
         self.name = "BioGP_Model"
         self.linear_node = None
@@ -199,18 +237,23 @@ class BioGPModel(BioGP):
         self.minimize = None
         self.svr = None
         self.log = None
-        self.set_params(**kwargs)
+        self.ea_params = ea_parameters
+        if model_parameters:
+            self.set_params(**model_parameters)
+        else:
+            self.set_params()
 
     def set_params(
         self,
         name="BioGP_Model",
-        algorithm=PPGA,
+        training_algorithm=PPGA,
         pop_size=500,
         max_depth=5,
         max_subtrees=4,
         prob_terminal=0.5,
         complexity_scalar=0.5,
         error_lim=0.001,
+        init_method="ramped_half_and_half",
         selection="min_error",
         loss_func="root_mean_square",
         recombination_type=None,
@@ -219,7 +262,6 @@ class BioGPModel(BioGP):
         single_obj_generations=10,
         logging=False,
         plotting=False,
-        ea_parameters=None,
         function_set=("add", "sub", "mul", "div"),
         terminal_set=None,
     ):
@@ -230,7 +272,7 @@ class BioGPModel(BioGP):
         ----------
         name : str
             Name of the problem.
-        algorithm : :obj:
+        training_algorithm : EA
             Which evolutionary algorithm to use for training the models.
         pop_size : int
             Population size.
@@ -247,6 +289,15 @@ class BioGPModel(BioGP):
         error_lim : float
             Used to control bloat. If the error reduction ratio of a subtree is less than this value,
             then that root is terminated and a new root is grown under the linear node (i.e., parent node).
+        init_method : str
+            Method to use for creating the initial population. Can be either 'grow', 'full', or
+            'ramped_half_and_half' (default).
+
+            grow: nodes are chosen at random from both functions and terminals, allowing for smaller trees
+            than max_depth.
+            full: nodes are chosen from the function set until the max depth is reached, and then terminals are chosen.
+            ramped half and half: trees are grown with a 50/50 mixture of 'grow' and 'full'.
+
         loss_func : str
             The loss function to use.
         selection : str
@@ -260,8 +311,6 @@ class BioGPModel(BioGP):
             True to create a logfile, False otherwise.
         plotting : bool
             True to create a plot, False otherwise.
-        ea_parameters : dict
-            Contains the parameters needed by EA (Default value = None).
         function_set : tuple
             The function set to use when creating the trees.
         terminal_set : list
@@ -271,13 +320,14 @@ class BioGPModel(BioGP):
 
         params = {
             "name": name,
-            "algorithm": algorithm,
+            "training_algorithm": training_algorithm,
             "pop_size": pop_size,
             "max_depth": max_depth,
             "max_subtrees": max_subtrees,
             "prob_terminal": prob_terminal,
             "complexity_scalar": complexity_scalar,
             "error_lim": error_lim,
+            "init_method": init_method,
             "loss_func": loss_func,
             "selection": selection,
             "recombination_type": recombination_type,
@@ -286,7 +336,6 @@ class BioGPModel(BioGP):
             "single_obj_generations": single_obj_generations,
             "logging": logging,
             "plotting": plotting,
-            "ea_parameters": ea_parameters,
             "function_set": function_set,
             "terminal_set": terminal_set,
         }
@@ -343,7 +392,11 @@ class BioGPModel(BioGP):
         }
         self.minimize = [True, False]
 
-        print("Minimizing error for " + str(self.params["single_obj_generations"]) + " generations...")
+        print(
+            "Minimizing error for "
+            + str(self.params["single_obj_generations"])
+            + " generations..."
+        )
 
         pop = Population(
             self,
@@ -364,7 +417,7 @@ class BioGPModel(BioGP):
         print("Switching to bi-objective mode")
 
         pop.evolve(
-            EA=self.params["algorithm"], ea_parameters=self.params["ea_parameters"]
+            EA=self.params["training_algorithm"], ea_parameters=self.ea_params
         )
 
         non_dom_front = pop.non_dominated()
@@ -430,7 +483,7 @@ class BioGPModel(BioGP):
         plotly.offline.plot(
             data,
             filename="Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"
@@ -463,7 +516,7 @@ class BioGPModel(BioGP):
         # Save params to log file
         log_file = open(
             "Tests/"
-            + self.params["algorithm"].__name__
+            + self.params["training_algorithm"].__name__
             + self.__class__.__name__
             + name
             + "_var"
@@ -563,7 +616,9 @@ class Node:
 
     """
 
-    def __init__(self, value=None, depth=None, params=None, function_set=None, terminal_set=None):
+    def __init__(
+        self, value=None, depth=None, params=None, function_set=None, terminal_set=None
+    ):
         self.value = value
         self.depth = depth
         self.params = params
@@ -722,6 +777,7 @@ class LinearNode(Node):
     params : None or dict
         Parameters of the model.
     """
+
     def __init__(self, value="linear", depth=0, params=None):
         super().__init__(params=params)
         self.value = value
