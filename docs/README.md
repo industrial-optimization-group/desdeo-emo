@@ -21,12 +21,16 @@ In **Evo**lutionary **N**eural **N**etwork [[1]](#1) [[2]](#2), the population c
 
 ![EvoNN](https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/evonn.png "An example EvoNN model")
 
+*Figure 1. An example EvoNN model. [[7]](#7)*
+
 The evolution happens in the lower part of the network (i.e. between the input layer and the hidden layer), where the weights are optimized using a genetic algorithm (see available [algorithms](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) in pyRVEA). The two objectives to optimize here are the model's accuracy and complexity. Thus, both the training error and the complexity need to be minimized. The weights are altered using crossover and mutation operations. The upper part of the network is then optimized using a Linear Least Square (LLSQ) approach, which ensures the mathematical convergence to the Pareto front. The evolutionary algorithm then chooses the fittest of the individuals (the ones with the best tradeoff between accuracy and complexity) to go on to the next generation.
 
 ## What is EvoDN2?
 **Evo**lutionary **D**eep Neural **N**etwork [[3]](#3) is an extension to EvoNN using deep neural networks and has the capacity for deep learning. The principle of EvoDN2 is the same as EvoNN, but the structure of the networks is different. In EvoDN2, each network consists of multiple subnets, which take in subsets of the input variables so that each variable is used at least once. The subnets have an input layer and multiple hidden layers, and they are optimized just as EvoNN using a genetic algorithm. Finally, the subnets converge on a linear layer, optimized by LLSQ and are mapped to an output. Each subnet has a randomized number of layers and nodes on each layers based on the bounds set by the user. The number of subnets can also be set.
 
 ![EvoDN2](https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/evodn.png "An example EvoDN2 model")
+
+*Figure 2. An example EvoDN2 model. [[3]](#3)*
 
 The advantage of EvoDN2 over EvoNN is that it fares much better with larger data sets, which can have thousands of data points. With smaller data sets EvoDN2 performs similarly to EvoNN, although EvoDN2 models tend to have a tighter fit.
 
@@ -42,6 +46,9 @@ The BioGP models are represented with a tree encoding. GP achieves its learning 
 The BioGP tree has a linear node at the top (code-wise, the linear node is at depth=0), from which a number of subtrees emerge. Each of these subtrees represent a nonlinear function, consisting of function nodes and terminal nodes. The linear node takes a weighted sum of the outputs of the subtrees, adds a bias value, and optimizes the weights using LLSQ to calculate the final output of the tree. To handle bloat, BioGP uses a parameter called error reduction ratio which provides a simple quantification of the contribution that a single subtree makes toward the performance of the model. If the contribution is less than the limit set by the user, that subtree is terminated and a new one is grown in its place.
 
 ![BioGP](https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/biogp.png "An example BioGP model")
+
+
+*Figure 3. An example BioGP tree. [[4]](#4)*
 
 The complexity of the model depends on the number of function nodes in the tree, and the tree's total depth. A scalar parameter is used in the complexity function allowing the user to control whether the depth or the number of function nodes should weigh more in the calculation.
 
@@ -87,3 +94,6 @@ Laumanns, M., Rudolph, G., & Schwefel, H. P. (1998). A spatial predator-prey app
 
 #### 6
 Li, X. (2003). A real-coded predator-prey genetic algorithm for multiobjective optimization. In International Conference on Evolutionary Multi-Criterion Optimization (pp. 207-221). Springer, Berlin, Heidelberg.
+
+#### 7
+Bhupinder S. Optimization of Vanadium Microalloyed Steel Composition Using Evolutionary Deep Learning Techniques. Master's thesis. Department of Metallurgical and Materials Engineering, Indian Institute of Technology.
