@@ -69,10 +69,14 @@ The source code of pyRVEA is implemented by Bhupinder Saini.
 
 ## Contact
 
+If you have any questions about the code, please contact:
+
 Bhupinder Saini: bhupinder.s.saini@jyu.fi
+
 Project researcher at University of Jyväskylä.
 
 Rissanen Niko: nijosari@student.jyu.fi
+
 Research assistant at University of Jyväskylä.
 
 ## References
