@@ -60,22 +60,30 @@ The algorithms presented here have been created earlier in MATLAB, and these Pyt
 
 The source code of pyRVEA is implemented by Bhupinder Saini.
 
+## Contact
+
+Bhupinder Saini: bhupinder.s.saini@jyu.fi
+Project researcher at University of Jyväskylä.
+
+Rissanen Niko: nijosari@student.jyu.fi
+Research assistant at University of Jyväskylä.
+
 ## References
 
 #### 1
-N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems. J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.
+Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in chemical and metallurgical Systems. In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer, Cham.
 
 #### 2
-F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.
+Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based multi-objective neural net applied to noisy blast furnace data. Applied Soft Computing, 7(1), 387-397.
 
 #### 3
-Swagata Roy, Bhupinder Singh Saini, Debalay Chakrabarti and Nirupam Chakraborti. A new Deep Neural Network algorithm employed in the study of mechanical properties of micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indian Institute of Technology, 2019.
+Swagata R., Bhupinder S., Chakrabarti, N. and Chakraborti, N. (2019). A new Deep Neural Network algorithm employed in the study of mechanical properties of micro-alloyed steel. Department of Metallurgical and Materials Engineering, Indian Institute of Technology.
 
 #### 4
-B. K. Giri, J. Hakanen, K. Miettinen, N. Chakraborti. Genetic programming through bi-objective genetic algorithms with a study of a simulated moving bed process involving multiple objectives. Applied Soft Computing, Volume 13, Issue 5. Pages 2613-2623. 2013.
+Giri, B. K., Hakanen, J., Miettinen, K., & Chakraborti, N. (2013). Genetic programming through bi-objective genetic algorithms with a study of a simulated moving bed process involving multiple objectives. Applied Soft Computing, 13(5), 2613-2623.
 
 #### 5
-Laumanns, Marco, Günter Rudolph, and Hans-Paul Schwefel. “A spatial predator- prey approach to multi-objective optimization: A preliminary study.” International Conference on Parallel Problem Solving from Nature. Springer, Berlin, Heidelberg, 1998.
+Laumanns, M., Rudolph, G., & Schwefel, H. P. (1998). A spatial predator-prey approach to multi-objective optimization: A preliminary study. In International Conference on Parallel Problem Solving from Nature (pp. 241-249). Springer, Berlin, Heidelberg.
 
 #### 6
-Li X. A Real-Coded Predator-Prey Genetic Algorithm for Multiobjective Optimization. In: Fonseca C.M., Fleming P.J., Zitzler E., Thiele L., Deb K. (eds) Evolutionary Multi-Criterion Optimization. EMO 2003. Lecture Notes in Computer Science, vol 2632. Springer, Berlin, Heidelberg. 2003.
+Li, X. (2003). A real-coded predator-prey genetic algorithm for multiobjective optimization. In International Conference on Evolutionary Multi-Criterion Optimization (pp. 207-221). Springer, Berlin, Heidelberg.
