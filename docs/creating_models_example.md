@@ -21,11 +21,13 @@ test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2)
 # x = list of variable names, y = list of objectives
 dataset, x, y = test_prob.create_training_data(samples=500)
 ```
-Or you can import a data set, here an example data set for [ZDT1](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) problem with 30 variables and 1000 samples is used:
+Or you can import a data set, here an example data set for [ZDT1](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) problem with 30 variables and 1000 samples is used. The DataProblem class requires the names of the variables and objectives as lists. If your data set does not contain them in the header, you will have to create them yourself.
 ```
 dataset = pd.read_excel("ZDT1_1000.xls", header=0)
 x = dataset.columns[0:30].tolist()
+# x = ['x1', 'x2', 'x3', ...]
 y = dataset.columns[30:].tolist()
+# y = ['f1', 'f2']
 ```
 After you have the data, create the DataProblem class and pass the data, variables and objectives.
 ```
@@ -35,21 +37,27 @@ You can split the data into a training and testing set:
 ```
 problem.train_test_split(train_size=0.7)
 ```
-Select the genetic algorithm you want to use and set the parameters (or use defaults). Check [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details.
-
-Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params),  [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params) and [BioGP parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.set_params).
+Parameters can be passed for the model and for the genetic algorithm as dictionaries. If no parameters are passed, the defaults are used.
+Select the model and the genetic algorithm you want to use and set the parameters (or use defaults). Check [EA documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details for the genetic algorithms and see docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params),  [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params) and [BioGP parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.set_params).
 
 Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is encouraged.
 
 ```
 from pyrvea.EAs.PPGA import PPGA
 
-ea_params = {
+ea_parameters = {
     "generations_per_iteration": 10,
     "iterations": 10,
 }
 
-problem.train(model_type="EvoDN2", algorithm=PPGA, ea_parameters=ea_params)
+model_parameters = {
+    "training_algorithm": PPGA
+}
+
+problem.train(
+    model_type="EvoDN2",
+    model_parameters=model_parameters,
+    ea_parameters=ea_parameters)
 ```
 
 Note that for BioGP, function set and terminal should be adjusted according to the problem. By default, function set includes addition, substraction, multiplication and division, and terminal set includes the variables from the data.
@@ -57,11 +65,15 @@ For [Fonseca-Fleming function](https://en.wikipedia.org/wiki/Test_functions_for_
 ```
 f_set = ("add", "sub", "mul", "div", "sqrt", "neg")
 t_set = [1, 2]
+
+model_parameters = {
+    function_set = f_set
+    terminal_set = t_set
+}
+
 problem.train(
     model_type="BioGP",
-    algorithm=RVEA,
-    terminal_set=t_set,
-    function_set=f_set,
+    model_parameters=model_parameters
 )
 ```
 
