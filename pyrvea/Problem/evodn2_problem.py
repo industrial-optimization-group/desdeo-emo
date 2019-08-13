@@ -280,7 +280,7 @@ class EvoDN2Model(EvoDN2):
 
     """
 
-    def __init__(self, model_parameters, ea_parameters):
+    def __init__(self, model_parameters=None, ea_parameters=None):
         super().__init__()
         self.name = "EvoDN2_Model"
         self.subnets = None
@@ -377,7 +377,6 @@ class EvoDN2Model(EvoDN2):
             "plotting": plotting
         }
 
-        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):

@@ -229,7 +229,7 @@ class BioGPModel(BioGP):
         If logging set to True in params, external log file is stored here.
 
     """
-    def __init__(self, model_parameters, ea_parameters):
+    def __init__(self, model_parameters=None, ea_parameters=None):
         super().__init__()
         self.name = "BioGP_Model"
         self.linear_node = None
@@ -340,7 +340,6 @@ class BioGPModel(BioGP):
             "terminal_set": terminal_set,
         }
 
-        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):
