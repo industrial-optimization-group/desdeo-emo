@@ -12,6 +12,7 @@ For training data, example functions can be found in pyRVEA/Problem/testproblem.
 Using [Fonseca-Fleming](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) two objective function with 2 variables as an example:
 ```python
 import numpy as np
+import pandas as pd
 from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Problem.dataproblem import DataProblem
 
