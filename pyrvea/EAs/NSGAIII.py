@@ -23,7 +23,7 @@ class NSGAIII(BaseDecompositionEA):
         lattice_resolution: int = None,
         interact: bool = False,
         a_priori_preference: bool = False,
-        generations_per_iteration: int = 100,
+        generations_per_iteration: int = 10,
         iterations: int = 10,
         plotting: bool = True,
         logging: bool = False,

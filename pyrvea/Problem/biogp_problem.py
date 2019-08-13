@@ -340,6 +340,7 @@ class BioGPModel(BioGP):
             "terminal_set": terminal_set,
         }
 
+        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):

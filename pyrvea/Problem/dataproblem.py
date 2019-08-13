@@ -142,9 +142,8 @@ class DataProblem(BaseProblem):
         decision_variables_transformed = self.transform_new_data(decision_variables)
         for obj, i in zip(self.y, range(self.num_of_objectives)):
             y = self.models[obj][0].predict(
-                decision_variables_transformed.reshape(1, self.num_of_variables),
-                return_std=False,
-            )
+                decision_variables_transformed
+            ).reshape(-1, 1)
             if y_pred is None:
                 y_pred = np.asarray(y)
             else:

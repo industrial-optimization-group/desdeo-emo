@@ -8,19 +8,21 @@ from pyrvea.EAs.NSGAIII import NSGAIII
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+import plotly
+import plotly.graph_objs as go
 
-test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2)
-dataset, x, y = test_prob.create_training_data(samples=500)
+# test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2)
+# dataset, x, y = test_prob.create_training_data(samples=500)
 
-# dataset = pd.read_excel("ZDT1_1000.xls", header=0)
-# x = dataset.columns[0:30].tolist()
-# y = dataset.columns[30:].tolist()
+dataset = pd.read_excel("ZDT1_1000.xls", header=0)
+x = dataset.columns[0:30].tolist()
+y = dataset.columns[30:].tolist()
 
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
 
-f_set = ("add", "sub", "mul", "div", "sqrt", "neg")
-t_set = [1, 2]
+# f_set = ("add", "sub", "mul", "div", "sqrt", "neg")
+# t_set = [1, 2]
 #f_set = ("add", "sub", "mul", "div", "sqrt")
 #t_set = [1, 9, 30]
 
@@ -35,34 +37,39 @@ t_set = [1, 2]
 #     "kill_interval": 5,
 #     "max_rank": 20,
 # }
-model_params = {
-    "training_algorithm": RVEA,
-    "terminal_set": t_set,
-    "function_set": f_set
-}
-
-problem.train(
-    model_type="BioGP",
-    model_parameters=model_params,
-
-)
-
-# ea_parameters = {
-#     "generations_per_iteration": 10,
-#     "iterations": 10,
-#     "prob_mutation": 0.3,
-#
-# }
-#
-# model_parameters = {
-#     "training_algorithm": NSGAIII,
+# model_params = {
+#     "training_algorithm": RVEA,
+#     "terminal_set": t_set,
+#     "function_set": f_set
 # }
 #
 # problem.train(
-#     model_type="EvoDN2",
-#     model_parameters=model_parameters,
+#     model_type="BioGP",
+#     model_parameters=model_params,
 #
 # )
+
+ea_parameters = {
+    "generations_per_iteration": 15,
+    "iterations": 10,
+    "prob_mutation": 0.7,
+    "neighbourhood_radius": 5,
+    "target_pop_size": 100,
+    "mut_strength": 0.7
+
+}
+
+model_parameters = {
+    "training_algorithm": RVEA,
+    "num_nodes": 25
+}
+
+problem.train(
+    model_type="EvoNN",
+    model_parameters=model_parameters,
+    ea_parameters=ea_parameters
+
+)
 
 y = problem.models["f1"][0].predict(problem.data[problem.x])
 problem.models["f1"][0].plot(y, problem.data["f1"], name="ZDT1_100" + "f1")

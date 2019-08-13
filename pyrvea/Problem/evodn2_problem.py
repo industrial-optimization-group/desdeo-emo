@@ -377,6 +377,7 @@ class EvoDN2Model(EvoDN2):
             "plotting": plotting
         }
 
+        self.name = name
         self.params = params
 
     def fit(self, training_data, target_values):
