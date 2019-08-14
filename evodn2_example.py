@@ -21,55 +21,49 @@ y = dataset.columns[30:].tolist()
 problem = DataProblem(data=dataset, x=x, y=y)
 problem.train_test_split(train_size=0.7)
 
-# f_set = ("add", "sub", "mul", "div", "sqrt", "neg")
-# t_set = [1, 2]
-#f_set = ("add", "sub", "mul", "div", "sqrt")
-#t_set = [1, 9, 30]
-
+# f_set = ("add", "sub", "mul", "div", "sqrt")
+# t_set = [1, 2, 9, 29]
+#
 # ea_parameters = {
-#     "generations_per_iteration": 10,
+#     "generations_per_iteration": 20,
 #     "iterations": 10,
-#     "predator_pop_size": 60,
-#     "target_pop_size": 300,
-#     "prob_prey_move": 0.5,
-#     "prob_crossover": 0.9,
-#     "prob_mutation": 0.3,
-#     "kill_interval": 5,
-#     "max_rank": 20,
+#
 # }
 # model_params = {
 #     "training_algorithm": RVEA,
 #     "terminal_set": t_set,
-#     "function_set": f_set
+#     "function_set": f_set,
+#     "max_depth": 8
 # }
 #
 # problem.train(
 #     model_type="BioGP",
 #     model_parameters=model_params,
+#     ea_parameters=ea_parameters
 #
 # )
 
-ea_parameters = {
-    "generations_per_iteration": 15,
-    "iterations": 10,
-    "prob_mutation": 0.7,
-    "neighbourhood_radius": 5,
-    "target_pop_size": 100,
-    "mut_strength": 0.7
-
-}
-
-model_parameters = {
-    "training_algorithm": PPGA,
-    "num_nodes": 25
-}
-
-problem.train(
-    model_type="EvoNN",
-    model_parameters=model_parameters,
-    ea_parameters=ea_parameters
-
-)
+# ea_parameters = {
+#     "generations_per_iteration": 15,
+#     "iterations": 10,
+#     "prob_mutation": 0.7,
+#     "neighbourhood_radius": 5,
+#     "target_pop_size": 100,
+#     "mut_strength": 0.7
+#
+# }
+#
+# model_parameters = {
+#     "training_algorithm": RVEA,
+#
+# }
+#
+# problem.train(
+#     model_type="EvoDN2",
+#     model_parameters=model_parameters,
+#     ea_parameters=ea_parameters
+#
+# )
 
 y_pred = problem.surrogates_predict(problem.data[problem.x])
 
