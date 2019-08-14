@@ -1,73 +1,102 @@
-## Creating surrogate models in Python with EvoNN and EvoDN2
+## Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP
 
-This example will show how to create surrogate models for multi-objective optimization problems using Evolutionary (Deep) Neural Networks. The code is currently capable of training the models with two algorithms, EvoNN and EvoDN2. EvoNN uses artificial, single layer neural networks, whereas EvoDN2 uses deep neural networks with multiple hidden layers and subnets.
+This example will show how to use the code and structure in pyRVEA to create models using EvoNN, EvoDN2 and BioGP ([see descriptions of the algorithms here](https://github.com/delamorte/pyRVEA/blob/master/docs/README.md)). The code is currently capable of training and optimizing the models with all of the genetic algorithms implemented in [pyRVEA/EAs](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html).
 
 The basic workflow is as follows:
-1. Create a test problem with training data
-2. Create a dataproblem class which handles the training of the models
+1. Create or import training data
+2. Create a problem class which handles the training of the models
 3. After training, create a new population and evolve it using the models to optimize the problem
 
-First, create the test problem:
+For training data, example functions can be found in pyRVEA/Problem/testproblem.py and test_functions.py packages, or a custom data set can be imported.
+
+Using [Fonseca-Fleming](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) two objective function with 2 variables as an example:
 ```python
 import numpy as np
+import pandas as pd
 from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.Problem.dataproblem import DataProblem
 
-# TestProblem class contains a number of testing functions
-# Schaffer function N.1, -100 <= x <= 100
-# Minimize:
-# f1 = x ** 2
-# f2 = (x - 2) ** 2
-
-test_prob = TestProblem(name="SchafferN1")
+test_prob = TestProblem(name="Fonseca-Fleming", num_of_variables=2)
 
 # Random data for training
 # x = list of variable names, y = list of objectives
-dataset, x, y = test_prob.create_training_data(samples=500, method="lhs")
-
+dataset, x, y = test_prob.create_training_data(samples=500)
+```
+Or you can import a data set, here an example data set for [ZDT1](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization) problem with 30 variables and 1000 samples is used. The DataProblem class requires the names of the variables and objectives as lists. If your data set does not contain them in the header, you will have to create them yourself.
+```
+dataset = pd.read_excel("ZDT1_1000.xls", header=0)
+x = dataset.columns[0:30].tolist()
+# x = ['x1', 'x2', 'x3', ...]
+y = dataset.columns[30:].tolist()
+# y = ['f1', 'f2']
 ```
 After you have the data, create the DataProblem class and pass the data, variables and objectives.
 ```
 problem = DataProblem(data=dataset, x=x, y=y)
 ```
-Split data into training and testing set:
+You can split the data into a training and testing set:
 ```
 problem.train_test_split(train_size=0.7)
 ```
-Select the Evolutionary Algorithm you want to use and set the parameters (or use defaults). Check [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details.
+Parameters can be passed for the model and for the genetic algorithm as dictionaries. If no parameters are passed, the defaults are used.
+Select the model and the genetic algorithm you want to use and set the parameters (or use defaults). Check [EA documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html) for details for the genetic algorithms and see docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params),  [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params) and [BioGP parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.set_params).
 
-Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for [EvoNN parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params) and [EvoDN2 parameters](https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params).
-
-Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is strongly encouraged.
+Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is encouraged.
 
 ```
 from pyrvea.EAs.PPGA import PPGA
 
-ea_params = {
-    "target_pop_size": 100,
+ea_parameters = {
     "generations_per_iteration": 10,
     "iterations": 10,
 }
 
-problem.train(model_type="EvoNN", algorithm=PPGA, num_nodes=25, ea_parameters=ea_params)
+model_parameters = {
+    "training_algorithm": PPGA
+}
+
+problem.train(
+    model_type="EvoDN2",
+    model_parameters=model_parameters,
+    ea_parameters=ea_parameters)
 ```
-EvoNN and EvoDN2 models can currently be trained with available algorithms in [pyRVEA/EAs](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html). For explanations of the different EAs, see their respective [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html).
+
+Note that for BioGP, function set and terminal should be adjusted according to the problem. By default, function set includes addition, substraction, multiplication and division, and terminal set includes the variables from the data.
+For [Fonseca-Fleming function](https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization), square root and negative should be added to the function set and constants 1 and 2 to the terminal set:
+```
+f_set = ("add", "sub", "mul", "div", "sqrt", "neg")
+t_set = [1, 2]
+
+model_parameters = {
+    function_set = f_set
+    terminal_set = t_set
+}
+
+problem.train(
+    model_type="BioGP",
+    model_parameters=model_parameters
+)
+```
+
+The models can currently be trained with available algorithms in [pyRVEA/EAs](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html). For explanations of the different EAs, see their respective [documentation](https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html).
 
 The model's prediction vs. target values can be plotted as follows:
 ```
 # Prediction for f1
-f1_y_pred = problem.models["f1"][0].predict(np.asarray(problem.data[problem.x]))
+f1_y_pred = problem.models["f1"][0].predict(problem.data[problem.x])
+
 problem.models["f1"][0].plot(
-    f1_y_pred, np.asarray(problem.data["f1"]), name=test_prob.name + "f1"
+    f1_y_pred, np.asarray(problem.data["f1"]), name="filename" + "f1"
 )
 # Prediction for f2
-f2_y_pred = problem.models["f2"][0].predict(np.asarray(problem.data[problem.x]))
+f2_y_pred = problem.models["f2"][0].predict(problem.data[problem.x])
+
 problem.models["f2"][0].plot(
-    f2_y_pred, np.asarray(problem.data["f2"]), name=test_prob.name + "f2"
+    f2_y_pred, np.asarray(problem.data["f2"]), name="filename" + "f2"
 )
 ```
 
-After the models have been trained, the test problem can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.
+After the models have been trained, the objectives can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.
 
 ```
 from pyrvea.EAs.RVEA import RVEA
@@ -78,5 +107,5 @@ pop.evolve(EA=RVEA, ea_parameters=opt_params)
 ```
 To show the final pareto plot:
 ```
-pop.plot_pareto(filename="my-test-function")
+pop.plot_pareto(name="my-test-function")
 ```

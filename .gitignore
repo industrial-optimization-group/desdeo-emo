@@ -5,7 +5,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.html
-*.xls
 
 # C extensions
 *.so
@@ -135,9 +134,6 @@ dmypy.json
 # Pycharm files
 .idea/
 
-.tests.py
-Tests/
-my-tests/
 *.csv
 
 # Graphviz files

@@ -488,8 +488,8 @@ class EvoNNModel(EvoNN):
         if name is None:
             name = self.name
 
-        trace0 = go.Scatter(x=prediction, y=target, mode="markers")
-        trace1 = go.Scatter(x=target, y=target)
+        trace0 = go.Scatter(x=prediction, y=target, name="prediction", mode="markers")
+        trace1 = go.Scatter(x=target, y=target, name="target")
         data = [trace0, trace1]
         plotly.offline.plot(
             data,

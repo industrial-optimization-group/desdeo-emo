@@ -60,7 +60,7 @@ ea_parameters = {
 }
 
 model_parameters = {
-    "training_algorithm": RVEA,
+    "training_algorithm": PPGA,
     "num_nodes": 25
 }
 
@@ -71,11 +71,11 @@ problem.train(
 
 )
 
-y = problem.models["f1"][0].predict(problem.data[problem.x])
-problem.models["f1"][0].plot(y, problem.data["f1"], name="ZDT1_100" + "f1")
+y_pred = problem.surrogates_predict(problem.data[problem.x])
 
-y2 = problem.models["f2"][0].predict(problem.data[problem.x])
-problem.models["f2"][0].plot(y2, problem.data["f2"], name="ZDT1_100" + "f2")
+problem.models["f1"][0].plot(y_pred[:, 0], problem.data["f1"], name="ZDT1_1000" + "f1")
+
+problem.models["f2"][0].plot(y_pred[:, 1], problem.data["f2"], name="ZDT1_1000" + "f2")
 
 # Optimize
 # PPGA
@@ -92,7 +92,7 @@ ppga_parameters = {
     "neighbourhood_radius": 5,
 }
 
-pop_ppga.evolve(PPGA, ea_parameters=ppga_parameters)
+pop_ppga.evolve(EA=PPGA, ea_parameters=ppga_parameters)
 
 pop_ppga.plot_pareto(
     name="Tests/" + problem.models["f1"][0].__class__.__name__ + "_ppga_" + "ZDT1_100"
@@ -109,7 +109,7 @@ pop_rvea = Population(
 
 rvea_parameters = {"iterations": 10, "generations_per_iteration": 25}
 
-pop_rvea.evolve(RVEA, ea_parameters=rvea_parameters)
+pop_rvea.evolve(EA=RVEA, ea_parameters=rvea_parameters)
 
 pop_rvea.plot_pareto(
     name="Tests/" + problem.models["f1"][0].__class__.__name__ + "_rvea_" + "ZDT1_100"

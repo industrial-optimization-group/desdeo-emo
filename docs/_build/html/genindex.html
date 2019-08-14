@@ -84,7 +84,8 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Evolutionary algorithms in pyRVEA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyrvea.html">pyrvea package</a></li>
 </ul>
 
@@ -269,8 +270,6 @@
         <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.PPGA.continue_evolution">(pyrvea.EAs.PPGA.PPGA method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.baseEA.BaseDecompositionEA.continue_iteration">continue_iteration() (pyrvea.EAs.baseEA.BaseDecompositionEA method)</a>
 
       <ul>
@@ -279,6 +278,10 @@
         <li><a href="pyrvea.EAs.html#pyrvea.EAs.TournamentEA.TournamentEA.continue_iteration">(pyrvea.EAs.TournamentEA.TournamentEA method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.cos">cos() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
+</li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.create_individuals">create_individuals() (pyrvea.Problem.biogp_problem.BioGP method)</a>
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.create_logfile">create_logfile() (pyrvea.Problem.biogp_problem.BioGPModel method)</a>
@@ -359,8 +362,14 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.fitness">fitness (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.fitness">fitness (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.fitness">(pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
 </li>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.fitness">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -429,14 +438,26 @@
 </li>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.Lattice.lattice_wrap_idx">lattice_wrap_idx() (pyrvea.EAs.PPGA.Lattice static method)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.linear_layer">linear_layer (pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.linear_layer">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.linear_layer">linear_layer (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.linear_node">linear_node (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.LinearNode">LinearNode (class in pyrvea.Problem.biogp_problem)</a>
 </li>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.log">log (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.log">log (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.log">(pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
 </li>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.log">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+</li>
+      </ul></li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.log">log() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
 </li>
   </ul></td>
@@ -465,6 +486,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.minimize">minimize (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
+</li>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.Lattice.move_predator">move_predator() (pyrvea.EAs.PPGA.Lattice method)</a>
 </li>
       <li><a href="pyrvea.EAs.html#pyrvea.EAs.PPGA.Lattice.move_prey">move_prey() (pyrvea.EAs.PPGA.Lattice method)</a>
@@ -483,7 +506,15 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.name">name (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.name">name (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.name">(pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
+</li>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.name">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.neg">neg() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
 </li>
       <li><a href="pyrvea.OtherTools.html#pyrvea.OtherTools.ReferenceVectors.ReferenceVectors.neighbouring_angles">neighbouring_angles() (pyrvea.OtherTools.ReferenceVectors.ReferenceVectors method)</a>
 </li>
@@ -495,14 +526,18 @@
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.Node">Node (class in pyrvea.Problem.biogp_problem)</a>
 </li>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.Node.node_label">node_label() (pyrvea.Problem.biogp_problem.Node method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.Node.node_label">node_label() (pyrvea.Problem.biogp_problem.Node method)</a>
+</li>
       <li><a href="pyrvea.Population.html#pyrvea.Population.Population.Population.non_dominated">non_dominated() (pyrvea.Population.Population.Population method)</a>
 </li>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.non_linear_layer">non_linear_layer (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.non_linear_layer">non_linear_layer (pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.non_linear_layer">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
 </li>
+      </ul></li>
       <li><a href="pyrvea.OtherTools.html#pyrvea.OtherTools.newRV.normalize">normalize() (in module pyrvea.OtherTools.newRV)</a>
 
       <ul>
@@ -751,6 +786,8 @@
         <li><a href="pyrvea.OtherTools.html#pyrvea.OtherTools.symmetric_vectors.shear">(in module pyrvea.OtherTools.symmetric_vectors)</a>
 </li>
       </ul></li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.sin">sin() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
+</li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.single_variable_response">single_variable_response() (pyrvea.Problem.biogp_problem.BioGPModel method)</a>
 
       <ul>
@@ -771,16 +808,28 @@
 </li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.sub">sub() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
 </li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.subnets">subnets (pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
+</li>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.subsets">subsets (pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
+</li>
       <li><a href="pyrvea.Problem.html#pyrvea.Problem.dataproblem.DataProblem.surrogates_predict">surrogates_predict() (pyrvea.Problem.dataproblem.DataProblem method)</a>
 </li>
-      <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.svr">svr (pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.svr">svr (pyrvea.Problem.biogp_problem.BioGPModel attribute)</a>
+
+      <ul>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.svr">(pyrvea.Problem.evodn2_problem.EvoDN2Model attribute)</a>
 </li>
+        <li><a href="pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.svr">(pyrvea.Problem.evonn_problem.EvoNNModel attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGP.tan">tan() (pyrvea.Problem.biogp_problem.BioGP static method)</a>
+</li>
       <li><a href="pyrvea.OtherTools.html#pyrvea.OtherTools.plotlyanimate.test">test() (in module pyrvea.OtherTools.plotlyanimate)</a>
 </li>
       <li><a href="pyrvea.OtherTools.html#pyrvea.OtherTools.plotlyanimate.test2">test2() (in module pyrvea.OtherTools.plotlyanimate)</a>

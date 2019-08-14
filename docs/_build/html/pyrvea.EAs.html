@@ -84,7 +84,8 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Evolutionary algorithms in pyRVEA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="creating_models_example.html">Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="pyrvea.html">pyrvea package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="pyrvea.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">pyrvea.EAs package</a><ul>
@@ -210,7 +211,7 @@
 </table>
 <dl class="method">
 <dt id="pyrvea.EAs.NSGAIII.NSGAIII.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.NSGAIII.NSGAIII.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in self.params</p>
 </dd></dl>
 
@@ -275,16 +276,15 @@ N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and 
 and Materials Domain. In Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to
 Materials Design: Theoretical and Practical Aspects, pp. 346-369, 2016.</p>
 <p class="rubric">References</p>
-<p>[1] Laumanns, Marco, Günter Rudolph, and Hans-Paul Schwefel. “A spatial predator-
-prey approach to multi-objective optimization: A preliminary study.” International
-Conference on Parallel Problem Solving from Nature. Springer, Berlin, Heidelberg, 1998.</p>
-<p>[2] Li X. (2003) A Real-Coded Predator-Prey Genetic Algorithm for Multiobjective Optimization.
-In: Fonseca C.M., Fleming P.J., Zitzler E., Thiele L., Deb K. (eds) Evolutionary Multi-Criterion Optimization.
-EMO 2003. Lecture Notes in Computer Science, vol 2632. Springer, Berlin, Heidelberg</p>
-<p>[3] N. Chakraborti. Strategies for Evolutionary Data Driven Modeling in Chemical and Metallurgical Systems.
-J. Valadi and P. Siarry (eds.), Applications of Metaheuristics in Process Engineering, pp. 89-122, 2014.</p>
-<p>[4] F. Pettersson, N. Chakraborti, H. Saxén. A genetic algorithms based multi-objective neural
-net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397, 2007.</p>
+<p>[1] Laumanns, M., Rudolph, G., &amp; Schwefel, H. P. (1998). A spatial predator-prey approach to multi-objective
+optimization: A preliminary study.
+In International Conference on Parallel Problem Solving from Nature (pp. 241-249). Springer, Berlin, Heidelberg.</p>
+<p>[2] Li, X. (2003). A real-coded predator-prey genetic algorithm for multiobjective optimization. In International
+Conference on Evolutionary Multi-Criterion Optimization (pp. 207-221). Springer, Berlin, Heidelberg.</p>
+<p>[3] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in chemical and metallurgical Systems.
+In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer, Cham.</p>
+<p>[4] Pettersson, F., Chakraborti, N., &amp; Saxén, H. (2007). A genetic algorithms based multi-objective neural net
+applied to noisy blast furnace data. Applied Soft Computing, 7(1), 387-397.</p>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -301,14 +301,14 @@ net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.select" title="pyrvea.EAs.PPGA.PPGA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population[, max_rank])</p></td>
 <td><p>Of the population, individuals lower than max_rank are selected.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="pyrvea.EAs.PPGA.PPGA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="pyrvea.EAs.PPGA.PPGA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …)</p></td>
 <td><p>Set up the parameters.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="pyrvea.EAs.PPGA.PPGA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">target_pop_size:int=100</em>, <em class="sig-param">predator_pop_size:int=50</em>, <em class="sig-param">prey_max_moves:int=10</em>, <em class="sig-param">prob_prey_move:float=0.3</em>, <em class="sig-param">offspring_place_attempts:int=10</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">kill_interval:int=7</em>, <em class="sig-param">max_rank:int=20</em>, <em class="sig-param">prob_crossover:float=0.8</em>, <em class="sig-param">prob_mutation:float=0.3</em>, <em class="sig-param">mut_strength:float=0.7</em>, <em class="sig-param">neighbourhood_radius:int=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">target_pop_size:int=100</em>, <em class="sig-param">predator_pop_size:int=50</em>, <em class="sig-param">prey_max_moves:int=10</em>, <em class="sig-param">prob_prey_move:float=0.3</em>, <em class="sig-param">offspring_place_attempts:int=10</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">kill_interval:int=7</em>, <em class="sig-param">max_rank:int=20</em>, <em class="sig-param">prob_crossover:float=0.8</em>, <em class="sig-param">prob_mutation:float=0.3</em>, <em class="sig-param">mut_strength:float=0.9</em>, <em class="sig-param">neighbourhood_radius:int=3</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.PPGA.PPGA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -321,8 +321,6 @@ net applied to noisy blast furnace data. Applied Soft Computing 7, pp. 387–397
 <li><p><strong>offspring_place_attempts</strong> (<em>int</em>) – Number of tries to place to offspring to the lattice.</p></li>
 <li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
 <li><p><strong>iterations</strong> (<em>int</em>) – Total number of iterations.</p></li>
-<li><p><strong>logging</strong> (<em>bool</em>) – If true, append parameters to a logfile.</p></li>
-<li><p><strong>logfile</strong> (<em>file</em>) – External log file.</p></li>
 <li><p><strong>kill_interval</strong> (<em>int</em>) – Kill all individuals worse than max_rank in the population every interval generation.</p></li>
 <li><p><strong>max_rank</strong> (<em>int</em>) – Individuals &lt; max_rank will be preserved after kill_interval.</p></li>
 <li><p><strong>prob_crossover</strong> (<em>float</em>) – Probability of crossover occurring.</p></li>
@@ -627,14 +625,14 @@ Evolutionary Computation, 2016</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA.select" title="pyrvea.EAs.RVEA.RVEA.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(self, population)</p></td>
 <td><p>Describe a selection mechanism.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="pyrvea.EAs.RVEA.RVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="pyrvea.EAs.RVEA.RVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …)</p></td>
 <td><p>Set up the parameters.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="pyrvea.EAs.RVEA.RVEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">population_size:int=None</em>, <em class="sig-param">lattice_resolution:int=None</em>, <em class="sig-param">interact:bool=False</em>, <em class="sig-param">a_priori_preference:bool=False</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.RVEA.RVEA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in RVEA.params. Note, this should be
 changed to align with the current structure.</p>
 <dl class="field-list simple">
@@ -648,7 +646,6 @@ changed to align with the current structure.</p>
 <li><p><strong>generations_per_iteration</strong> (<em>int</em>) – Number of generations per iteration.</p></li>
 <li><p><strong>iterations</strong> (<em>int</em>) – Total Number of iterations.</p></li>
 <li><p><strong>Alpha</strong> (<em>float</em>) – The alpha parameter of APD selection.</p></li>
-<li><p><strong>plotting</strong> (<em>bool</em>) – Useless really.</p></li>
 </ul>
 </dd>
 </dl>
@@ -868,14 +865,14 @@ information.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code>(self, population)</p></td>
 <td><p>Describe a selection mechanism.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="pyrvea.EAs.slowRVEA.slowRVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …[, logfile])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="pyrvea.EAs.slowRVEA.slowRVEA.set_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code></a>(self, population, …)</p></td>
 <td><p>Set up the parameters.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="pyrvea.EAs.slowRVEA.slowRVEA.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">generations_per_iteration:int=100</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">plotting:bool=True</em>, <em class="sig-param">logging:bool=False</em>, <em class="sig-param">logfile=None</em>, <em class="sig-param">ref_point:list=None</em>, <em class="sig-param">old_point:list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">population:'Population'</em>, <em class="sig-param">generations_per_iteration:int=10</em>, <em class="sig-param">iterations:int=10</em>, <em class="sig-param">Alpha:float=2</em>, <em class="sig-param">ref_point:list=None</em>, <em class="sig-param">old_point:list=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrvea.EAs.slowRVEA.slowRVEA.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the parameters. Save in RVEA.params. Note, this should be
 changed to align with the current structure.</p>
 <dl class="field-list simple">

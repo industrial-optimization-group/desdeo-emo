@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Creating surrogate models in Python with EvoNN and EvoDN2 &mdash; pyrvea  documentation</title>
+  <title>Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP &mdash; pyrvea  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pyrvea package" href="pyrvea.html" />
-    <link rel="prev" title="Welcome to pyrvea’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Evolutionary algorithms in pyRVEA" href="README.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -85,7 +85,8 @@
 </ul>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating surrogate models in Python with EvoNN and EvoDN2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Evolutionary algorithms in pyRVEA</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyrvea.html">pyrvea package</a></li>
 </ul>
 
@@ -132,7 +133,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Creating surrogate models in Python with EvoNN and EvoDN2</li>
+      <li>Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -151,70 +152,98 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="creating-surrogate-models-in-python-with-evonn-and-evodn2">
-<h1>Creating surrogate models in Python with EvoNN and EvoDN2<a class="headerlink" href="#creating-surrogate-models-in-python-with-evonn-and-evodn2" title="Permalink to this headline">¶</a></h1>
-<p>This example will show how to create surrogate models for multi-objective optimization problems using Evolutionary (Deep) Neural Networks. The code is currently capable of training the models with two algorithms, EvoNN and EvoDN2. EvoNN uses artificial, single layer neural networks, whereas EvoDN2 uses deep neural networks with multiple hidden layers and subnets.</p>
+  <div class="section" id="creating-surrogate-models-in-python-with-evonn-evodn2-and-biogp">
+<h1>Creating surrogate models in Python with EvoNN, EvoDN2 and BioGP<a class="headerlink" href="#creating-surrogate-models-in-python-with-evonn-evodn2-and-biogp" title="Permalink to this headline">¶</a></h1>
+<p>This example will show how to use the code and structure in pyRVEA to create models using EvoNN, EvoDN2 and BioGP (<a class="reference external" href="https://github.com/delamorte/pyRVEA/blob/master/docs/README">see descriptions of the algorithms here</a>). The code is currently capable of training and optimizing the models with all of the genetic algorithms implemented in <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">pyRVEA/EAs</a>.</p>
 <p>The basic workflow is as follows:</p>
 <ol class="simple">
-<li><p>Create a test problem with training data</p></li>
-<li><p>Create a dataproblem class which handles the training of the models</p></li>
+<li><p>Create or import training data</p></li>
+<li><p>Create a problem class which handles the training of the models</p></li>
 <li><p>After training, create a new population and evolve it using the models to optimize the problem</p></li>
 </ol>
-<p>First, create the test problem:</p>
+<p>For training data, example functions can be found in pyRVEA/Problem/testproblem.py and test_functions.py packages, or a custom data set can be imported.</p>
+<p>Using <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization">Fonseca-Fleming</a> two objective function with 2 variables as an example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">pyrvea.Problem.testproblem</span> <span class="kn">import</span> <span class="n">TestProblem</span>
 <span class="kn">from</span> <span class="nn">pyrvea.Problem.dataproblem</span> <span class="kn">import</span> <span class="n">DataProblem</span>
 
-<span class="c1"># TestProblem class contains a number of testing functions</span>
-<span class="c1"># Schaffer function N.1, -100 &lt;= x &lt;= 100</span>
-<span class="c1"># Minimize:</span>
-<span class="c1"># f1 = x ** 2</span>
-<span class="c1"># f2 = (x - 2) ** 2</span>
-
-<span class="n">test_prob</span> <span class="o">=</span> <span class="n">TestProblem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SchafferN1&quot;</span><span class="p">)</span>
+<span class="n">test_prob</span> <span class="o">=</span> <span class="n">TestProblem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Fonseca-Fleming&quot;</span><span class="p">,</span> <span class="n">num_of_variables</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># Random data for training</span>
 <span class="c1"># x = list of variable names, y = list of objectives</span>
-<span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;lhs&quot;</span><span class="p">)</span>
+<span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_prob</span><span class="o">.</span><span class="n">create_training_data</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or you can import a data set, here an example data set for <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization">ZDT1</a> problem with 30 variables and 1000 samples is used. The DataProblem class requires the names of the variables and objectives as lists. If your data set does not contain them in the header, you will have to create them yourself.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;ZDT1_1000.xls&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">30</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="c1"># x = [&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;, ...]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">30</span><span class="p">:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="c1"># y = [&#39;f1&#39;, &#39;f2&#39;]</span>
 </pre></div>
 </div>
 <p>After you have the data, create the DataProblem class and pass the data, variables and objectives.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span> <span class="o">=</span> <span class="n">DataProblem</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Split data into training and testing set:</p>
+<p>You can split the data into a training and testing set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">train_size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Select the Evolutionary Algorithm you want to use and set the parameters (or use defaults). Check <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">documentation</a> for details.</p>
-<p>Train the models. Model specific parameters can be passed as kwargs. If no parameters are passed, defaults are used. See docs for <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params">EvoNN parameters</a> and <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params">EvoDN2 parameters</a>.</p>
-<p>Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is strongly encouraged.</p>
+<p>Parameters can be passed for the model and for the genetic algorithm as dictionaries. If no parameters are passed, the defaults are used.
+Select the model and the genetic algorithm you want to use and set the parameters (or use defaults). Check <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">EA documentation</a> for details for the genetic algorithms and see docs for <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evonn_problem.EvoNNModel.set_params">EvoNN parameters</a>,  <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.evodn2_problem.EvoDN2Model.set_params">EvoDN2 parameters</a> and <a class="reference external" href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/delamorte/pyRVEA/master/docs/_build/html/pyrvea.Problem.html#pyrvea.Problem.biogp_problem.BioGPModel.set_params">BioGP parameters</a>.</p>
+<p>Both EA parameters and the model parameters can greatly affect the performance of the model. The best options depend on the problem, so experimenting with different values is encouraged.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyrvea.EAs.PPGA</span> <span class="k">import</span> <span class="n">PPGA</span>
 
-<span class="n">ea_params</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;target_pop_size&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+<span class="n">ea_parameters</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;generations_per_iteration&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
     <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;EvoNN&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">PPGA</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ea_parameters</span><span class="o">=</span><span class="n">ea_params</span><span class="p">)</span>
+<span class="n">model_parameters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;training_algorithm&quot;</span><span class="p">:</span> <span class="n">PPGA</span>
+<span class="p">}</span>
+
+<span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+    <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;EvoDN2&quot;</span><span class="p">,</span>
+    <span class="n">model_parameters</span><span class="o">=</span><span class="n">model_parameters</span><span class="p">,</span>
+    <span class="n">ea_parameters</span><span class="o">=</span><span class="n">ea_parameters</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>EvoNN and EvoDN2 models can currently be trained with available algorithms in <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">pyRVEA/EAs</a>. For explanations of the different EAs, see their respective <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">documentation</a>.</p>
+<p>Note that for BioGP, function set and terminal should be adjusted according to the problem. By default, function set includes addition, substraction, multiplication and division, and terminal set includes the variables from the data.
+For <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_multi-objective_optimization">Fonseca-Fleming function</a>, square root and negative should be added to the function set and constants 1 and 2 to the terminal set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f_set</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;sub&quot;</span><span class="p">,</span> <span class="s2">&quot;mul&quot;</span><span class="p">,</span> <span class="s2">&quot;div&quot;</span><span class="p">,</span> <span class="s2">&quot;sqrt&quot;</span><span class="p">,</span> <span class="s2">&quot;neg&quot;</span><span class="p">)</span>
+<span class="n">t_set</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="n">model_parameters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">function_set</span> <span class="o">=</span> <span class="n">f_set</span>
+    <span class="n">terminal_set</span> <span class="o">=</span> <span class="n">t_set</span>
+<span class="p">}</span>
+
+<span class="n">problem</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+    <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;BioGP&quot;</span><span class="p">,</span>
+    <span class="n">model_parameters</span><span class="o">=</span><span class="n">model_parameters</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The models can currently be trained with available algorithms in <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">pyRVEA/EAs</a>. For explanations of the different EAs, see their respective <a class="reference external" href="https://htmlpreview.github.io/?https://github.com/delamorte/pyRVEA/blob/master/docs/_build/html/pyrvea.EAs.html">documentation</a>.</p>
 <p>The model’s prediction vs. target values can be plotted as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prediction for f1</span>
-<span class="n">f1_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">]))</span>
+<span class="n">f1_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">])</span>
+
 <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">f1_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">test_prob</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;f1&quot;</span>
+    <span class="n">f1_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;filename&quot;</span> <span class="o">+</span> <span class="s2">&quot;f1&quot;</span>
 <span class="p">)</span>
 <span class="c1"># Prediction for f2</span>
-<span class="n">f2_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">]))</span>
+<span class="n">f2_y_pred</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">x</span><span class="p">])</span>
+
 <span class="n">problem</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">f2_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">test_prob</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;f2&quot;</span>
+    <span class="n">f2_y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;f2&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;filename&quot;</span> <span class="o">+</span> <span class="s2">&quot;f2&quot;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>After the models have been trained, the test problem can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.</p>
+<p>After the models have been trained, the objectives can be optimized by creating a new population, passing the data problem class (containing the trained models) and calling evolve. EA parameters can be modified for optimization phase if wanted.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyrvea.EAs.RVEA</span> <span class="k">import</span> <span class="n">RVEA</span>
 
 <span class="n">pop</span> <span class="o">=</span> <span class="n">Population</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
@@ -223,7 +252,7 @@
 </pre></div>
 </div>
 <p>To show the final pareto plot:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pop</span><span class="o">.</span><span class="n">plot_pareto</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;my-test-function&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pop</span><span class="o">.</span><span class="n">plot_pareto</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my-test-function&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -239,7 +268,7 @@
         <a href="pyrvea.html" class="btn btn-neutral float-right" title="pyrvea package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to pyrvea’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="README.html" class="btn btn-neutral float-left" title="Evolutionary algorithms in pyRVEA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
