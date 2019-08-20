@@ -209,7 +209,7 @@ class ReferenceVectors:
             self.normalize()
             self.add_edge_vectors()
         elif creation_type == "Sparse_Focused":
-            initial = np.eye(self.number_of_objectives-1)
+            initial = np.eye(self.number_of_objectives - 1)
             initial = np.vstack((initial, -initial))
             initial = normalize(initial)
             initial = np.hstack((initial, np.zeros((initial.shape[0], 1))))
@@ -288,12 +288,12 @@ class ReferenceVectors:
     def slow_interactive_adapt(self, ref_point):
         """Basically a wrapper around rotate_toward. Slowly rotate ref vectors toward
         ref_point. Return a boolean value to tell if the ref_point has been reached.
-        
+
         Parameters
         ----------
         ref_point : list or np.ndarray
             The reference vectors will slowly move towards the ref_point.
-                
+
         Returns
         -------
         boolean

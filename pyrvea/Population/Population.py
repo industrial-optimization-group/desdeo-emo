@@ -41,7 +41,7 @@ class Population:
             randomly. If 'assign_type' is 'LHSDesign', the population is
             generated via Latin Hypercube Sampling. If 'assign_type' is
             'custom', the population is imported from file. If assign_type
-            is 'empty', create blank population. (the default is "RandomAssign")
+            is 'empty', create blank population. (the default is "RandomDesign")
         plotting : bool, optional
             (the default is True, which creates the plots)
 
@@ -111,6 +111,7 @@ class Population:
             )
         else:
             print("Design not yet supported.")
+            return
         self.add(individuals)
         if self.plotting:
             self.figure = []
