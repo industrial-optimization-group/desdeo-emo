@@ -126,3 +126,4 @@ dmypy.json
 .pyre/
 
 .json
+!DTLZ3_5.html
