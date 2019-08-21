@@ -125,5 +125,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.json
+*.json
+
+.vscode/
+.directory
 !DTLZ3_5.html
