@@ -1,4 +1,3 @@
-desdefrom collections import defaultdict
 from collections.abc import Sequence
 
 from typing import TYPE_CHECKING
@@ -11,6 +10,7 @@ from pygmo import non_dominated_front_2d as nd2
 from tqdm import tqdm, tqdm_notebook
 
 from pyrvea.Population.create_individuals import create_new_individuals
+
 import plotly
 import plotly.graph_objs as go
 
@@ -57,14 +57,16 @@ class Population:
             generated via Latin Hypercube Sampling. If 'assign_type' is
             'custom', the population is imported from file. If assign_type
             is 'empty', create blank population.
-            'EvoNN' and 'EvoDN2' will create neural networks or deep neural networks, respectively,
+            'EvoNN' and 'EvoDN2' will create neural networks or deep neural networks,
+            respectively,
              for population .
         plotting : bool, optional
             (the default is True, which creates the plots)
         pop_size : int
             Population size
         recombination_type, crossover_type, mutation_type : str
-            Recombination functions. If recombination_type is specified, crossover and mutation
+            Recombination functions. If recombination_type is specified, crossover and
+            mutation
             will be handled by the same function. If None, they are done separately.
 
         """
@@ -184,7 +186,8 @@ class Population:
 
     def update_fitness(self):
         """Include or exclude objectives from fitness calculation.
-        Problem.minimize should be a list of booleans of same length as the number of objectives.
+        Problem.minimize should be a list of booleans of same length as the number of
+        objectives.
         """
         self.fitness = self.objectives[:, self.problem.minimize]
         self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)
@@ -192,15 +195,16 @@ class Population:
         self.update_ideal_and_nadir()
 
     def delete(self, indices, preserve=False):
-        """Remove from population individuals which are in indices if preserve=False, otherwise
-        preserve them and remove all others.
+        """Remove from population individuals which are in indices if preserve=False,
+        otherwise preserve them and remove all others.
 
         Parameters
         ----------
         indices: array_like
             Indices of individuals to keep or delete.
         preserve: bool
-            Whether to delete individuals at indices from current population, or preserve them and delete others.
+            Whether to delete individuals at indices from current population, or
+            preserve them and delete others.
         """
 
         mask = np.ones(len(self.individuals), dtype=bool)
@@ -327,7 +331,7 @@ class Population:
             name = self.problem.name
 
         ndf = self.non_dominated()
-        #pareto = self.objectives[ndf][self.objectives[ndf].min(axis=1) >= 0, :]
+        # pareto = self.objectives[ndf][self.objectives[ndf].min(axis=1) >= 0, :]
         pareto = self.objectives[ndf]
         pareto_pop = np.asarray(self.individuals)[ndf].tolist()
 
