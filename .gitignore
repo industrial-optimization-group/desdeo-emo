@@ -1,4 +1,4 @@
-results/
+4results/
 Backup_results/
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -52,6 +52,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+temp.py
 
 # Translations
 *.mo
@@ -70,7 +71,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+# _build
 
 # PyBuilder
 target/
@@ -130,3 +131,14 @@ dmypy.json
 .vscode/
 .directory
 !DTLZ3_5.html
+# vsCode settings
+.vscode/
+
+# Pycharm files
+.idea/
+
+*.csv
+
+# Graphviz files
+*.gv
+*.gv.png

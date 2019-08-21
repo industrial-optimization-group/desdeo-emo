@@ -18,7 +18,7 @@ Welcome to pyrvea's documentation!
 .. toctree::
    :maxdepth: 4 
    :caption: Contents:
-    
-   README.md 
-   pyrvea
 
+   README.md 
+   creating_models_example.md
+   pyrvea
