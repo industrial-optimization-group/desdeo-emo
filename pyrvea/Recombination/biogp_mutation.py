@@ -14,7 +14,8 @@ def mutate(
     Randomly select and regrow a subtree of an individual.
 
     Small mutation:
-    Randomly select a node within a tree and replace it with either a function of the same arity,
+    Randomly select a node within a tree and replace it with either a function of the
+    same arity,
     or another value from the terminal set.
 
     Mono parental:

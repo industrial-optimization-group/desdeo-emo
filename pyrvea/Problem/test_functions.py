@@ -212,7 +212,8 @@ class OptTestFunctions:
         samples : int
             number of samples
         method : str
-            method to use in data creation. Possible values random, lhs, linear, linear+zeros, linear+reverse.
+            method to use in data creation. Possible values random, lhs, linear,
+            linear+zeros, linear+reverse.
         seed : int
             if a number is given, random data will be seeded
         """

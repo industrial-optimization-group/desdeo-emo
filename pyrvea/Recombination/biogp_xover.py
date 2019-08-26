@@ -16,7 +16,8 @@ def mate(mating_pop, individuals: list, params):
     Parameters
     ----------
     mating_pop : list
-        List of indices of individuals to mate. If None, choose from population randomly.
+        List of indices of individuals to mate. If None, choose from population
+        randomly.
         Each entry should contain two indices, one for each parent.
     individuals : list
         List of all individuals.

@@ -1,8 +1,7 @@
 from pyrvea.Population.Population import Population
-from pyrvea.Problem.testProblem import testProblem
+from pyrvea.Problem.testproblem import TestProblem
 from pyrvea.EAs.slowRVEA import slowRVEA
 import altair as alt
-import pandas as pd
 import numpy as np
 
 
@@ -17,7 +16,7 @@ def main():
             k = 10
             numconst = 0
             numvar = numobj + k - 1
-            problem = testProblem(name, numvar, numobj, numconst)
+            problem = TestProblem(name, numvar, numobj, numconst)
             orig_point = [1] * numobj
             first_ref = [1, 1] + [0] * (numobj - 2)
             second_ref = [0] * (numobj - 2) + [1, 1]

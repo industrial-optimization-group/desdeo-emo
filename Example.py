@@ -35,6 +35,7 @@ pop = Population(
     problem,
     crossover_type="simulated_binary_crossover",
     mutation_type="bounded_polynomial_mutation",
+    plotting=True
 )
 
 pop.evolve(RVEA)

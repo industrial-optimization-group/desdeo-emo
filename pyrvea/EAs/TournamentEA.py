@@ -1,8 +1,5 @@
-from pyrvea.EAs.baseEA import BaseEA
 from pyrvea.Population.Population import Population
 from pyrvea.Selection.tournament_select import tour_select
-from random import sample
-from operator import attrgetter
 import numpy as np
 
 

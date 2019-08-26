@@ -1,11 +1,13 @@
-from pyrvea.Problem.baseproblem import BaseProblem
-from pyrvea.Population.Population import Population
-from pyrvea.EAs.PPGA import PPGA
-from scipy.special import expit
+import random
+
 import numpy as np
 import plotly
 import plotly.graph_objs as go
-import random
+from scipy.special import expit
+
+from pyrvea.EAs.PPGA import PPGA
+from pyrvea.Population.Population import Population
+from pyrvea.Problem.baseproblem import BaseProblem
 
 
 class EvoDN2(BaseProblem):
@@ -17,10 +19,12 @@ class EvoDN2(BaseProblem):
 
     Notes
     -----
-    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    The algorithm has been created earlier in MATLAB, and this Python implementation
+    has been using
     that code as a basis.
 
-    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+    Python code has been written by Niko Rissanen under the supervision of professor
+    Nirupam Chakraborti.
 
     Parameters
     ----------
@@ -41,9 +45,11 @@ class EvoDN2(BaseProblem):
 
     References
     ----------
-    [1] Swagata R., Bhupinder S., Chakrabarti, N. and Chakraborti, N. (2019). A new Deep Neural Network algorithm
+    [1] Swagata R., Bhupinder S., Chakrabarti, N. and Chakraborti, N. (2019). A new
+    Deep Neural Network algorithm
     employed in the study of mechanical properties of micro-alloyed steel.
-    Department of Metallurgical and Materials Engineering, Indian Institute of Technology.
+    Department of Metallurgical and Materials Engineering, Indian Institute of
+    Technology.
     """
 
     def __init__(
@@ -156,7 +162,9 @@ class EvoDN2(BaseProblem):
             training_error = np.sqrt(np.mean(((self.y_train - predicted_values) ** 2)))
 
         elif self.params["loss_func"] == "root_median_square":
-            training_error = np.sqrt(np.median(((self.y_train - predicted_values) ** 2)))
+            training_error = np.sqrt(
+                np.median(((self.y_train - predicted_values) ** 2))
+            )
 
         return linear_layer, predicted_values, training_error
 
@@ -315,7 +323,7 @@ class EvoDN2Model(EvoDN2):
         crossover_type="standard",
         mutation_type="gaussian",
         logging=False,
-        plotting=False
+        plotting=False,
     ):
         """ Set parameters for EvoDN2 model.
 
@@ -348,7 +356,8 @@ class EvoDN2Model(EvoDN2):
         selection : str
             The selection to use for selecting the model.
         recombination_type, crossover_type, mutation_type : str
-            Recombination functions. If recombination_type is specified, crossover and mutation
+            Recombination functions. If recombination_type is specified, crossover and
+            mutation
             will be handled by the same function. If None, they are done separately.
         logging : bool
             True to create a logfile, False otherwise.
@@ -374,7 +383,7 @@ class EvoDN2Model(EvoDN2):
             "mutation_type": mutation_type,
             "recombination_type": recombination_type,
             "logging": logging,
-            "plotting": plotting
+            "plotting": plotting,
         }
 
         self.name = name
@@ -426,7 +435,9 @@ class EvoDN2Model(EvoDN2):
         return self
 
     def train(self):
-        """Create a random population, evolve it and select a model based on selection."""
+        """
+        Create a random population, evolve it and select a model based on selection.
+        """
         pop = Population(
             self,
             assign_type="EvoDN2",
@@ -437,10 +448,7 @@ class EvoDN2Model(EvoDN2):
             plotting=self.params["plotting"],
         )
 
-        pop.evolve(
-            EA=self.params["training_algorithm"],
-            ea_parameters=self.ea_params
-        )
+        pop.evolve(EA=self.params["training_algorithm"], ea_parameters=self.ea_params)
 
         non_dom_front = pop.non_dominated()
         self.subnets, self.fitness = self.select(

@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-import time
 
 if TYPE_CHECKING:
     from pyrvea.Population.Population import Population

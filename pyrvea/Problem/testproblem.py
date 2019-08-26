@@ -1,10 +1,11 @@
-from optproblems import dtlz, zdt
-from pyrvea.Problem.baseproblem import BaseProblem
-from pyrvea.Problem.test_functions import OptTestFunctions
 import numpy as np
 import pandas as pd
+from optproblems import dtlz, zdt
 from pyDOE import lhs
 from sklearn.preprocessing import minmax_scale
+
+from pyrvea.Problem.baseproblem import BaseProblem
+from pyrvea.Problem.test_functions import OptTestFunctions
 
 
 class TestProblem(BaseProblem):
@@ -96,8 +97,7 @@ class TestProblem(BaseProblem):
             self.upper_limits = self.obj_func.max_bounds
         else:
             self.obj_func = OptTestFunctions(
-                name=self.name,
-                num_of_variables=num_of_variables,
+                name=self.name, num_of_variables=num_of_variables
             )
             self.lower_limits = self.obj_func.lower_limits
             self.upper_limits = self.obj_func.upper_limits
@@ -129,13 +129,15 @@ class TestProblem(BaseProblem):
         samples : int
             Number of samples.
         method : str
-            Method to use in data creation. Possible values random, lhs (latin hypercube sampling), linear.
+            Method to use in data creation. Possible values random, lhs (latin
+            hypercube sampling), linear.
         seed : int
             If a number is given, random data will be seeded.
 
         Returns
         -------
-        dataset : Training data in a Pandas DataFrame, including all variables and objectives.
+        dataset : Training data in a Pandas DataFrame, including all variables and
+        objectives.
         x : List of variables
         y : List of objectives
 

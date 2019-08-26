@@ -1,15 +1,17 @@
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.neural_network import MLPRegressor
-from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
-from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
-from pyrvea.Problem.biogp_problem import BioGPModel as BioGP
-from sklearn import preprocessing
-from sklearn.model_selection import train_test_split as tts
-import numpy as np
-from sklearn.metrics import r2_score
-from pyrvea.Problem.baseproblem import BaseProblem
-import pandas as pd
 from typing import List
+
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split as tts
+from sklearn.neural_network import MLPRegressor
+
+from pyrvea.Problem.baseproblem import BaseProblem
+from pyrvea.Problem.biogp_problem import BioGPModel as BioGP
+from pyrvea.Problem.evodn2_problem import EvoDN2Model as EvoDN2
+from pyrvea.Problem.evonn_problem import EvoNNModel as EvoNN
 
 
 class DataProblem(BaseProblem):
@@ -187,4 +189,3 @@ class DataProblem(BaseProblem):
             )
 
         return objectives
-

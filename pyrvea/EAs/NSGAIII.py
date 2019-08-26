@@ -27,7 +27,7 @@ class NSGAIII(BaseDecompositionEA):
         iterations: int = 10,
         plotting: bool = True,
         logging: bool = False,
-        logfile = None,
+        logfile=None,
         **kwargs
     ):
         lattice_resolution_options = {
@@ -48,8 +48,8 @@ class NSGAIII(BaseDecompositionEA):
         else:
             lattice_resolution = 3
         reference_vectors = ReferenceVectors(
-                lattice_resolution, population.problem.num_of_objectives
-            )
+            lattice_resolution, population.problem.num_of_objectives
+        )
         nsga3params = {
             "population_size": reference_vectors.number_of_vectors,
             "lattice_resolution": lattice_resolution,
@@ -77,7 +77,7 @@ class NSGAIII(BaseDecompositionEA):
             population.ideal_fitness,
             population.worst_fitness,
             self.params["extreme_points"],
-            self.params["population_size"]
+            self.params["population_size"],
         )
         self.params["extreme_points"] = extreme_points
         return Selection

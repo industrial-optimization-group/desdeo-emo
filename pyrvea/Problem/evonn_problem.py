@@ -1,19 +1,20 @@
-from pyrvea.Problem.baseproblem import BaseProblem
-from pyrvea.Population.Population import Population
-from pyrvea.EAs.PPGA import PPGA
-from pyrvea.EAs.RVEA import RVEA
-from scipy.special import expit
 import numpy as np
 import plotly
 import plotly.graph_objs as go
 from scipy.optimize import lsq_linear
+from scipy.special import expit
+
+from pyrvea.EAs.PPGA import PPGA
+from pyrvea.Population.Population import Population
+from pyrvea.Problem.baseproblem import BaseProblem
 
 
 class EvoNN(BaseProblem):
     """Creates Artificial Neural Network (ANN) models for the EvoNN algorithm.
 
     These models contain only one hidden node layer. The lower part of the network
-    is optimized by a genetic algorithm, and the upper part is optimized by Linear Least Square
+    is optimized by a genetic algorithm, and the upper part is optimized by Linear
+    Least Square
     algorithm by default.
 
     Parameters
@@ -33,16 +34,21 @@ class EvoNN(BaseProblem):
 
     Notes
     -----
-    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    The algorithm has been created earlier in MATLAB, and this Python implementation
+    has been using
     that code as a basis.
 
-    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+    Python code has been written by Niko Rissanen under the supervision of professor
+    Nirupam Chakraborti.
 
     References
     ----------
-    [1] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in chemical and metallurgical Systems.
-    In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer, Cham.
-    [2] Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based multi-objective neural net
+    [1] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in
+    chemical and metallurgical Systems.
+    In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer,
+    Cham.
+    [2] Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based
+    multi-objective neural net
     applied to noisy blast furnace data. Applied Soft Computing, 7(1), 387-397.
 
     """
@@ -140,15 +146,19 @@ class EvoNN(BaseProblem):
             linear_layer = linear_solution[0]
 
         elif self.params["opt_func"] == "llsq_constrained":
-            linear_layer = lsq_linear(non_linear_layer, self.y_train, method='bvls', bounds=(0, 1)).x
+            linear_layer = lsq_linear(
+                non_linear_layer, self.y_train, method="bvls", bounds=(0, 1)
+            ).x
 
         predicted_values = np.dot(non_linear_layer, linear_layer)
 
         if self.params["loss_func"] == "root_mean_square":
             training_error = np.sqrt(np.mean(((self.y_train - predicted_values) ** 2)))
-            
+
         elif self.params["loss_func"] == "root_median_square":
-            training_error = np.sqrt(np.median(((self.y_train - predicted_values) ** 2)))
+            training_error = np.sqrt(
+                np.median(((self.y_train - predicted_values) ** 2))
+            )
 
         return linear_layer, predicted_values, training_error
 
@@ -360,7 +370,8 @@ class EvoNNModel(EvoNN):
         selection : str
             The selection to use for selecting the model.
         recombination_type, crossover_type, mutation_type : str or None
-            Recombination functions. If recombination_type is specified, crossover and mutation
+            Recombination functions. If recombination_type is specified, crossover and
+            mutation
             will be handled by the same function. If None, they are done separately.
         logging : bool
             True to create a logfile, False otherwise.
@@ -384,7 +395,7 @@ class EvoNNModel(EvoNN):
             "crossover_type": crossover_type,
             "mutation_type": mutation_type,
             "logging": logging,
-            "plotting": plotting
+            "plotting": plotting,
         }
 
         self.name = name
@@ -433,11 +444,7 @@ class EvoNNModel(EvoNN):
             crossover_type=self.params["crossover_type"],
             mutation_type=self.params["mutation_type"],
         )
-        pop.evolve(
-            EA=self.params["training_algorithm"],
-            ea_parameters=self.ea_params
-
-        )
+        pop.evolve(EA=self.params["training_algorithm"], ea_parameters=self.ea_params)
 
         non_dom_front = pop.non_dominated()
         self.non_linear_layer, self.fitness = self.select(

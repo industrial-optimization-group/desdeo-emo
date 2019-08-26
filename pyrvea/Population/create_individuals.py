@@ -10,8 +10,8 @@ def create_new_individuals(design, problem, pop_size=None):
     The individuals can be created randomly, by LHS design, or can be passed by the
     user.
 
-    Design does not apply in case of EvoNN and EvoDN2 problem, where neural networks are created
-    as individuals.
+    Design does not apply in case of EvoNN and EvoDN2 problem, where neural networks
+    are created as individuals.
 
     Parameters
     ----------
@@ -43,10 +43,7 @@ def create_new_individuals(design, problem, pop_size=None):
         upper_limits = np.asarray(problem.upper_limits)
         individuals = np.random.random((pop_size, problem.num_of_variables))
         # Scaling
-        individuals = (
-                individuals * (upper_limits - lower_limits)
-                + lower_limits
-        )
+        individuals = individuals * (upper_limits - lower_limits) + lower_limits
 
         return individuals
 
@@ -55,10 +52,7 @@ def create_new_individuals(design, problem, pop_size=None):
         upper_limits = np.asarray(problem.upper_limits)
         individuals = lhs(problem.num_of_variables, samples=pop_size)
         # Scaling
-        individuals = (
-                individuals * (upper_limits - lower_limits)
-                + lower_limits
-        )
+        individuals = individuals * (upper_limits - lower_limits) + lower_limits
 
         return individuals
 
@@ -67,7 +61,7 @@ def create_new_individuals(design, problem, pop_size=None):
         """Create a population of neural networks for the EvoNN algorithm.
 
         Individuals are 2d arrays representing the weight matrices of the NNs.
-        One extra row is added for bias. 
+        One extra row is added for bias.
 
         """
 
@@ -78,15 +72,12 @@ def create_new_individuals(design, problem, pop_size=None):
         prob_omit = problem.params["prob_omit"]
 
         individuals = np.random.uniform(
-            w_low,
-            w_high,
-            size=(pop_size, in_nodes, num_nodes),
+            w_low, w_high, size=(pop_size, in_nodes, num_nodes)
         )
 
         # Randomly set some weights to zero
         zeros = np.random.choice(
-            np.arange(individuals.size),
-            ceil(individuals.size * prob_omit),
+            np.arange(individuals.size), ceil(individuals.size * prob_omit)
         )
         individuals.ravel()[zeros] = 0
 
@@ -98,8 +89,10 @@ def create_new_individuals(design, problem, pop_size=None):
     elif design == "EvoDN2":
         """Create a population of deep neural networks (DNNs) for the EvoDN2 algorithm.
 
-        Each individual is a list of subnets, and each subnet contains a random amount of layers and
-        nodes per layer. The subnets are evolved via evolutionary algorithms, and they converge
+        Each individual is a list of subnets, and each subnet contains a random amount
+        of layers and
+        nodes per layer. The subnets are evolved via evolutionary algorithms, and they
+        converge
         on the final linear layer of the DNN.
 
         """
@@ -116,11 +109,14 @@ def create_new_individuals(design, problem, pop_size=None):
                 for k in range(num_layers):
                     out_nodes = random.randint(2, problem.params["max_nodes"])
                     net = np.random.uniform(
-                        problem.params["w_low"], problem.params["w_high"], size=(in_nodes, out_nodes)
+                        problem.params["w_low"],
+                        problem.params["w_high"],
+                        size=(in_nodes, out_nodes),
                     )
                     # Randomly set some weights to zero
                     zeros = np.random.choice(
-                        np.arange(net.size), ceil(net.size * problem.params["prob_omit"])
+                        np.arange(net.size),
+                        ceil(net.size * problem.params["prob_omit"]),
                     )
                     net.ravel()[zeros] = 0
 

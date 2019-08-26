@@ -29,7 +29,9 @@ def mate(mating_pop, pop, params):
         shuffled_ids = list(range(pop_size))
         shuffle(shuffled_ids)
         # Create random pairs from the population for mating
-        mating_pop = [shuffled_ids[i * 2: (i + 1) * 2] for i in range(int(len(shuffled_ids) / 2))]
+        mating_pop = [
+            shuffled_ids[i * 2 : (i + 1) * 2] for i in range(int(len(shuffled_ids) / 2))
+        ]
 
     # The rest closely follows the matlab code.
 
@@ -44,7 +46,7 @@ def mate(mating_pop, pop, params):
         beta[np.random.rand(num_var) > prob_crossover] = 1  # It was in matlab code
         avg = (pop[mating_pop[i][0]] + pop[mating_pop[i][1]]) / 2
         diff = (pop[mating_pop[i][0]] - pop[mating_pop[i][1]]) / 2
-        offsprings = np.vstack((offsprings, avg+beta*diff))
+        offsprings = np.vstack((offsprings, avg + beta * diff))
         offsprings = np.vstack((offsprings, avg - beta * diff))
 
     return offsprings

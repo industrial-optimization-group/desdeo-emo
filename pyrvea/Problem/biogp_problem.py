@@ -1,34 +1,44 @@
-from random import random, randint, choice, seed
-from graphviz import Digraph, Source
+from math import ceil
+from random import choice, random
+
 import numpy as np
 import pandas as pd
-from math import ceil
-from pyrvea.Problem.baseproblem import BaseProblem
+import plotly
+import plotly.graph_objs as go
+from graphviz import Digraph, Source
+
 from pyrvea.EAs.PPGA import PPGA
 from pyrvea.EAs.TournamentEA import TournamentEA
 from pyrvea.Population.Population import Population
-import plotly
-import plotly.graph_objs as go
+from pyrvea.Problem.baseproblem import BaseProblem
 
 
 class BioGP(BaseProblem):
-    """Creates syntax tree models to use for genetic programming through bi-objective genetic algorithms.
+    """Creates syntax tree models to use for genetic programming through bi-objective
+    genetic algorithms.
 
-    The BioGP technique initially minimizes training error through a single objective optimization procedure and then a
-    trade-off between complexity and accuracy is worked out through a genetic algorithm based bi-objective
+    The BioGP technique initially minimizes training error through a single objective
+    optimization procedure and then a
+    trade-off between complexity and accuracy is worked out through a genetic algorithm
+    based bi-objective
     optimization strategy.
 
-    The benefit of the BioGP approach is that an expert user or a decision maker (DM) can
-    flexibly select the mathematical operations involved to construct a meta-model of desired complexity or
-    accuracy. It is also designed to combat bloat – a perennial problem in genetic programming along with
+    The benefit of the BioGP approach is that an expert user or a decision maker (DM)
+    can
+    flexibly select the mathematical operations involved to construct a meta-model of
+    desired complexity or
+    accuracy. It is also designed to combat bloat – a perennial problem in genetic
+    programming along with
     over fitting and under fitting problems.
 
     Notes
     -----
-    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
+    The algorithm has been created earlier in MATLAB, and this Python implementation
+    has been using
     that code as a basis.
 
-    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+    Python code has been written by Niko Rissanen under the supervision of professor
+    Nirupam Chakraborti.
 
     Parameters
     ----------
@@ -51,8 +61,10 @@ class BioGP(BaseProblem):
 
     References
     ----------
-    [1] Giri, B. K., Hakanen, J., Miettinen, K., & Chakraborti, N. (2013). Genetic programming through bi-objective
-    genetic algorithms with a study of a simulated moving bed process involving multiple objectives.
+    [1] Giri, B. K., Hakanen, J., Miettinen, K., & Chakraborti, N. (2013). Genetic
+    programming through bi-objective
+    genetic algorithms with a study of a simulated moving bed process involving
+    multiple objectives.
     Applied Soft Computing, 13(5), 2613-2623.
     """
 
@@ -229,6 +241,7 @@ class BioGPModel(BioGP):
         If logging set to True in params, external log file is stored here.
 
     """
+
     def __init__(self, model_parameters=None, ea_parameters=None):
         super().__init__()
         self.name = "BioGP_Model"
@@ -283,27 +296,36 @@ class BioGPModel(BioGP):
         prob_terminal : float
             The probability of making the node terminal when growing the tree.
         complexity_scalar : float
-            Complexity of the model is calculated as a weighted aggregate of the maximum depth of the GP tree
-            and the total number of corresponding function nodes. Larger value gives more weight to the depth,
+            Complexity of the model is calculated as a weighted aggregate of the
+            maximum depth of the GP tree
+            and the total number of corresponding function nodes. Larger value gives
+            more weight to the depth,
             lower more weight to the number of function nodes.
         error_lim : float
-            Used to control bloat. If the error reduction ratio of a subtree is less than this value,
-            then that root is terminated and a new root is grown under the linear node (i.e., parent node).
+            Used to control bloat. If the error reduction ratio of a subtree is less
+            than this value,
+            then that root is terminated and a new root is grown under the linear node
+            (i.e., parent node).
         init_method : str
-            Method to use for creating the initial population. Can be either 'grow', 'full', or
+            Method to use for creating the initial population. Can be either 'grow',
+            'full', or
             'ramped_half_and_half' (default).
 
-            grow: nodes are chosen at random from both functions and terminals, allowing for smaller trees
+            grow: nodes are chosen at random from both functions and terminals,
+            allowing for smaller trees
             than max_depth.
-            full: nodes are chosen from the function set until the max depth is reached, and then terminals are chosen.
-            ramped half and half: trees are grown with a 50/50 mixture of 'grow' and 'full'.
+            full: nodes are chosen from the function set until the max depth is reached,
+            and then terminals are chosen.
+            ramped half and half: trees are grown with a 50/50 mixture of 'grow' and
+            'full'.
 
         loss_func : str
             The loss function to use.
         selection : str
             The selection method to use.
         recombination_type, crossover_type, mutation_type : str or None
-            Recombination functions. If recombination_type is specified, crossover and mutation
+            Recombination functions. If recombination_type is specified, crossover and
+            mutation
             will be handled by the same function. If None, they are done separately.
         single_obj_generations : int
             How many generations to run minimizing only the training error.
@@ -416,9 +438,7 @@ class BioGPModel(BioGP):
 
         print("Switching to bi-objective mode")
 
-        pop.evolve(
-            EA=self.params["training_algorithm"], ea_parameters=self.ea_params
-        )
+        pop.evolve(EA=self.params["training_algorithm"], ea_parameters=self.ea_params)
 
         non_dom_front = pop.non_dominated()
         self.linear_node, self.fitness = self.select(
@@ -604,7 +624,8 @@ class Node:
     Parameters
     ----------
     value : function, str or float
-        A function node has as its value a function. Terminal nodes contain variables which are either float or str.
+        A function node has as its value a function. Terminal nodes contain variables
+        which are either float or str.
     depth : int
         The depth the node is at.
     params : None or dict
@@ -713,8 +734,10 @@ class Node:
             The maximum depth of the tree.
         method : str
             Methods: 'grow', 'full'.
-            For the 'grow' method, nodes are chosen at random from both functions and terminals.
-            The 'full' method chooses nodes from the function set until the max depth is reached,
+            For the 'grow' method, nodes are chosen at random from both functions and
+            terminals.
+            The 'full' method chooses nodes from the function set until the max depth
+            is reached,
             and then terminals are chosen.
         depth : int
             Current depth.
@@ -764,14 +787,16 @@ class Node:
 
 class LinearNode(Node):
     """The parent node of the tree, from which a number of subtrees emerge, as defined
-    by the user. The linear node takes a weighted sum of the output from the subtrees and
+    by the user. The linear node takes a weighted sum of the output from the subtrees
+    and
     also uses a bias value. The weights and the bias are calculated by the linear least
     square technique.
 
     Parameters
     ----------
     value : function, str or float
-        A function node has as its value a function. Terminal nodes contain variables which are either float or str.
+        A function node has as its value a function. Terminal nodes contain variables
+        which are either float or str.
     depth : int
         The depth the node is at.
     params : None or dict

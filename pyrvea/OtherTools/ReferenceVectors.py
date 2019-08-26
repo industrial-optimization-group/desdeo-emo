@@ -1,8 +1,7 @@
-from itertools import combinations
+from itertools import combinations, product
 
 import numpy as np
 from scipy.special import comb
-from itertools import product
 
 
 def normalize(vectors):

@@ -11,15 +11,16 @@ class PPGA:
     Weaker prey, i.e. bad models or solutions, are killed by predators.
     The predators and prey are placed in a lattice, in which they are free to roam.
 
-    In each generation, each predator gets a certain number of turns to move about and hunt
-    in its neighbourhood, killing the weaker prey, according to a fitness criteria. After this, each
-    prey gets a certain number of moves to pursue a random walk and to reproduce with
-    other prey. Each reproduction step generates two new prey from two parents, by
-    crossing over their attributes and adding random mutations. After each prey has
-    completed its move, the whole process starts again.
+    In each generation, each predator gets a certain number of turns to move about and
+    hunt in its neighbourhood, killing the weaker prey, according to a fitness criteria.
+    After this, each prey gets a certain number of moves to pursue a random walk and to
+    reproduce with other prey. Each reproduction step generates two new prey from two
+    parents, by crossing over their attributes and adding random mutations. After each
+    prey has completed its move, the whole process starts again.
 
-    As the weaker individuals get eliminated in each generation, the population as a whole becomes more fit,
-    i.e. the individuals get closer to the true pareto-optimal solutions.
+    As the weaker individuals get eliminated in each generation, the population as a
+    whole becomes more fit, i.e. the individuals get closer to the true pareto-optimal
+    solutions.
 
     If you have any questions about the code, please contact:
 
@@ -35,29 +36,38 @@ class PPGA:
 
     Notes
     -----
-    The algorithm has been created earlier in MATLAB, and this Python implementation has been using
-    that code as a basis.
-    See references [4] for the study during which the original MATLAB version was created.
-    Python code has been written by Niko Rissanen under the supervision of professor Nirupam Chakraborti.
+    The algorithm has been created earlier in MATLAB, and this Python implementation
+    has been using that code as a basis. See references [4] for the study during which
+    the original MATLAB version was created.
+    Python code has been written by Niko Rissanen under the supervision of professor
+    Nirupam Chakraborti.
 
     For the MATLAB implementation, see:
-    N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and Their Applications in Metallurgical
-    and Materials Domain. In Datta, Shubhabrata, Davim, J. Paulo (eds.), Computational Approaches to
-    Materials Design: Theoretical and Practical Aspects, pp. 346-369, 2016.
+    N. Chakraborti. Data-Driven Bi-Objective Genetic Algorithms EvoNN and BioGP and
+    Their Applications in Metallurgical and Materials Domain. In Datta, Shubhabrata,
+    Davim, J. Paulo (eds.), Computational Approaches to Materials Design: Theoretical
+    and Practical Aspects, pp. 346-369, 2016.
 
     References
     ----------
-    [1] Laumanns, M., Rudolph, G., & Schwefel, H. P. (1998). A spatial predator-prey approach to multi-objective
+    [1] Laumanns, M., Rudolph, G., & Schwefel, H. P. (1998). A spatial predator-prey
+    approach to multi-objective
     optimization: A preliminary study.
-    In International Conference on Parallel Problem Solving from Nature (pp. 241-249). Springer, Berlin, Heidelberg.
+    In International Conference on Parallel Problem Solving from Nature (pp. 241-249).
+    Springer, Berlin, Heidelberg.
 
-    [2] Li, X. (2003). A real-coded predator-prey genetic algorithm for multiobjective optimization. In International
-    Conference on Evolutionary Multi-Criterion Optimization (pp. 207-221). Springer, Berlin, Heidelberg.
+    [2] Li, X. (2003). A real-coded predator-prey genetic algorithm for multiobjective
+    optimization. In International
+    Conference on Evolutionary Multi-Criterion Optimization (pp. 207-221). Springer,
+    Berlin, Heidelberg.
 
-    [3] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in chemical and metallurgical Systems.
-    In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer, Cham.
+    [3] Chakraborti, N. (2014). Strategies for evolutionary data driven modeling in
+    chemical and metallurgical Systems.
+    In Applications of Metaheuristics in Process Engineering (pp. 89-122). Springer,
+    Cham.
 
-    [4] Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based multi-objective neural net
+    [4] Pettersson, F., Chakraborti, N., & Saxén, H. (2007). A genetic algorithms based
+    multi-objective neural net
     applied to noisy blast furnace data. Applied Soft Computing, 7(1), 387-397.
 
     """
@@ -110,7 +120,8 @@ class PPGA:
         iterations : int
             Total number of iterations.
         kill_interval : int
-            Kill all individuals worse than max_rank in the population every interval generation.
+            Kill all individuals worse than max_rank in the population every interval
+            generation.
         max_rank : int
             Individuals < max_rank will be preserved after kill_interval.
         prob_crossover : float
@@ -414,7 +425,8 @@ class Lattice:
 
                     if self.lattice[y][x] == 0:
                         # Append the offspring to the list of preys.
-                        # len(self.preys_loc) is the index of the current last prey in the list
+                        # len(self.preys_loc) is the index of the current
+                        # last prey in the list
                         self.lattice[y][x] = int(len(self.preys_loc) + 1)
                         self.preys_loc.append([y, x])
                         placed_offspring.append(i)
@@ -446,7 +458,8 @@ class Lattice:
                 )
                 targets = neighbours[neighbours > 0]
 
-                # If preys found in the neighbourhood, calculate their fitness and kill the weakest
+                # If preys found in the neighbourhood,
+                # calculate their fitness and kill the weakest
                 if len(targets) > 0:
                     fitness = []
                     weakest_prey = None
@@ -478,7 +491,8 @@ class Lattice:
                         self.preys_loc[weakest_prey][1],
                     )
 
-                    # Set the killed prey as dead in the list of prey locations and end predator turn
+                    # Set the killed prey as dead in the list of prey locations and
+                    # end predator turn
                     to_be_killed.append(weakest_prey)
                     self.preys_loc[weakest_prey] = None
 
@@ -576,7 +590,8 @@ class Lattice:
 
         Returns
         -------
-        The neighbouring cells of x, y in radius n*n. Defaults to Moore neighbourhood (n=3).
+        The neighbouring cells of x, y in radius n*n.
+        Defaults to Moore neighbourhood (n=3).
         """
 
         arr = np.roll(np.roll(arr, shift=-x + 1, axis=0), shift=-y + 1, axis=1)

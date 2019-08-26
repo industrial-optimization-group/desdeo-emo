@@ -2,13 +2,16 @@ import numpy as np
 from copy import deepcopy
 
 
-def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_type=None):
+def mate(
+    mating_pop, individuals: list, params, crossover_type=None, mutation_type=None
+):
     """Swap nodes between two partners and mutate based on standard deviation.
 
     Parameters
     ----------
     mating_pop : list
-        List of indices of individuals to mate. If None, choose from population randomly.
+        List of indices of individuals to mate. If None, choose from population
+        randomly.
         Each entry should contain two indices, one for each parent.
     individuals : list
         List of all individuals.
@@ -23,7 +26,7 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
 
     prob_crossover = params.get("prob_crossover", 0.8)
     prob_mutation = params.get("prob_mutation", 0.3)
-    mut_strength = params.get("mut_strength", 1.)
+    mut_strength = params.get("mut_strength", 1.0)
     cur_gen = params.get("current_total_gen_count", 1)
     total_gen = params.get("total_generations", 10)
     std_dev = (5 / 3) * (1 - cur_gen / total_gen)
@@ -74,7 +77,9 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
                     try:
                         connections = sub1[layer].size
 
-                        mut_val = np.random.normal(0, std_dev, connections) * mut_strength
+                        mut_val = (
+                            np.random.normal(0, std_dev, connections) * mut_strength
+                        )
 
                         mut = np.random.choice(
                             connections,
@@ -92,7 +97,9 @@ def mate(mating_pop, individuals: list, params, crossover_type=None, mutation_ty
                     try:
                         connections = sub2[layer].size
 
-                        mut_val = np.random.normal(0, std_dev, connections) * mut_strength
+                        mut_val = (
+                            np.random.normal(0, std_dev, connections) * mut_strength
+                        )
 
                         mut = np.random.choice(
                             connections,

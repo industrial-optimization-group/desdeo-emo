@@ -33,7 +33,8 @@ def mutate(offspring, individuals, params, lower_limits, upper_limits):
         * (
             (
                 2 * miu[temp]
-                + (1 - 2 * miu[temp]) * (1 - offspring_scaled[temp]) ** (dis_mutation + 1)
+                + (1 - 2 * miu[temp])
+                * (1 - offspring_scaled[temp]) ** (dis_mutation + 1)
             )
             ** (1 / (dis_mutation + 1))
             - 1
