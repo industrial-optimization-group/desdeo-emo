@@ -77,6 +77,7 @@ class Population:
         self.hyp = 0
         self.non_dom = 0
         self.pop_size = pop_size
+        # Fix to remove the following assumptions
         self.recombination_funcs = {
             "biogp_xover": biogp_xover,
             "biogp_mut": biogp_mutation,
@@ -298,13 +299,13 @@ class Population:
         return offspring
 
     def plot_init_(self):
-        """Initialize animation objects. Return figure"""
+        """Initialize animation object. Return figure"""
         obj = self.objectives
         self.figure = animate_init_(obj, self.filename + ".html")
         return self.figure
 
     def plot_objectives(self, iteration: int = None):
-        """Plot the objective values of individuals in notebook. This is a hack.
+        """Plot the objective values of individuals.
 
         Parameters
         ----------
@@ -317,7 +318,7 @@ class Population:
         )
 
     def plot_pareto(self, name, show_all=False):
-        """Plot the pareto front.
+        """Plot the pareto front. REMOVE THIS IN THE FUTURE.
 
         Parameters
         ----------
