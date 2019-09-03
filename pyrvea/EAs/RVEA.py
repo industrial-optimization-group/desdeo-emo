@@ -35,10 +35,10 @@ class RVEA(BaseDecompositionEA):
         lattice_resolution: int = None,
         interact: bool = False,
         a_priori_preference: bool = False,
-        generations_per_iteration: int = 10,
+        generations_per_iteration: int = 100,
         iterations: int = 10,
         Alpha: float = 2,
-        plotting: bool = True,
+        **kwargs
     ):
         """Set up the parameters. Save in RVEA.params. Note, this should be
         changed to align with the current structure.
@@ -61,8 +61,6 @@ class RVEA(BaseDecompositionEA):
             Total Number of iterations.
         Alpha : float
             The alpha parameter of APD selection.
-        plotting : bool
-            Useless really.
         Returns
         -------
 
@@ -92,13 +90,16 @@ class RVEA(BaseDecompositionEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "Alpha": Alpha,
-            "ploton": plotting,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
+            "current_total_gen_count": 0,
+            "total_generations": generations_per_iteration * iterations,
             "reference_vectors": ReferenceVectors(
                 lattice_resolution, population.problem.num_of_objectives
             ),
+            "prob_mutation": 1 / population.num_var,
         }
+        rveaparams.update(kwargs)
         return rveaparams
 
     def _run_interruption(self, population: "Population"):

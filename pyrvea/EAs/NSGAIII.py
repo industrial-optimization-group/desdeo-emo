@@ -21,11 +21,14 @@ class NSGAIII(BaseDecompositionEA):
         population: "Population",
         population_size: int = None,
         lattice_resolution: int = None,
-        interact: bool = True,
+        interact: bool = False,
         a_priori_preference: bool = False,
-        generations_per_iteration: int = 100,
+        generations_per_iteration: int = 10,
         iterations: int = 10,
         plotting: bool = True,
+        logging: bool = False,
+        logfile=None,
+        **kwargs
     ):
         lattice_resolution_options = {
             "2": 49,
@@ -45,8 +48,8 @@ class NSGAIII(BaseDecompositionEA):
         else:
             lattice_resolution = 3
         reference_vectors = ReferenceVectors(
-                lattice_resolution, population.problem.num_of_objectives
-            )
+            lattice_resolution, population.problem.num_of_objectives
+        )
         nsga3params = {
             "population_size": reference_vectors.number_of_vectors,
             "lattice_resolution": lattice_resolution,
@@ -55,11 +58,16 @@ class NSGAIII(BaseDecompositionEA):
             "generations": generations_per_iteration,
             "iterations": iterations,
             "ploton": plotting,
+            "logging": logging,
+            "logfile": logfile,
             "current_iteration_gen_count": 0,
             "current_iteration_count": 0,
+            "current_total_gen_count": 0,
+            "total_generations": iterations * generations_per_iteration,
             "reference_vectors": reference_vectors,
             "extreme_points": None,
         }
+        nsga3params.update(kwargs)
         return nsga3params
 
     def select(self, population: "Population"):
@@ -69,7 +77,7 @@ class NSGAIII(BaseDecompositionEA):
             population.ideal_fitness,
             population.worst_fitness,
             self.params["extreme_points"],
-            self.params["population_size"]
+            self.params["population_size"],
         )
         self.params["extreme_points"] = extreme_points
         return Selection

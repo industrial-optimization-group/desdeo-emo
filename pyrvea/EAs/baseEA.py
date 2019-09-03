@@ -35,7 +35,7 @@ class BaseDecompositionEA(BaseEA):
     Evolutionary algorithms, such as RVEA or NSGA-III.
     """
 
-    def __init__(self, population: "Population", EA_parameters: dict = None):
+    def __init__(self, population: "Population", ea_parameters):
         """Initialize a Base Decomposition EA.
 
         This will call methods to set up the parameters of RVEA, create
@@ -53,7 +53,10 @@ class BaseDecompositionEA(BaseEA):
         Population:
             Returns the Population after evolution.
         """
-        self.params = self.set_params(population, EA_parameters)
+        if ea_parameters:
+            self.params = self.set_params(population, **ea_parameters)
+        else:
+            self.params = self.set_params(population)
         # print("Using BaseDecompositionEA init")
         self._next_iteration(population)
 
@@ -73,6 +76,7 @@ class BaseDecompositionEA(BaseEA):
         while self.continue_iteration():
             self._next_gen(population)
             self.params["current_iteration_gen_count"] += 1
+            self.params["current_total_gen_count"] += 1
         self.params["current_iteration_count"] += 1
 
     def _next_gen(self, population: "Population"):
@@ -86,10 +90,11 @@ class BaseDecompositionEA(BaseEA):
         population: "Population"
             Population object
         """
-        offspring = population.mate()
+
+        offspring = population.mate(params=self.params)
         population.add(offspring)
         selected = self.select(population)
-        population.keep(selected)
+        population.delete(selected, preserve=True)
 
     def select(self, population) -> list:
         """Describe a selection mechanism. Return indices of selected

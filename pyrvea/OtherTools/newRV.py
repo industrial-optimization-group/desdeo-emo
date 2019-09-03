@@ -98,7 +98,7 @@ def dist_based_translation(vectors):
     """Translates points towards origin based on distance."""
     dist = np.sqrt(np.sum(np.square(vectors), axis=1))
     max_dist = np.amax(dist)
-    #max_dist = 1
+    # max_dist = 1
     alpha = 5
     ratio = alpha * (1 / (dist * dist) - 1 / (max_dist * max_dist))
     t_factor = 1 / (1 + ratio)

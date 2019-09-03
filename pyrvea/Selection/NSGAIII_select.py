@@ -1,6 +1,5 @@
 import numpy as np
 from pygmo import fast_non_dominated_sorting as nds
-from warnings import warn
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
