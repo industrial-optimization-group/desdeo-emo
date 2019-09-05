@@ -25,9 +25,8 @@ from pyrvea.Recombination import (
     simulated_binary_crossover,
 )
 
-if TYPE_CHECKING:
-    from pyrvea.Problem.baseproblem import BaseProblem
-    from pyrvea.EAs.baseEA import BaseEA
+
+from desdeo_problem.Problem import MOProblem
 
 
 class Population:
@@ -35,9 +34,8 @@ class Population:
 
     def __init__(
         self,
-        problem: "BaseProblem",
+        problem: MOProblem,
         assign_type: str = "RandomDesign",
-        plotting: bool = False,
         pop_size=None,
         recombination_type=None,
         crossover_type="simulated_binary_crossover",
@@ -71,9 +69,9 @@ class Population:
 
         """
         self.assign_type = assign_type
-        self.num_var = problem.num_of_variables
-        self.lower_limits = np.asarray(problem.lower_limits)
-        self.upper_limits = np.asarray(problem.upper_limits)
+        self.num_var = problem.n_of_variables
+        self.lower_limits = np.asarray(problem.get_variable_lower_bounds())
+        self.upper_limits = np.asarray(problem.get_variable_upper_bounds())
         self.hyp = 0
         self.non_dom = 0
         self.pop_size = pop_size
@@ -94,11 +92,11 @@ class Population:
             self.mutation = self.recombination_funcs.get(mutation_type, None)
         self.problem = problem
         self.filename = (
-            problem.name + "_" + str(problem.num_of_objectives)
+            problem.name + "_" + str(problem.n_of_objectives)
         )  # Used for plotting
         self.plotting = plotting
         self.individuals = []
-        self.objectives = np.empty((0, self.problem.num_of_objectives), float)
+        self.objectives = np.empty((0, self.problem.n_of_objectives), float)
         if problem.minimize is not None:
             self.fitness = self.objectives[:, self.problem.minimize]
             self.ideal_fitness = np.full((1, self.fitness.shape[1]), np.inf)

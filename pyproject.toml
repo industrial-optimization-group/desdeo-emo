@@ -7,7 +7,7 @@ license = "MPL-2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 numpy = "^1.16"
 pandas = "^0.24.2"
 optproblems = "^1.2"
@@ -27,6 +27,7 @@ gplearn = "^0.4.1"
 graphviz = "^0.11.1"
 xlrd = "^1.2"
 numpydoc = "^0.9.1"
+desdeo_problem = {git = "https://github.com/industrial-optimization-group/desdeo-problem.git"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"
