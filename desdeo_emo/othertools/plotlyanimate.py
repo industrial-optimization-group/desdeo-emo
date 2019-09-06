@@ -1,8 +1,9 @@
-from plotly.offline.offline import plot
-import plotly.graph_objs as go
+from typing import Union
+
 import numpy as np
 import pandas as pd
-from typing import Union
+import plotly.graph_objs as go
+from plotly.offline.offline import plot
 
 
 def animate_init_(data: Union[np.ndarray, pd.DataFrame, list], filename: str) -> dict:
@@ -79,16 +80,16 @@ def animate_2d_init_(
     data: Union[np.ndarray, pd.DataFrame, list], filename: str
 ) -> dict:
     """Initiate a 2D scatter animation.
-    
+
     Only for 2D data.
-    
+
     Parameters
     ----------
     data : Union[np.ndarray, pd.DataFrame, list]
         Objective values
     filename : str
         Name of the file to which plot is saved
-    
+
     Returns
     -------
     dict
@@ -327,7 +328,7 @@ def animate_3d_next_(
         "args": [
             [generation],
             {
-                "frame": {"duration": 300, "redraw": False},
+                "frame": {"duration": 300, "redraw": True},
                 "mode": "immediate",
                 "transition": {"duration": 300},
             },

@@ -1,8 +1,12 @@
-import numpy as np
-from typing import Union, List, Dict
 from abc import ABC, abstractmethod
-from desdeo_problem.Problem import MOProblem
+from typing import Dict, List, Union
+
+import numpy as np
+
 from desdeo_emo.population.CreateIndividuals import create_new_individuals
+from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
+from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
+from desdeo_problem.Problem import MOProblem
 
 
 class BasePopulation(ABC):
@@ -15,7 +19,11 @@ class BasePopulation(ABC):
         self.fitness: np.ndarray = None
         if not problem.n_of_constraints == 0:
             self.constraint_violation = None
-        self.ideal = problem.ideal
+        self.ideal_objective_vector = problem.ideal
+        self.ideal_fitness_val = problem.ideal  # TODO get correct fitness
+        self.xover = None
+        self.mutation = None
+        self.recombination = None
 
     @abstractmethod
     def add(self, offsprings: Union[List, np.ndarray]) -> List:
@@ -82,7 +90,7 @@ class BasePopulation(ABC):
 
 class Population(BasePopulation):
     def __init__(self, problem: MOProblem, pop_size: int, pop_params: Dict = None):
-        super().__init__()
+        super().__init__(problem, pop_size)
         self.lower_limits = self.problem.get_variable_lower_bounds()
         self.upper_limits = self.problem.get_variable_upper_bounds()
         if pop_params is None:
@@ -94,6 +102,8 @@ class Population(BasePopulation):
                 design = "LHSDesign"
         individuals = create_new_individuals(design, problem, pop_size)
         self.add(individuals)
+        self.xover = SBX_xover()
+        self.mutation = BP_mutation(self.lower_limits, self.upper_limits)
 
     def add(self, offsprings: Union[List, np.ndarray]) -> List:
         """Evaluate and add offspring to the population.
@@ -109,17 +119,23 @@ class Population(BasePopulation):
             Indices of the evaluated individuals
         """
         objs, cons = self.problem.evaluate(offsprings)
-        new_fiteness = objs  # TODO Calculate fitness based on min/maximization criteria
-        first_offspring_index = self.individuals.shape[0]
-        self.individuals = np.vstack((self.individuals, offsprings))
-        self.objectives = np.vstack((self.objectives, objs))
-        self.fitness = np.vstack(self.fitness, new_fiteness)
-        if self.problem.n_of_constraints != 0:
-            self.constraint_violation = np.vstack(
-                (self.constraint_violation, cons)
-            )
+        new_fitness = objs  # TODO Calculate fitness based on min/maximization criteria
+        if self.individuals is None:
+            self.individuals = offsprings
+            self.objectives = objs
+            self.fitness = new_fitness
+            self.constraint_violation = cons
+            first_offspring_index = 0
+        else:
+            first_offspring_index = self.individuals.shape[0]
+            self.individuals = np.vstack((self.individuals, offsprings))
+            self.objectives = np.vstack((self.objectives, objs))
+            self.fitness = np.vstack((self.fitness, new_fitness))
+            if self.problem.n_of_constraints != 0:
+                self.constraint_violation = np.vstack((self.constraint_violation, cons))
         last_offspring_index = self.individuals.shape[0]
-        return list(range[first_offspring_index, last_offspring_index])
+        self.update_ideal()
+        return list(range(first_offspring_index, last_offspring_index))
 
     def keep(self, indices: List):
         """Save the population members given by the list of indices for the next
@@ -136,7 +152,7 @@ class Population(BasePopulation):
         self.individuals = self.individuals[mask]
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
-        if len(self.problem.n_of_constraints) > 0:
+        if self.problem.n_of_constraints > 0:
             self.constraint_violation = self.constraint_violation[mask]
 
     def delete(self, indices: List):
@@ -153,12 +169,10 @@ class Population(BasePopulation):
         self.individuals = self.individuals[mask]
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
-        if len(self.problem.n_of_constraints) > 0:
+        if self.problem.n_of_constraints > 0:
             self.constraint_violation = self.constraint_violation[mask]
 
-    def mate(
-        self, mating_individuals: List = None, params: Dict = None
-    ) -> Union[List, np.ndarray]:
+    def mate(self, mating_individuals: List = None) -> Union[List, np.ndarray]:
         """Perform crossover and mutation over the population members.
 
         Parameters
@@ -174,4 +188,18 @@ class Population(BasePopulation):
         Union[List, np.ndarray]
             The offspring population
         """
-        pass
+        if self.recombination is not None:
+            offspring = self.recombination.do(self.individuals, mating_individuals)
+        else:
+            offspring = self.xover.do(self.individuals, mating_individuals)
+            offspring = self.mutation.do(offspring)
+        return offspring
+
+    def update_ideal(self):
+        if self.ideal_fitness_val is None:
+            self.ideal_fitness_val = np.amin(self.fitness, axis=0)
+        else:
+            self.ideal_fitness_val = np.amin(
+                np.vstack((self.ideal_fitness_val, self.fitness)), axis=0
+            )
+        self.ideal_objective_vector = self.ideal_fitness_val  # TODO fitness fix

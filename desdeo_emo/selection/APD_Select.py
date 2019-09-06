@@ -46,8 +46,8 @@ class APD_Select(SelectionBase):
         partial_penalty_factor = self._partial_penalty_factor()
         refV = vectors.neighbouring_angles_current
         # Normalization - There may be problems here
-        if pop.ideal is not None:
-            fmin = pop.ideal
+        if pop.ideal_fitness_val is not None:
+            fmin = pop.ideal_fitness_val
         else:
             fmin = np.amin(pop.fitness, axis=0)
         translated_fitness = pop.fitness - fmin

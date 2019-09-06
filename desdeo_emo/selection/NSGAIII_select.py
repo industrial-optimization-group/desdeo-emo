@@ -22,7 +22,8 @@ class NSGAIII_select(SelectionBase):
     def __init__(self, pop: Population, n_survive: int = None):
         self.worst_fitness: np.ndarray = -np.full((1, pop.fitness.shape[1]), np.inf)
         self.extreme_points: np.ndarray = None
-        self.n_survive: int = n_survive
+        if n_survive is None:
+            self.n_survive: int = pop.pop_size
 
     def do(self, pop: Population, vectors: ReferenceVectors) -> List[int]:
         """Select individuals for mating for NSGA-III.
@@ -53,12 +54,12 @@ class NSGAIII_select(SelectionBase):
         worst_of_front = np.max(fitness[non_dominated, :], axis=0)
         self.extreme_points = self.get_extreme_points_c(
             fitness[non_dominated, :],
-            pop.ideal_point,
+            pop.ideal_fitness_val,
             extreme_points=self.extreme_points,
         )
         nadir_point = self.get_nadir_point(
             self.extreme_points,
-            pop.ideal_point,
+            pop.ideal_fitness_val,
             self.worst_fitness,
             worst_of_population,
             worst_of_front,
@@ -81,7 +82,7 @@ class NSGAIII_select(SelectionBase):
         # Selecting individuals from the last acceptable front.
         if len(selection) > self.n_survive:
             niche_of_individuals, dist_to_niche = self.associate_to_niches(
-                F, ref_dirs, pop.ideal_point, nadir_point
+                F, ref_dirs, pop.ideal_fitness_val, nadir_point
             )
             # if there is only one front
             if len(fronts) == 1:

@@ -1,9 +1,9 @@
-
 from typing import Dict
+
+from desdeo_emo.EAs.BaseEA import BaseDecompositionEA
 from desdeo_emo.population.Population import Population
-from desdeo_problem.Problem import MOProblem
 from desdeo_emo.selection.APD_Select import APD_Select
-from desdeo_emo.EAs.baseEA import BaseDecompositionEA
+from desdeo_problem.Problem import MOProblem
 
 
 class RVEA(BaseDecompositionEA):
@@ -23,31 +23,30 @@ class RVEA(BaseDecompositionEA):
 
     Project researcher at University of Jyväskylä.
     """
-
     def __init__(
         self,
         problem: MOProblem,
-        selection_operator: APD_Select,
         population_size: int = None,
         population_params: Dict = None,
         initial_population: Population = None,
+        alpha: float = None,
         lattice_resolution: int = None,
         a_priori: bool = False,
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
-        selection_parameters: Dict = None,
     ):
         super().__init__(
-            problem,
-            selection_operator,
-            population_size,
-            population_params,
-            initial_population,
-            lattice_resolution,
-            a_priori,
-            interact,
-            n_iterations,
-            n_gen_per_iter,
-            selection_parameters,
+            problem=problem,
+            population_size=population_size,
+            population_params=population_params,
+            initial_population=initial_population,
+            lattice_resolution=lattice_resolution,
+            a_priori=a_priori,
+            interact=interact,
+            n_iterations=n_iterations,
+            n_gen_per_iter=n_gen_per_iter,
         )
+        selection_operator = APD_Select(self.population, self.n_gen_per_iter, alpha)
+        self.selection_operator = selection_operator
+        self._next_iteration()

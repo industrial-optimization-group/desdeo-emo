@@ -39,18 +39,18 @@ def create_new_individuals(design, problem, pop_size=None):
         pop_size = pop_size_options[problem.num_of_objectives - 2]
 
     if design == "RandomDesign":
-        lower_limits = np.asarray(problem.lower_limits)
-        upper_limits = np.asarray(problem.upper_limits)
-        individuals = np.random.random((pop_size, problem.num_of_variables))
+        lower_limits = np.asarray(problem.get_variable_lower_bounds())
+        upper_limits = np.asarray(problem.get_variable_upper_bounds)
+        individuals = np.random.random((pop_size, problem.n_of_variables))
         # Scaling
         individuals = individuals * (upper_limits - lower_limits) + lower_limits
 
         return individuals
 
     elif design == "LHSDesign":
-        lower_limits = np.asarray(problem.lower_limits)
-        upper_limits = np.asarray(problem.upper_limits)
-        individuals = lhs(problem.num_of_variables, samples=pop_size)
+        lower_limits = np.asarray(problem.get_variable_lower_bounds())
+        upper_limits = np.asarray(problem.get_variable_upper_bounds())
+        individuals = lhs(problem.n_of_variables, samples=pop_size)
         # Scaling
         individuals = individuals * (upper_limits - lower_limits) + lower_limits
 

@@ -1,9 +1,11 @@
+from typing import Dict, Type
+
 import numpy as np
-from desdeo_problem.Problem import MOProblem
+
+from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from typing import Type, Dict
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_problem.Problem import MOProblem
 
 
 class BaseEA:
@@ -11,25 +13,20 @@ class BaseEA:
 
     def __init__(self):
         """Initialize EA here. Set up parameters, create EA specific objects."""
-        pass
 
     def set_params(self):
         """Set up the parameters. Save in self.params"""
-        pass
 
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
-        pass
 
     def _next_iteration(self):
         """Run one iteration (a number of generations) of EA."""
-        pass
 
     def _run_interruption(self):
         """Run interruptions in between iterations. You can update parameters/EA
         specific classes here.
         """
-        pass
 
 
 class BaseDecompositionEA(BaseEA):
@@ -40,7 +37,7 @@ class BaseDecompositionEA(BaseEA):
     def __init__(
         self,
         problem: MOProblem,
-        selection_operator: Type[SelectionBase],
+        selection_operator: Type[SelectionBase] = None,
         population_size: int = None,
         population_params: Dict = None,
         initial_population: Population = None,
@@ -49,7 +46,6 @@ class BaseDecompositionEA(BaseEA):
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
-        selection_parameters: Dict = None,
     ):
         """Initialize a Base Decomposition EA.
 
@@ -83,17 +79,20 @@ class BaseDecompositionEA(BaseEA):
         elif initial_population is None:
             if population_size is None:
                 pop_size_options = [50, 105, 120, 126, 132, 112, 156, 90, 275]
-                population_size = pop_size_options[problem.num_of_objectives - 2]
+                population_size = pop_size_options[problem.n_of_objectives - 2]
             self.population = Population(problem, population_size, population_params)
-        self.a_priori = a_priori
-        self.interact = interact
-        self.n_iterations = n_iterations
-        self.n_gen_per_iter = n_gen_per_iter
-        self.selection_operator = selection_operator(selection_parameters)
+        self.a_priori: bool = a_priori
+        self.interact: bool = interact
+        self.n_iterations: int = n_iterations
+        self.n_gen_per_iter: int = n_gen_per_iter
+        self.selection_operator = selection_operator
+        # Internal counters
+        self._iteration_counter: int = 1
+        self._gen_count_in_curr_iteration = 1
+        self._total_gen_count = 1
         # print("Using BaseDecompositionEA init")
-        self._next_iteration()
 
-    def _next_iteration(self, population: Population):
+    def _next_iteration(self):
         """Run one iteration of EA.
 
         One iteration consists of a constant or variable number of
@@ -105,14 +104,14 @@ class BaseDecompositionEA(BaseEA):
         population : Population
             Contains current population
         """
-        self.params["current_iteration_gen_count"] = 1
+        self._gen_count_in_curr_iteration = 1
         while self.continue_iteration():
-            self._next_gen(population)
-            self.params["current_iteration_gen_count"] += 1
-            self.params["current_total_gen_count"] += 1
-        self.params["current_iteration_count"] += 1
+            self._next_gen()
+            self._gen_count_in_curr_iteration += 1
+            self._total_gen_count += 1
+        self._iteration_counter += 1
 
-    def _next_gen(self, population: Population):
+    def _next_gen(self):
         """Run one generation of decomposition based EA.
 
         This method leaves method.params unchanged. Intended to be used by
@@ -124,12 +123,12 @@ class BaseDecompositionEA(BaseEA):
             Population object
         """
 
-        offspring = population.mate(params=self.params)
-        population.add(offspring)
-        selected = self.select(population)
-        population.delete(selected, preserve=True)
+        offspring = self.population.mate()  # (params=self.params)
+        self.population.add(offspring)
+        selected = self.select()
+        self.population.keep(selected)
 
-    def _run_interruption(self, population: "Population"):
+    def _run_interruption(self):
         """Run the interruption phase of RVEA.
 
         Use this phase to make changes to RVEA.params or other objects.
@@ -139,10 +138,8 @@ class BaseDecompositionEA(BaseEA):
         ----------
         population : Population
         """
-        if self.params["interact"] or (
-            self.params["a_priori"] and self.params["current_iteration_count"] == 1
-        ):
-            ideal = population.ideal_fitness
+        if self.interact or (self.a_priori and self._iteration_counter == 1):
+            ideal = self.population.ideal_fitness
             refpoint = np.zeros_like(ideal)
             print("Ideal vector is ", ideal)
             for index in range(len(refpoint)):
@@ -158,13 +155,13 @@ class BaseDecompositionEA(BaseEA):
             refpoint = refpoint - ideal
             norm = np.sqrt(np.sum(np.square(refpoint)))
             refpoint = refpoint / norm
-            self.params["reference_vectors"].iteractive_adapt_1(refpoint)
-            self.params["reference_vectors"].add_edge_vectors()
+            self.reference_vectors.iteractive_adapt_1(refpoint)
+            self.reference_vectors.add_edge_vectors()
         else:
-            self.params["reference_vectors"].adapt(population.fitness)
-        self.params["reference_vectors"].neighbouring_angles()
+            self.reference_vectors.adapt(self.population.fitness)
+        self.reference_vectors.neighbouring_angles()
 
-    def select(self, population) -> list:
+    def select(self) -> list:
         """Describe a selection mechanism. Return indices of selected
         individuals.
 
@@ -183,8 +180,8 @@ class BaseDecompositionEA(BaseEA):
 
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
-        return self.params["current_iteration_gen_count"] <= self.params["generations"]
+        return self._gen_count_in_curr_iteration <= self.n_gen_per_iter
 
     def continue_evolution(self) -> bool:
         """Checks whether the current iteration should be continued or not."""
-        pass
+        return self._iteration_counter <= self.n_iterations

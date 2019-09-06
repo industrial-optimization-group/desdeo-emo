@@ -211,6 +211,7 @@ optproblems = "^1.2"
 reference = "96891b8f648f3ee24f23cf94bb7629d01958b572"
 type = "git"
 url = "https://github.com/industrial-optimization-group/desdeo-problem.git"
+
 [[package]]
 category = "main"
 description = "Sample in hypercubes, select diverse subsets, and measure diversity"
@@ -699,13 +700,9 @@ description = "An open-source, interactive graphing library for Python"
 name = "plotly"
 optional = false
 python-versions = "*"
-version = "3.10.0"
+version = "4.1.1"
 
 [package.dependencies]
-decorator = ">=4.0.6"
-nbformat = ">=4.2"
-pytz = "*"
-requests = "*"
 retrying = ">=1.3.3"
 six = "*"
 
@@ -1188,7 +1185,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "1.2.0"
 
 [metadata]
-content-hash = "b47c6b4ce295a7770fbd551e027a19fd5ef5324800c0b866604a9ed35d90f98a"
+content-hash = "dac4789ec96c458647c663c7983675fd1a16dc358505506794d35f71f3096b07"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -1255,7 +1252,7 @@ pandocfilters = ["b3dd70e169bb5449e6bc6ff96aea89c5eea8c5f6ab5e207fc2f521a2cf4a0d
 parso = ["63854233e1fadb5da97f2744b6b24346d2750b85965e7e399bec1620232797dc", "666b0ee4a7a1220f65d367617f2cd3ffddff3e205f3f16a0284df30e774c2a9c"]
 pexpect = ["2094eefdfcf37a1fdbfb9aa090862c1a4878e5c7e0e7e7088bdb511c558e5cd1", "9e2c1fd0e6ee3a49b28f95d4b33bc389c89b20af6a1255906e90ff1262ce62eb"]
 pickleshare = ["87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca", "9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"]
-plotly = ["5dcb33f5c9a00e1d68ac567340b58e90c07ba93767ad3e360dd6aa11cf568a98", "ab51c41f3212c5b50238abc1be070cdf79dea60a127216e7c2f1829d14113b49"]
+plotly = ["0f0cd50a8bad5acadfc95af367820da8ed3e1569d83ef13bb218cc4259dcf219", "b1ff1f29dffca9085847dcb3b8a92d4c3750c433996cf620b0b3c9dcf8a7b268"]
 prometheus-client = ["71cd24a2b3eb335cb800c7159f423df1bd4dcd5171b234be15e3f31ec9f622da"]
 prompt-toolkit = ["11adf3389a996a6d45cc277580d0d53e8a5afd281d0c9ec71b28e6f121463780", "2519ad1d8038fd5fc8e770362237ad0364d16a7650fb5724af6997ed5515e3c1", "977c6583ae813a37dc1c2e1b715892461fcbdaa57f6fc62f33a528c4886c8f55"]
 ptyprocess = ["923f299cc5ad920c68f2bc0bc98b75b9f838b93b599941a6b63ddbc2476394c0", "d7cc528d76e76342423ca640335bd3633420dc1366f258cb31d05e865ef5ca1f"]
