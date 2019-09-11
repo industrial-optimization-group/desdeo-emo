@@ -461,7 +461,7 @@ def animate_parallel_coords_next_(
         "args": [
             [generation],
             {
-                "frame": {"duration": 300, "redraw": False},
+                "frame": {"duration": 300, "redraw": True},
                 "mode": "immediate",
                 "transition": {"duration": 300},
             },

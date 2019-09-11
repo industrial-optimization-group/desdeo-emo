@@ -5,7 +5,7 @@ from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
 
 
 dtlz3 = test_problem_builder("DTLZ3", n_of_variables=30, n_of_objectives=4)
-evolver = NSGAIII(dtlz3, n_iterations=15)
+evolver = RVEA(dtlz3, n_iterations=10)
 figure = animate_init_(evolver.population.objectives, filename="dtlz3.html")
 while evolver.continue_evolution():
     evolver._next_iteration()
