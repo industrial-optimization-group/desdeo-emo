@@ -118,21 +118,26 @@ class Population(BasePopulation):
         List
             Indices of the evaluated individuals
         """
-        objs, cons = self.problem.evaluate(offsprings)
-        new_fitness = objs  # TODO Calculate fitness based on min/maximization criteria
+        results = self.problem.evaluate(offsprings)
+        objectives = results.objectives
+        fitness = results.fitness
+        constraints = results.constraints
+        uncertainity = results.uncertainity
         if self.individuals is None:
             self.individuals = offsprings
-            self.objectives = objs
-            self.fitness = new_fitness
-            self.constraint_violation = cons
+            self.objectives = objectives
+            self.fitness = fitness
+            self.constraint_violation = constraints
+            self.uncertainity = uncertainity
             first_offspring_index = 0
         else:
             first_offspring_index = self.individuals.shape[0]
             self.individuals = np.vstack((self.individuals, offsprings))
-            self.objectives = np.vstack((self.objectives, objs))
-            self.fitness = np.vstack((self.fitness, new_fitness))
+            self.objectives = np.vstack((self.objectives, objectives))
+            self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
-                self.constraint_violation = np.vstack((self.constraint_violation, cons))
+                self.constraint_violation = np.vstack((self.constraint_violation, constraints))
+            self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
         return list(range(first_offspring_index, last_offspring_index))

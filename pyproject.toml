@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyrvea"
+name = "desdeo_emo"
 version = "0.1.1"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]
@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.7"
 numpy = "^1.16"
-pandas = "^0.24.2"
+pandas = "^0.25"
 optproblems = "^1.2"
 pygmo = "^2.10"
 scipy = "^1.2"
@@ -26,8 +26,8 @@ gplearn = "^0.4.1"
 graphviz = "^0.11.1"
 xlrd = "^1.2"
 numpydoc = "^0.9.1"
-desdeo_problem = {git = "https://github.com/industrial-optimization-group/desdeo-problem.git"}
 plotly = "^4.1"
+desdeo_problem = "^0.8.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"
