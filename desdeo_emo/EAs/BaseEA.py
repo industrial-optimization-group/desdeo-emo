@@ -107,8 +107,6 @@ class BaseDecompositionEA(BaseEA):
         self._gen_count_in_curr_iteration = 1
         while self.continue_iteration():
             self._next_gen()
-            self._gen_count_in_curr_iteration += 1
-            self._total_gen_count += 1
         self._iteration_counter += 1
 
     def _next_gen(self):
@@ -127,6 +125,9 @@ class BaseDecompositionEA(BaseEA):
         self.population.add(offspring)
         selected = self.select()
         self.population.keep(selected)
+        # Book keeping
+        self._total_gen_count += 1
+        self._gen_count_in_curr_iteration += 1
 
     def _run_interruption(self):
         """Run the interruption phase of RVEA.
