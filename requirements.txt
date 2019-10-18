@@ -13,7 +13,6 @@ cloudpickle==1.2.2
 commonmark==0.9.1
 decorator==4.4.0
 defusedxml==0.6.0
--e git+https://github.com/light-weaver/desdeo-emo.git@fe59f21969061cda7b274be6e246c521c1c25aa4#egg=desdeo_emo
 desdeo-problem==0.8
 diversipy==0.8
 docutils==0.15.2
