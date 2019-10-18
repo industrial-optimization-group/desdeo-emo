@@ -5,7 +5,7 @@ The python version reference vector guided evolutionary algorithm.
 
 Currently supported: Multi-objective minimization with visualization and interaction support. Preference is accepted as a reference point.
 
-To test the code, open the [binder link](https://mybinder.org/v2/gh/EchoBetaGlass/pyrvea/master) and read example.ipynb.
+To test the code, open the [binder link](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master) and read example.ipynb.
 
 Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
 
