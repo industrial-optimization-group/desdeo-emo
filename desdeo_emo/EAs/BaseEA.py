@@ -140,7 +140,7 @@ class BaseDecompositionEA(BaseEA):
         population : Population
         """
         if self.interact or (self.a_priori and self._iteration_counter == 1):
-            ideal = self.population.ideal_fitness
+            ideal = self.population.ideal_fitness_val
             refpoint = np.zeros_like(ideal)
             print("Ideal vector is ", ideal)
             for index in range(len(refpoint)):
