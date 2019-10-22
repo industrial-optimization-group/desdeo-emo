@@ -9,9 +9,40 @@ from desdeo_problem.Problem import MOProblem
 class NSGAIII(BaseDecompositionEA):
     """Python Implementation of NSGA-III. Based on the pymoo package.
 
-    [description]
+    Most of the relevant code is contained in the super class. This class just assigns
+    the NSGAIII selection operator to BaseDecompositionEA.
+    
+    Parameters
+    ----------
+    problem : MOProblem
+        The problem class object specifying the details of the problem.
+    population_size : int, optional
+        The desired population size, by default None, which sets up a default value
+        of population size depending upon the dimensionaly of the problem.
+    population_params : Dict, optional
+        The parameters for the population class, by default None. See
+        desdeo_emo.population.Population for more details.
+    initial_population : Population, optional
+        An initial population class, by default None. Use this if you want to set up
+        a specific starting population, such as when the output of one EA is to be
+        used as the input of another.
+    lattice_resolution : int, optional
+        The number of divisions along individual axes in the objective space to be
+        used while creating the reference vector lattice by the simplex lattice
+        design. By default None
+    a_priori : bool, optional
+        A bool variable defining whether a priori preference is to be used or not.
+        By default False
+    interact : bool, optional
+        A bool variable defining whether interactive preference is to be used or
+        not. By default False
+    n_iterations : int, optional
+        The total number of iterations to be run, by default 10. This is not a hard
+        limit and is only used for an internal counter.
+    n_gen_per_iter : int, optional
+        The total number of generations in an iteration to be run, by default 100.
+        This is not a hard limit and is only used for an internal counter.
     """
-
     def __init__(
         self,
         problem: MOProblem,
@@ -38,4 +69,4 @@ class NSGAIII(BaseDecompositionEA):
         )
         selection_operator = NSGAIII_select(self.population, n_survive)
         self.selection_operator = selection_operator
-        self._next_iteration()
+        self.iterate()

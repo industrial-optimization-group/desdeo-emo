@@ -1,6 +1,8 @@
 # README
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/EchoBetaGlass/pyrvea/master)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master)
 
+
+# Outdated: To be Updated
 The python version reference vector guided evolutionary algorithm.
 
 Currently supported: Multi-objective minimization with visualization and interaction support. Preference is accepted as a reference point.
