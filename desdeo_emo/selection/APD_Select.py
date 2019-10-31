@@ -1,6 +1,6 @@
 import numpy as np
 from warnings import warn
-from typing import List
+from typing import List, Callable
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
@@ -16,15 +16,16 @@ class APD_Select(SelectionBase):
     ----------
     pop : Population
         The population instance
-    iteration_length : int
-        Length of the iteration
+    time_penalty_function : Callable
+        A function that returns the time component in the penalty function.
     alpha : float, optional
         The RVEA alpha parameter, by default 2
     """
 
-    def __init__(self, pop: Population, iteration_length: int, alpha: float = 2):
-        self.iteration_length = iteration_length
-        self.gen_counter = 1
+    def __init__(
+        self, pop: Population, time_penalty_function: Callable, alpha: float = 2
+    ):
+        self.time_penalty_function = time_penalty_function
         self.alpha = 2
         self.n_of_objectives = pop.problem.n_of_objectives
 
@@ -109,6 +110,7 @@ class APD_Select(SelectionBase):
     def _partial_penalty_factor(self) -> float:
         """Calculate and return the partial penalty factor for APD calculation.
             This calculation does not include the angle related terms, hence the name.
+            If the calculated penalty is outside [0, 1], it will round it up/down to 0/1
 
         Returns
         -------
@@ -116,6 +118,10 @@ class APD_Select(SelectionBase):
             The partial penalty value
         """
         penalty = (
-            (self.gen_counter / self.iteration_length) ** self.alpha
+            (self.time_penalty_function()) ** self.alpha
         ) * self.n_of_objectives
+        if penalty < 0:
+            penalty = 0
+        if penalty > 1:
+            penalty = 1
         return penalty

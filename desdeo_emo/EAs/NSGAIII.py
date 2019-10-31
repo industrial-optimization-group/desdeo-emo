@@ -42,6 +42,9 @@ class NSGAIII(BaseDecompositionEA):
     n_gen_per_iter : int, optional
         The total number of generations in an iteration to be run, by default 100.
         This is not a hard limit and is only used for an internal counter.
+    total_function_evaluations :int, optional
+        Set an upper limit to the total number of function evaluations. When set to
+        zero, this argument is ignored and other termination criteria are used.
     """
     def __init__(
         self,
@@ -55,6 +58,7 @@ class NSGAIII(BaseDecompositionEA):
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
     ):
         super().__init__(
             problem=problem,
@@ -66,7 +70,7 @@ class NSGAIII(BaseDecompositionEA):
             interact=interact,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
+            total_function_evaluations=total_function_evaluations
         )
         selection_operator = NSGAIII_select(self.population, n_survive)
         self.selection_operator = selection_operator
-        self.iterate()
