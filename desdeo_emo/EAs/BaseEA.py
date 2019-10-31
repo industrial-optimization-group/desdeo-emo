@@ -7,6 +7,10 @@ from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_problem.Problem import MOProblem
 
+class eaError(Exception):
+    """Raised when an error related to EA occurs
+    """
+
 
 class BaseEA:
     """This class provides the basic structure for Evolutionary algorithms."""
@@ -67,7 +71,11 @@ class BaseDecompositionEA(BaseEA):
     n_gen_per_iter : int, optional
         The total number of generations in an iteration to be run, by default 100.
         This is not a hard limit and is only used for an internal counter.
+    total_function_evaluations :int, optional
+        Set an upper limit to the total number of function evaluations. When set to
+        zero, this argument is ignored and other termination criteria are used.
     """
+
     def __init__(
         self,
         problem: MOProblem,
@@ -80,6 +88,7 @@ class BaseDecompositionEA(BaseEA):
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
     ):
         lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
         if problem.n_of_objectives < 11:
@@ -101,11 +110,14 @@ class BaseDecompositionEA(BaseEA):
         self.interact: bool = interact
         self.n_iterations: int = n_iterations
         self.n_gen_per_iter: int = n_gen_per_iter
+        self.total_gen_count: int = n_gen_per_iter * n_iterations
+        self.total_function_evaluations = total_function_evaluations
         self.selection_operator = selection_operator
         # Internal counters
-        self._iteration_counter: int = 1
-        self._gen_count_in_curr_iteration = 1
-        self._total_gen_count = 1
+        self._iteration_counter: int = 0
+        self._gen_count_in_curr_iteration = 0
+        self._current_gen_count = 0
+        self._function_evaluation_count = population_size
         # print("Using BaseDecompositionEA init")
 
     def iterate(self):
@@ -115,7 +127,7 @@ class BaseDecompositionEA(BaseEA):
         generations. This method leaves EA.params unchanged, except the current
         iteration count and gen count.
         """
-        self._gen_count_in_curr_iteration = 1
+        self._gen_count_in_curr_iteration = 0
         while self.continue_iteration():
             self._next_gen()
         self._iteration_counter += 1
@@ -124,14 +136,14 @@ class BaseDecompositionEA(BaseEA):
         """Run one generation of decomposition based EA. Intended to be used by
         next_iteration.
         """
-
         offspring = self.population.mate()  # (params=self.params)
         self.population.add(offspring)
         selected = self._select()
         self.population.keep(selected)
-        # Book keeping
-        self._total_gen_count += 1
+        self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
+        self._function_evaluation_count += offspring.shape[0]
+            
 
     def run_interruption(self):
         """Run the interruption phase of EA.
@@ -139,7 +151,7 @@ class BaseDecompositionEA(BaseEA):
         Use this phase to make changes to RVEA.params or other objects.
         Updates Reference Vectors (adaptation), conducts interaction with the user.
         """
-        if self.interact or (self.a_priori and self._iteration_counter == 1):
+        if self.interact or (self.a_priori and self._iteration_counter == 0):
             ideal = self.population.ideal_fitness_val
             refpoint = np.zeros_like(ideal)
             print("Ideal vector is ", ideal)
@@ -175,8 +187,24 @@ class BaseDecompositionEA(BaseEA):
 
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
-        return self._gen_count_in_curr_iteration <= self.n_gen_per_iter
+        return (
+            self._gen_count_in_curr_iteration < self.n_gen_per_iter
+            and self.check_FE_count()
+        )
 
     def continue_evolution(self) -> bool:
         """Checks whether the current iteration should be continued or not."""
-        return self._iteration_counter <= self.n_iterations
+        return self._iteration_counter < self.n_iterations and self.check_FE_count()
+
+    def check_FE_count(self) -> bool:
+        """Checks whether termination criteria via function evaluation count has been
+            met or not.
+        
+        Returns:
+            bool: True is function evaluation count limit NOT met.
+        """
+        if self.total_function_evaluations == 0:
+            return True
+        elif self._function_evaluation_count <= self.total_function_evaluations:
+            return True
+        return False
