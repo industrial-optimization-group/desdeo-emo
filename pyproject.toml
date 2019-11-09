@@ -27,6 +27,8 @@ scikit-learn = "^0.21.2"
 # plotly = "^4.1"
 desdeo_problem = "^0.8.0"
 plotly = "^4.1"
+desdeo-tools = "^0.1.2"
+
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"

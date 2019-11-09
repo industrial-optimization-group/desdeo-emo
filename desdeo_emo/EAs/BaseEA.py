@@ -6,6 +6,14 @@ from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_problem.Problem import MOProblem
+from desdeo_tools.interaction import (
+    SimplePlotRequest,
+    ReferencePointPreference,
+    validate_ref_point_data_type,
+    validate_ref_point_dimensions,
+    validate_ref_point_with_ideal,
+)
+
 
 class eaError(Exception):
     """Raised when an error related to EA occurs
@@ -143,7 +151,6 @@ class BaseDecompositionEA(BaseEA):
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
         self._function_evaluation_count += offspring.shape[0]
-            
 
     def run_interruption(self):
         """Run the interruption phase of EA.
