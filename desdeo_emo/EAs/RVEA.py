@@ -64,7 +64,7 @@ class RVEA(BaseDecompositionEA):
         If penalty_time_component is a float between [0, 1], (t/t_max) is replaced by
         that constant for the entire algorithm.
         If penalty_time_component is "original", the original intent of the paper is
-        followed and (t/t_max) is calculated as 
+        followed and (t/t_max) is calculated as
         (current generation count/total number of generations).
         If penalty_time_component is "function_count", (t/t_max) is calculated as
         (current function evaluation count/total number of function evaluations)
@@ -81,6 +81,7 @@ class RVEA(BaseDecompositionEA):
         If `interact` is false, but `total_function_evaluations` is not provided,
         penalty_time_component is "original" by default.
     """
+
     def __init__(
         self,
         problem: MOProblem,
@@ -94,7 +95,7 @@ class RVEA(BaseDecompositionEA):
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
-        time_penalty_component : Union[str, float] = None,
+        time_penalty_component: Union[str, float] = None,
     ):
         super().__init__(
             problem=problem,
@@ -106,7 +107,7 @@ class RVEA(BaseDecompositionEA):
             interact=interact,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
-            total_function_evaluations=total_function_evaluations
+            total_function_evaluations=total_function_evaluations,
         )
         self.time_penalty_component = time_penalty_component
         time_penalty_component_options = ["original", "function_count", "interactive"]
@@ -119,16 +120,16 @@ class RVEA(BaseDecompositionEA):
                 time_penalty_component = "original"
         if not (type(time_penalty_component) is float or str):
             msg = (
-                f'type(time_penalty_component) should be float or str'
-                f'Provided type: {type(time_penalty_component)}'
+                f"type(time_penalty_component) should be float or str"
+                f"Provided type: {type(time_penalty_component)}"
             )
             eaError(msg)
         if type(time_penalty_component) is float:
-            if (time_penalty_component <= 0) or (time_penalty_component>=1):
+            if (time_penalty_component <= 0) or (time_penalty_component >= 1):
                 msg = (
-                    f'time_penalty_component should either be a float in the range'
-                    f'[0, 1], or one of {time_penalty_component_options}.\n'
-                    f'Provided value = {time_penalty_component}'
+                    f"time_penalty_component should either be a float in the range"
+                    f"[0, 1], or one of {time_penalty_component_options}.\n"
+                    f"Provided value = {time_penalty_component}"
                 )
                 eaError(msg)
             time_penalty_function = self._time_penalty_constant
@@ -141,12 +142,12 @@ class RVEA(BaseDecompositionEA):
                 time_penalty_function = self._time_penalty_interactive
             else:
                 msg = (
-                    f'time_penalty_component should either be a float in the range'
-                    f'[0, 1], or one of {time_penalty_component_options}.\n'
-                    f'Provided value = {time_penalty_component}'
+                    f"time_penalty_component should either be a float in the range"
+                    f"[0, 1], or one of {time_penalty_component_options}.\n"
+                    f"Provided value = {time_penalty_component}"
                 )
                 eaError(msg)
-            
+
         selection_operator = APD_Select(self.population, time_penalty_function, alpha)
         self.selection_operator = selection_operator
 
@@ -158,14 +159,14 @@ class RVEA(BaseDecompositionEA):
     def _time_penalty_original(self):
         """Calculates the appropriate time penalty value, by the original formula.
         """
-        return self._current_gen_count/self.total_gen_count
+        return self._current_gen_count / self.total_gen_count
 
     def _time_penalty_interactive(self):
         """Calculates the appropriate time penalty value.
         """
-        return self._gen_count_in_curr_iteration/self.n_gen_per_iter
+        return self._gen_count_in_curr_iteration / self.n_gen_per_iter
 
     def _time_penalty_function_count(self):
         """Calculates the appropriate time penalty value.
         """
-        return self._function_evaluation_count/self.total_function_evaluations
+        return self._function_evaluation_count / self.total_function_evaluations

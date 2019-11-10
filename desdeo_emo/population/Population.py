@@ -20,7 +20,12 @@ class BasePopulation(ABC):
         if not problem.n_of_constraints == 0:
             self.constraint_violation = None
         self.ideal_objective_vector = problem.ideal
-        self.ideal_fitness_val = problem.ideal  # TODO get correct fitness
+        self.nadir_objective_vector = problem.nadir
+        self.ideal_fitness_val = None
+        self.nadir_fitness_val = None
+        if problem.ideal is not None:
+            self.ideal_fitness_val = problem.ideal * problem._max_multiplier
+            self.nadir_fitness_val = problem.nadir * problem._max_multiplier
         self.xover = None
         self.mutation = None
         self.recombination = None
@@ -136,7 +141,9 @@ class Population(BasePopulation):
             self.objectives = np.vstack((self.objectives, objectives))
             self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
-                self.constraint_violation = np.vstack((self.constraint_violation, constraints))
+                self.constraint_violation = np.vstack(
+                    (self.constraint_violation, constraints)
+                )
             self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
@@ -207,4 +214,7 @@ class Population(BasePopulation):
             self.ideal_fitness_val = np.amin(
                 np.vstack((self.ideal_fitness_val, self.fitness)), axis=0
             )
-        self.ideal_objective_vector = self.ideal_fitness_val  # TODO fitness fix
+        self.ideal_objective_vector = (
+            self.ideal_fitness_val * self.problem._max_multiplier
+        )
+
