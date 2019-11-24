@@ -1,10 +1,10 @@
 from random import choice, sample
 import numpy as np
-from pyrvea.Population.Population import Population
 from pygmo import fast_non_dominated_sorting as nds
+from desdeo_emo.EAs.BaseEA import BaseEA, eaError
 
 
-class PPGA:
+class PPGA(BaseEA):
     """Predatory-Prey genetic algorithm.
 
     A population of prey signify the various models or solutions to the problem at hand.
@@ -31,8 +31,7 @@ class PPGA:
     ----------
     population : object
         The population object
-    ea_parameters : dict
-        PPGA specific parameters
+
 
     Notes
     -----
@@ -72,119 +71,48 @@ class PPGA:
 
     """
 
-    def __init__(self, population: "Population", ea_parameters):
-
-        if ea_parameters:
-            self.params = self.set_params(population, **ea_parameters)
-        else:
-            self.params = self.set_params(population)
-
-        self.lattice = Lattice(60, 60, self.params)
-
-    def set_params(
+    def __init__(
         self,
-        population: "Population",
-        target_pop_size: int = 100,
+        problem,
+        population_size: int = 100,
+        population_params=None,
+        initial_population=None,
+        n_iterations: int = 10,
+        n_gen_per_iter: int = 10,
         predator_pop_size: int = 50,
         prey_max_moves: int = 10,
         prob_prey_move: float = 0.3,
         offspring_place_attempts: int = 10,
-        generations_per_iteration: int = 10,
-        iterations: int = 10,
         kill_interval: int = 7,
         max_rank: int = 20,
-        prob_crossover: float = 0.8,
-        prob_mutation: float = 0.3,
-        mut_strength: float = 0.9,
         neighbourhood_radius: int = 3,
-        **kwargs
     ):
-        """Set up the parameters.
+        super().__init__(n_gen_per_iter=n_gen_per_iter, n_iterations=n_iterations)
+        if initial_population is None:
+            msg = "Provide initial population"
+            raise eaError(msg)
+        self.population = initial_population
+        self.target_pop_size = population_size
+        self.predator_pop_size: int = predator_pop_size
+        self.prey_max_moves: int = prey_max_moves
+        self.prob_prey_move: float = prob_prey_move
+        self.offspring_place_attempts: int = offspring_place_attempts
+        self.kill_interval: int = kill_interval
+        self.max_rank: int = max_rank
+        self.neighbourhood_radius: int = neighbourhood_radius
+        self.lattice = Lattice(
+            size_x=60,
+            size_y=60,
+            population=self.population,
+            predator_pop_size=predator_pop_size,
+            target_pop_size=self.target_pop_size,
+            prob_prey_move=prob_prey_move,
+            prey_max_moves=prey_max_moves,
+            offspring_place_attempts=offspring_place_attempts,
+            neighbourhood_radius=neighbourhood_radius,
+        )
 
-        Parameters
-        ----------
-        population : Population
-            Population object.
-        target_pop_size : int
-            Target population size.
-        predator_pop_size : int
-            Predator population size.
-        prey_max_moves : int
-            Number of turns the prey can try to move.
-        prob_prey_move: float
-            Prey move in the lattice based on this probability.
-        offspring_place_attempts : int
-            Number of tries to place to offspring to the lattice.
-        generations_per_iteration : int
-            Number of generations per iteration.
-        iterations : int
-            Total number of iterations.
-        kill_interval : int
-            Kill all individuals worse than max_rank in the population every interval
-            generation.
-        max_rank : int
-            Individuals < max_rank will be preserved after kill_interval.
-        prob_crossover : float
-            Probability of crossover occurring.
-        prob_mutation : float
-            Probability of mutation occurring.
-        mut_strength : float
-            Strength of the mutation.
-        neighbourhood_radius : int
-            Radius of neighbourhood, or range of vision for predators.
-
-        Returns
-        -------
-        dict
-            Parameters for the algorithm.
-
-        """
-
-        ppgaparams = {
-            "population": population,
-            "population_size": population.pop_size,
-            "target_pop_size": target_pop_size,
-            "predator_pop_size": predator_pop_size,
-            "prey_max_moves": prey_max_moves,
-            "prob_prey_move": prob_prey_move,
-            "offspring_place_attempts": offspring_place_attempts,
-            "generations": generations_per_iteration,
-            "iterations": iterations,
-            "total_generations": iterations * generations_per_iteration,
-            "current_iteration_gen_count": 0,
-            "current_total_gen_count": 0,
-            "current_iteration_count": 0,
-            "prob_crossover": prob_crossover,
-            "prob_mutation": prob_mutation,
-            "mut_strength": mut_strength,
-            "kill_interval": kill_interval,
-            "max_rank": max_rank,
-            "neighbourhood_radius": neighbourhood_radius,
-        }
-
-        ppgaparams.update(kwargs)
-        return ppgaparams
-
-    def _next_iteration(self, population: "Population"):
-        """Run one iteration of EA.
-
-        One iteration consists of a constant or variable number of
-        generations.
-
-        Parameters
-        ----------
-        population : "Population"
-            Contains current population
-        """
-
-        self.params["current_iteration_gen_count"] = 1
-        while self.continue_iteration():
-            self._next_gen(population)
-            self.params["current_iteration_gen_count"] += 1
-            self.params["current_total_gen_count"] += 1
-        self.params["current_iteration_count"] += 1
-
-    def _next_gen(self, population: "Population"):
+    def _next_gen(self):
         """Run one generation of PPGA.
 
         Intended to be used by next_iteration.
@@ -198,7 +126,7 @@ class PPGA:
         # Move prey and select neighbours for breeding
         mating_pop = self.lattice.move_prey()
 
-        offspring = population.mate(mating_pop, self.params)
+        offspring = self.population.mate(mating_pop)
 
         # Try to place the offspring to lattice, add to population if successful
         placed_indices = self.lattice.place_offspring(len(offspring))
@@ -209,31 +137,19 @@ class PPGA:
         offspring = np.asarray(offspring)[~mask]
 
         # Add the successfully placed offspring to the population
-        population.add(offspring)
+        self.population.add(offspring)
+        self._current_gen_count += 1
+        self._gen_count_in_curr_iteration += 1
+        self._function_evaluation_count += offspring.shape[0]
 
         # Kill bad individuals every n generations
-        if (
-            self.params["current_iteration_gen_count"] % self.params["kill_interval"]
-            == 0
-        ):
-            selected = self.select(population, self.params["max_rank"])
+        if self._current_gen_count % self.kill_interval == 0:
+            selected = self.select(self.population, self.max_rank)
             self.lattice.update_lattice(selected)
-            population.delete(selected)
+            self.population.delete(selected)
 
         # Move predators
         self.lattice.move_predator()
-
-    def _run_interruption(self, population: "Population"):
-        """Run the interruption phase of PPGA.
-
-        Use this phase to make changes to PPGA.params or other objects.
-
-        Parameters
-        ----------
-        population : Population
-        """
-
-        pass
 
     def select(self, population, max_rank=20) -> list:
         """Of the population, individuals lower than max_rank are selected.
@@ -257,13 +173,8 @@ class PPGA:
         selection = np.nonzero(rank > max_rank)
         return selection[0]
 
-    def continue_iteration(self):
-        """Checks whether the current iteration should be continued or not."""
-        return self.params["current_iteration_gen_count"] <= self.params["generations"]
-
-    def continue_evolution(self) -> bool:
-        """Checks whether the current iteration should be continued or not."""
-        pass
+    def manage_preferences(self, preference=None):
+        return
 
 
 class Lattice:
@@ -283,21 +194,37 @@ class Lattice:
         Location (x, y) of predators on the lattice.
     preys_loc : list
         Location (x, y) of preys on the lattice.
-    params : dict
-        Parameters for the algorithm
 
     """
 
-    def __init__(self, size_x, size_y, params):
+    def __init__(
+        self,
+        size_x,
+        size_y,
+        population,
+        predator_pop_size,
+        target_pop_size,
+        prob_prey_move,
+        prey_max_moves,
+        offspring_place_attempts,
+        neighbourhood_radius,
+    ):
 
         self.size_x = size_x
         self.size_y = size_y
+        self.population = population
+        self.predator_pop_size = predator_pop_size
+        self.target_pop_size = target_pop_size
+        self.prob_prey_move = prob_prey_move
+        self.prey_max_moves = prey_max_moves
+        self.offspring_place_attempts = offspring_place_attempts
+        self.neighbourhood_radius = neighbourhood_radius
+
         self.lattice = np.zeros((self.size_y, self.size_x), int)
         self.predator_pop = np.empty((0, 1))
         self.predators_loc = []
         self.preys_loc = []
         self.mating_pop = []
-        self.params = params
         self.init_predators()
         self.init_prey()
 
@@ -306,7 +233,7 @@ class Lattice:
         and place them in the lattice randomly."""
 
         # Initialize the predator population
-        self.predator_pop = np.linspace(0, 1, num=self.params["predator_pop_size"])
+        self.predator_pop = np.linspace(0, 1, num=self.predator_pop_size)
 
         # Take random indices from free (==zero) lattice spaces
         free_space = np.transpose(np.nonzero(self.lattice == 0))
@@ -326,11 +253,9 @@ class Lattice:
 
         # Take random indices from free (==zero) lattice spaces
         free_space = np.transpose(np.nonzero(self.lattice == 0))
-        indices = sample(
-            free_space.tolist(), len(self.params["population"].individuals)
-        )
+        indices = sample(free_space.tolist(), len(self.population.individuals))
 
-        for i in range(len(self.params["population"].individuals)):
+        for i in range(len(self.population.individuals)):
 
             # Keep track of preys in a list
             self.preys_loc.append([indices[i][0], indices[i][1]])
@@ -350,9 +275,9 @@ class Lattice:
         mating_pop = []
         for prey, pos in enumerate(self.preys_loc):
 
-            if np.random.random() < self.params["prob_prey_move"]:
+            if np.random.random() < self.prob_prey_move:
 
-                for i in range(self.params["prey_max_moves"]):
+                for i in range(self.prey_max_moves):
 
                     neighbours = self.neighbours(self.lattice, pos[0], pos[1])
 
@@ -391,7 +316,8 @@ class Lattice:
                 # -1 for lattice offset
                 mate = int(choice(mates)) - 1
                 mating_pop.append([prey, mate])
-
+        if mating_pop ==[]:
+            raise eaError("What's ahppening?!")
         return mating_pop
 
     def place_offspring(self, offspring):
@@ -417,7 +343,7 @@ class Lattice:
             y = np.random.randint(self.size_y)
             x = np.random.randint(self.size_x)
 
-            for j in range(self.params["offspring_place_attempts"]):
+            for j in range(self.offspring_place_attempts):
                 if self.lattice[y][x] != 0:
                     continue
 
@@ -439,11 +365,8 @@ class Lattice:
         Repeat until > predator_max_moves."""
 
         predator_max_moves = int(
-            (
-                len(self.params["population"].individuals)
-                - self.params["target_pop_size"]
-            )
-            / self.params["predator_pop_size"]
+            (len(self.population.individuals) - self.target_pop_size)
+            / self.predator_pop_size
         )
 
         # Track killed preys in list and remove them at the end of the function
@@ -454,7 +377,7 @@ class Lattice:
             for i in range(predator_max_moves):
 
                 neighbours = self.neighbours(
-                    self.lattice, pos[0], pos[1], n=self.params["neighbourhood_radius"]
+                    self.lattice, pos[0], pos[1], n=self.neighbourhood_radius
                 )
                 targets = neighbours[neighbours > 0]
 
@@ -465,8 +388,8 @@ class Lattice:
                     weakest_prey = None
                     for target in targets:
 
-                        obj1 = self.params["population"].fitness[target - 1][0]
-                        obj2 = self.params["population"].fitness[target - 1][1]
+                        obj1 = self.population.fitness[target - 1][0]
+                        obj2 = self.population.fitness[target - 1][1]
 
                         fc = (
                             self.predator_pop[predator] * obj1
@@ -523,7 +446,7 @@ class Lattice:
                     pos[0], pos[1] = dest_y, dest_x
 
         # Remove killed prey from population
-        self.params["population"].delete(to_be_killed)
+        self.population.delete(to_be_killed)
         self.update_lattice()
 
     def update_lattice(self, selected=None):

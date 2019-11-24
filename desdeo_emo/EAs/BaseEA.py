@@ -24,22 +24,80 @@ class eaError(Exception):
 class BaseEA:
     """This class provides the basic structure for Evolutionary algorithms."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        a_priori: bool = False,
+        interact: bool = False,
+        selection_operator: Type[SelectionBase] = None,
+        n_iterations: int = 10,
+        n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
+    ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
-
-    def set_params(self):
-        """Set up the parameters. Save in self.params"""
+        self.a_priori: bool = a_priori
+        self.interact: bool = interact
+        self.n_iterations: int = n_iterations
+        self.n_gen_per_iter: int = n_gen_per_iter
+        self.total_gen_count: int = n_gen_per_iter * n_iterations
+        self.total_function_evaluations = total_function_evaluations
+        self.selection_operator = selection_operator
+        # Internal counters and state trackers
+        self._iteration_counter: int = 0
+        self._gen_count_in_curr_iteration: int = 0
+        self._current_gen_count: int = 0
+        self._function_evaluation_count: int = 0
 
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
 
-    def iterate(self):
-        """Run one iteration (a number of generations) of EA."""
+    def iterate(self, preference=None) -> Tuple:
+        """Run one iteration of EA.
 
-    def run_interruption(self):
-        """Run interruptions in between iterations. You can update parameters/EA
-        specific classes here.
+        One iteration consists of a constant or variable number of
+        generations. This method leaves EA.params unchanged, except the current
+        iteration count and gen count.
         """
+        self.manage_preferences(preference)
+        self._gen_count_in_curr_iteration = 0
+        while self.continue_iteration():
+            self._next_gen()
+        self._iteration_counter += 1
+        return self.requests()
+
+    def continue_iteration(self):
+        """Checks whether the current iteration should be continued or not."""
+        return (
+            self._gen_count_in_curr_iteration < self.n_gen_per_iter
+            and self.check_FE_count()
+        )
+
+    def continue_evolution(self) -> bool:
+        """Checks whether the current iteration should be continued or not."""
+        return self._iteration_counter < self.n_iterations and self.check_FE_count()
+
+    def check_FE_count(self) -> bool:
+        """Checks whether termination criteria via function evaluation count has been
+            met or not.
+
+        Returns:
+            bool: True is function evaluation count limit NOT met.
+        """
+        if self.total_function_evaluations == 0:
+            return True
+        elif self._function_evaluation_count <= self.total_function_evaluations:
+            return True
+        return False
+
+    def manage_preferences(self, preference=None):
+        """Run the interruption phase of EA.
+
+        Use this phase to make changes to RVEA.params or other objects.
+        Updates Reference Vectors (adaptation), conducts interaction with the user.
+        """
+        pass
+
+    def requests(self) -> Tuple:
+        pass
 
 
 class BaseDecompositionEA(BaseEA):
@@ -92,13 +150,21 @@ class BaseDecompositionEA(BaseEA):
         population_size: int = None,
         population_params: Dict = None,
         initial_population: Population = None,
-        lattice_resolution: int = None,
         a_priori: bool = False,
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
+        lattice_resolution: int = None,
     ):
+        super().__init__(
+            a_priori=a_priori,
+            interact=interact,
+            n_iterations=n_iterations,
+            n_gen_per_iter=n_gen_per_iter,
+            total_function_evaluations=total_function_evaluations,
+            selection_operator=selection_operator
+        )
         lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
         if problem.n_of_objectives < 11:
             lattice_resolution = lattice_res_options[problem.n_of_objectives - 2]
@@ -114,34 +180,9 @@ class BaseDecompositionEA(BaseEA):
             if population_size is None:
                 population_size = self.reference_vectors.number_of_vectors
             self.population = Population(problem, population_size, population_params)
-        self.a_priori: bool = a_priori
-        self.interact: bool = interact
-        self.n_iterations: int = n_iterations
-        self.n_gen_per_iter: int = n_gen_per_iter
-        self.total_gen_count: int = n_gen_per_iter * n_iterations
-        self.total_function_evaluations = total_function_evaluations
-        self.selection_operator = selection_operator
-        # Internal counters and state trackers
-        self._iteration_counter: int = 0
-        self._gen_count_in_curr_iteration: int = 0
-        self._current_gen_count: int = 0
-        self._function_evaluation_count: int = population_size
+            self._function_evaluation_count += population_size
         self._ref_vectors_are_focused: bool = False
         # print("Using BaseDecompositionEA init")
-
-    def iterate(self, preference: ReferencePointPreference = None) -> Tuple:
-        """Run one iteration of EA.
-
-        One iteration consists of a constant or variable number of
-        generations. This method leaves EA.params unchanged, except the current
-        iteration count and gen count.
-        """
-        self.manage_preferences(preference)
-        self._gen_count_in_curr_iteration = 0
-        while self.continue_iteration():
-            self._next_gen()
-        self._iteration_counter += 1
-        return self.requests()
 
     def _next_gen(self):
         """Run one generation of decomposition based EA. Intended to be used by
@@ -200,30 +241,6 @@ class BaseDecompositionEA(BaseEA):
             List of indices of individuals to be selected.
         """
         return self.selection_operator.do(self.population, self.reference_vectors)
-
-    def continue_iteration(self):
-        """Checks whether the current iteration should be continued or not."""
-        return (
-            self._gen_count_in_curr_iteration < self.n_gen_per_iter
-            and self.check_FE_count()
-        )
-
-    def continue_evolution(self) -> bool:
-        """Checks whether the current iteration should be continued or not."""
-        return self._iteration_counter < self.n_iterations and self.check_FE_count()
-
-    def check_FE_count(self) -> bool:
-        """Checks whether termination criteria via function evaluation count has been
-            met or not.
-
-        Returns:
-            bool: True is function evaluation count limit NOT met.
-        """
-        if self.total_function_evaluations == 0:
-            return True
-        elif self._function_evaluation_count <= self.total_function_evaluations:
-            return True
-        return False
 
     def request_plot(self) -> SimplePlotRequest:
         dimensions_data = pd.DataFrame(

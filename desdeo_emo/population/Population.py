@@ -137,7 +137,12 @@ class Population(BasePopulation):
             first_offspring_index = 0
         else:
             first_offspring_index = self.individuals.shape[0]
-            self.individuals = np.vstack((self.individuals, offsprings))
+            if self.individuals.ndim - offsprings.ndim == 1:
+                self.individuals = np.vstack((self.individuals, [offsprings]))
+            elif self.individuals.ndim == offsprings.ndim:
+                self.individuals = np.vstack((self.individuals, offsprings))
+            else:
+                pass  # TODO raise error
             self.objectives = np.vstack((self.objectives, objectives))
             self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
@@ -217,4 +222,3 @@ class Population(BasePopulation):
         self.ideal_objective_vector = (
             self.ideal_fitness_val * self.problem._max_multiplier
         )
-
