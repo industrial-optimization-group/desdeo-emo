@@ -7,6 +7,7 @@ class surrogateProblem(ProblemBase):
         self.performance_evaluator = performance_evaluator
         self.n_of_constraints = 0
         self._max_multiplier = 1
+        self.objective_names = ["error", "complexity"]
 
     def evaluate(self, model_parameters):
         results = self.performance_evaluator(model_parameters)
@@ -17,3 +18,6 @@ class surrogateProblem(ProblemBase):
 
     def get_variable_bounds(self):
         pass
+
+    def get_objective_names(self):
+        return self.objective_names

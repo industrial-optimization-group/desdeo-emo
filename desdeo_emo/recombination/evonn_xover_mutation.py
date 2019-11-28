@@ -239,4 +239,4 @@ class EvoNNRecombination:
 
             offspring.extend((offspring1, offspring2))
 
-        return offspring
+        return np.asarray(offspring)

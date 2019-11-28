@@ -1,12 +1,11 @@
 from math import ceil
-from typing import Callable, Type, Union
+from typing import Callable, Type, Union, Dict
 
 import numpy as np
 import pandas as pd
 from desdeo_problem.surrogatemodels.SurrogateModels import BaseRegressor, ModelError
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, r2_score
 from scipy.special import expit
-from scipy.optimize import lsq_linear
 
 from desdeo_emo.EAs.BaseEA import BaseEA
 from desdeo_emo.EAs.PPGA import PPGA
@@ -27,12 +26,11 @@ class EvoNN(BaseRegressor):
         p_omit: float = 0.2,
         w_low: float = -5.0,
         w_high: float = 5.0,
-        activation_function: Union[str, Callable] = "sigmoid",  # TODO Give default
-        optimization_function: str = "llsq",  # TODO Give default
-        loss_function: str = "mse",  # TODO Give default
+        activation_function: Union[str, Callable] = "sigmoid",
+        loss_function: str = "mse",
         training_algorithm: Type[BaseEA] = PPGA,
         pop_size: int = 500,
-        model_selection_criterion: str = None,  # TODO Give default
+        model_selection_criterion: str = "akaike_corrected",
         recombination_type: str = "evonn_xover_mutation",
         crossover_type: str = "standard",
         mutation_type: str = "gaussian",
@@ -48,7 +46,6 @@ class EvoNN(BaseRegressor):
         self.w_low: float = w_low
         self.w_high: float = w_high
         self.activation_function: Union[str, Callable] = activation_function
-        self.optimization_function: str = optimization_function
         self.loss_function_str: str = loss_function
         self.loss_function: Callable = loss_functions[loss_function]
         self.training_algorithm: Type[BaseEA] = training_algorithm
@@ -63,6 +60,8 @@ class EvoNN(BaseRegressor):
         # Model Parameters
         self._first_layer: np.ndarray = None
         self._last_layer: np.ndarray = None
+        self.performance: Dict = {"RMSE": None, "R^2": None, "AICc": None}
+        self.model_population = None
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         if isinstance(X, (pd.DataFrame, pd.Series)):
@@ -89,22 +88,22 @@ class EvoNN(BaseRegressor):
         )
         # Do evolution
         evolver = self.training_algorithm(problem, initial_population=population)
-        figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
         recombinator = EvoNNRecombination(
             evolver=evolver, mutation_type=self.mutation_type
         )
         evolver.population.recombination = recombinator
+        figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
         while evolver.continue_evolution():
             evolver.iterate()
-            fitness = evolver.population.fitness
             figure = animate_next_(
                 evolver.population.objectives,
                 figure,
                 filename="evoNN.html",
                 generation=evolver._iteration_counter,
             )
-
-        # Save model's last layer
+        self.model_population = evolver.population
+        # Selection
+        self._first_layer = self.select()
         self.model_trained = True
 
     def _model_performance(
@@ -121,14 +120,14 @@ class EvoNN(BaseRegressor):
         if X is None:
             X = self.X
             y = self.y
-        if first_layer.ndim == 3:
+        if np.ndim(first_layer) == 3:
             loss = []
             complexity = []
             for actual_first_layer in first_layer:
                 y_predict = self.predict(X=X, first_layer=actual_first_layer)
                 loss.append(self.loss_function(y, y_predict))
                 complexity.append(np.count_nonzero(actual_first_layer))
-        elif first_layer.ndim == 2:
+        elif np.ndim(first_layer) == 2:
             y_predict = self.predict(X=X, first_layer=first_layer)
             loss = self.loss_function(y, y_predict)
             complexity = np.count_nonzero(first_layer)
@@ -141,29 +140,36 @@ class EvoNN(BaseRegressor):
         elif first_layer is not None:
             # Calculate the dot product + bias
             out = np.dot(X, first_layer[1:, :]) + first_layer[0]
-            activated_layer = self.activate(self.activation_function, out)
-            _, y_pred = self.calculate_linear(activated_layer)
+            activated_layer = self.activate(out)
+            last_layer = self.calculate_linear(activated_layer)
         elif first_layer is None:
             first_layer = self._first_layer
+            last_layer = self._last_layer
             # Calculate the dot product + bias
             out = np.dot(X, first_layer[1:, :]) + first_layer[0]
-            activated_layer = self.activate(self.activation_function, out)
-            y_pred = np.dot(activated_layer, self._last_layer)
+            activated_layer = self.activate(out)
         else:
             msg = "How did you get here?"
             raise ModelError(msg)
+        y_pred = np.dot(activated_layer, last_layer[1:, :]) + last_layer[0]
         return y_pred
 
-    def activate(self, name, x):
-        if name == "sigmoid":
+    def activate(self, x):
+        if self.activation_function == "sigmoid":
             return expit(x)
-        if name == "relu":
+        elif self.activation_function == "relu":
             return np.maximum(x, 0)
-        if name == "tanh":
+        elif self.activation_function == "tanh":
             return np.tanh(x)
+        else:
+            msg = (
+                f"Given activation function not recognized: {self.activation_function}"
+                f"\nActivation function should be one of ['relu', 'sigmoid', 'tanh']"
+            )
+            raise ModelError(msg)
 
-    def calculate_linear(self, non_linear_layer_output):
-        """ Apply the linear function to the activated layer.
+    def calculate_linear(self, previous_layer_output):
+        """ Calculate the final layer using LLSQ or
 
         Parameters
         ----------
@@ -181,21 +187,12 @@ class EvoNN(BaseRegressor):
         """
 
         linear_layer = None
-
-        if self.optimization_function == "llsq":
-            linear_solution = np.linalg.lstsq(
-                non_linear_layer_output, self.y, rcond=None
-            )
-            linear_layer = linear_solution[0]
-
-        elif self.optimization_function == "llsq_constrained":
-            linear_layer = lsq_linear(
-                non_linear_layer_output, self.y_train, method="bvls", bounds=(0, 1)
-            ).x
-
-        predicted_values = np.dot(non_linear_layer_output, linear_layer)
-
-        return linear_layer, predicted_values
+        previous_layer_output = np.hstack(
+            (np.ones((previous_layer_output.shape[0], 1)), previous_layer_output)
+        )
+        linear_solution = np.linalg.lstsq(previous_layer_output, self.y, rcond=None)
+        linear_layer = linear_solution[0]
+        return linear_layer
 
     def _create_individuals(self):
 
@@ -214,3 +211,36 @@ class EvoNN(BaseRegressor):
         )
         individuals.ravel()[zeros] = 0
         return individuals
+
+    def select(self):
+        aicc_array = []
+        if self.model_selection_criterion == "min_error":
+            # Return the model with the lowest error
+            selected = np.argmin(self.model_population.objectives[:, 0])
+        elif self.model_selection_criterion == "akaike_corrected":
+            for first_layer in self.model_population.individuals:
+                # Blah
+                out = np.dot(self.X, first_layer[1:, :]) + first_layer[0]
+                activated_layer = self.activate(out)
+                last_layer = self.calculate_linear(activated_layer)
+                y_pred = np.dot(activated_layer, last_layer[1:, :]) + last_layer[0]
+                # Blah 2
+                k = np.count_nonzero(first_layer) + np.count_nonzero(last_layer)
+                rss = np.sum((y_pred - self.y) ** 2)
+                num_samples = self.y.shape[0]
+                aic = 2 * k + num_samples * np.log(rss / num_samples)
+                aicc = aic + (2 * k * (k + 1)) / (num_samples - k - 1)
+                aicc_array.append(aicc)
+            selected = np.argmin(aicc)
+        # Blah 3
+        first_layer = self.model_population.individuals[selected]
+        out = np.dot(self.X, first_layer[1:, :]) + first_layer[0]
+        activated_layer = self.activate(out)
+        last_layer = self.calculate_linear(activated_layer)
+        y_pred = np.dot(activated_layer, last_layer[1:, :]) + last_layer[0]
+        # Blah4
+        self._first_layer = first_layer
+        self._last_layer = last_layer
+        self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
+        self.performance["R^2"] = r2_score(self.y, y_pred)
+        self.performance["AICc"] = aicc_array[selected]
