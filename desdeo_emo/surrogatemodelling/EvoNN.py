@@ -1,18 +1,20 @@
 from math import ceil
-from typing import Callable, Type, Union, Dict
+from typing import Callable, Dict, Type, Union
 
 import numpy as np
 import pandas as pd
-from desdeo_problem.surrogatemodels.SurrogateModels import BaseRegressor, ModelError
-from sklearn.metrics import mean_squared_error, mean_squared_log_error, r2_score
+from desdeo_problem.surrogatemodels.SurrogateModels import (BaseRegressor,
+                                                            ModelError)
 from scipy.special import expit
+from sklearn.metrics import (mean_squared_error, mean_squared_log_error,
+                             r2_score)
 
 from desdeo_emo.EAs.BaseEA import BaseEA
 from desdeo_emo.EAs.PPGA import PPGA
-from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
-from desdeo_emo.surrogatemodelling.Problem import surrogateProblem
-from desdeo_emo.recombination.evonn_xover_mutation import EvoNNRecombination
 from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
+from desdeo_emo.recombination.evonn_xover_mutation import EvoNNRecombination
+from desdeo_emo.surrogatemodelling.Problem import surrogateProblem
 
 
 def negative_r2_score(y_true, y_pred):
