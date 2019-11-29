@@ -3,15 +3,14 @@ from typing import Callable, Dict, Type, Union
 
 import numpy as np
 import pandas as pd
-from desdeo_problem.surrogatemodels.SurrogateModels import (BaseRegressor,
-                                                            ModelError)
+from desdeo_problem.surrogatemodels.SurrogateModels import BaseRegressor, ModelError
 from scipy.special import expit
-from sklearn.metrics import (mean_squared_error, mean_squared_log_error,
-                             r2_score)
+from sklearn.metrics import mean_squared_error, mean_squared_log_error, r2_score
 
 from desdeo_emo.EAs.BaseEA import BaseEA
 from desdeo_emo.EAs.PPGA import PPGA
-from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+
+# from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
 from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
 from desdeo_emo.recombination.evonn_xover_mutation import EvoNNRecombination
 from desdeo_emo.surrogatemodelling.Problem import surrogateProblem
@@ -94,18 +93,18 @@ class EvoNN(BaseRegressor):
             evolver=evolver, mutation_type=self.mutation_type
         )
         evolver.population.recombination = recombinator
-        figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
+        # figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
         while evolver.continue_evolution():
             evolver.iterate()
-            figure = animate_next_(
+            """figure = animate_next_(
                 evolver.population.objectives,
                 figure,
                 filename="evoNN.html",
                 generation=evolver._iteration_counter,
-            )
+            )"""
         self.model_population = evolver.population
         # Selection
-        self._first_layer = self.select()
+        self.select()
         self.model_trained = True
 
     def _model_performance(

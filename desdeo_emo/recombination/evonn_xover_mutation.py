@@ -134,7 +134,7 @@ class EvoNNRecombination:
         self.ProM: float = ProM
         self.mutation_strength: float = mutation_strength
 
-    def do(self, pop, mating_pop_ids: list = None, **kwargs):
+    def do(self, pop, mating_pop_ids: list = None):
         cur_gen = self.evolver.__getattribute__("_current_gen_count")
         total_gen = self.evolver.__getattribute__("total_gen_count")
         pop_size = pop.shape[0]

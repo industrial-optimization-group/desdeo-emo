@@ -184,6 +184,8 @@ class Population(BasePopulation):
         mask = np.ones(self.individuals.shape[0], dtype=bool)
         mask[indices] = False
         self.individuals = self.individuals[mask]
+        if len(self.individuals) == 0:
+            self.individuals = None
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
         if self.problem.n_of_constraints > 0:
