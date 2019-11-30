@@ -27,10 +27,10 @@ class EvoNN(BaseRegressor):
         p_omit: float = 0.2,
         w_low: float = -5.0,
         w_high: float = 5.0,
-        activation_function: Union[str, Callable] = "sigmoid",
+        activation_function: str = "sigmoid",
         loss_function: str = "mse",
         training_algorithm: Type[BaseEA] = PPGA,
-        pop_size: int = 500,
+        pop_size: int = 500,  # Add ProC and ProM
         model_selection_criterion: str = "akaike_corrected",
         recombination_type: str = "evonn_xover_mutation",
         crossover_type: str = "standard",
@@ -46,7 +46,7 @@ class EvoNN(BaseRegressor):
         self.p_omit: float = p_omit
         self.w_low: float = w_low
         self.w_high: float = w_high
-        self.activation_function: Union[str, Callable] = activation_function
+        self.activation_function: str = activation_function
         self.loss_function_str: str = loss_function
         self.loss_function: Callable = loss_functions[loss_function]
         self.training_algorithm: Type[BaseEA] = training_algorithm
@@ -61,6 +61,7 @@ class EvoNN(BaseRegressor):
         # Model Parameters
         self._first_layer: np.ndarray = None
         self._last_layer: np.ndarray = None
+        # Extras
         self.performance: Dict = {"RMSE": None, "R^2": None, "AICc": None}
         self.model_population = None
 
