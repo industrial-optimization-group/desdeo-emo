@@ -17,17 +17,17 @@ data = pd.DataFrame(np.hstack((X, y)), columns=["x1", "x2", "x3", "y"])
 
 
 # %% BioGP
-model = BioGP(pop_size=100, training_algorithm=NSGAIII)
-model.fit(data[["x1", "x2", "x3"]], data['y']) 
+"""model = BioGP(pop_size=100, training_algorithm=NSGAIII)
+model.fit(data[["x1", "x2", "x3"]], data['y']) """
 
 
 # %% EvoNN
-model = EvoNN()
-model.fit(data[["x1", "x2", "x3"]], data['y'])
+"""model = EvoNN()
+model.fit(data[["x1", "x2", "x3"]], data['y'])"""
 
 
 # %% EvoDN2
-model = EvoDN2(training_algorithm=NSGAIII)
+model = EvoDN2(training_algorithm=RVEA)
 model.fit(data[["x1", "x2", "x3"]], data['y'])
 
 

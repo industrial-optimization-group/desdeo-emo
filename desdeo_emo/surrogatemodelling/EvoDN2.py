@@ -69,7 +69,7 @@ class EvoDN2(BaseRegressor):
         self._subnets = None
         self._last_layer = None
         # Extras
-        self.performance: Dict = {"RMSE": None, "R^2": None, "AICc": None}
+        self.performance: Dict = {"RMSE": None, "R^2": None, "Complexity": None}
         self.model_population = None
 
     def fit(self, X: np.ndarray, y: np.ndarray):
@@ -112,13 +112,13 @@ class EvoDN2(BaseRegressor):
         evolver = self.training_algorithm(problem, initial_population=population)
         recombinator = EvoDN2Recombination(evolver=evolver)
         evolver.population.recombination = recombinator
-        figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
+        figure = animate_init_(evolver.population.objectives, filename="EvoDN2.html")
         while evolver.continue_evolution():
             evolver.iterate()
             figure = animate_next_(
                 evolver.population.objectives,
                 figure,
-                filename="evoNN.html",
+                filename="EvoDN2.html",
                 generation=evolver._iteration_counter,
             )
         self.model_population = evolver.population
@@ -213,11 +213,25 @@ class EvoDN2(BaseRegressor):
             raise ModelError(msg)
 
     def predict(self, X):
-        penultimate_y_pred = self._feed_forward(self.subnets, X)
+        penultimate_y_pred, _ = self._feed_forward(self.subnets, X)
         y_pred = (
             np.dot(penultimate_y_pred, self._last_layer[1:, :]) + self._last_layer[0]
         )
         return y_pred
+
+    def select(self):
+        if self.model_selection_criterion == "min_error":
+            # Return the model with the lowest error
+            selected = np.argmin(self.model_population.objectives[:, 0])
+        else:
+            raise ModelError("Selection criterion not recognized. Use 'min_error'.")
+        self.subnets = self.model_population.individuals[selected]
+        penultimate_y_pred, complexity = self._feed_forward(self.subnets, self.X)
+        y_pred, linear_layer = self._calculate_linear(penultimate_y_pred)
+        self._last_layer = linear_layer
+        self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
+        self.performance["R^2"] = r2_score(self.y, y_pred)
+        self.performance["Complexity"] = complexity
 
     def _create_individuals(self):
         individuals = []

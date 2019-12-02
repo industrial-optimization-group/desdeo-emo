@@ -302,7 +302,7 @@ class BioGP(BaseRegressor):
         complexity_scalar: float = 0.5,
         error_lim: float = 0.001,
         init_method: str = "ramped_half_and_half",
-        selection: str = "min_error",
+        model_selection_criterion: str = "min_error",
         loss_function: str = "mse",
         single_obj_generations: int = 10,
         function_set=("add", "sub", "mul", "div"),
@@ -335,7 +335,7 @@ class BioGP(BaseRegressor):
         self.complexity_scalar: float = complexity_scalar
         self.error_lim: float = error_lim
         self.init_method: str = init_method
-        self.selection: str = selection
+        self.model_selection_criterion: str = model_selection_criterion
         self.loss_function_str: str = loss_function
         self.loss_function: Callable = loss_functions[loss_function]
         self.single_obj_generations: int = single_obj_generations
@@ -350,7 +350,7 @@ class BioGP(BaseRegressor):
         self.model_trained: bool = False
         # Model Parameters
         self.tree: LinearNode = None
-        self.performance: Dict = {"RMSE": None, "R^2": None, "AICc": None}
+        self.performance: Dict = {"RMSE": None, "R^2": None}
         self.model_population = None
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame):
@@ -387,14 +387,14 @@ class BioGP(BaseRegressor):
             n_iterations=1,
         )
         figure = animate_init_(
-            tournament_evolver.population.objectives, filename="evoNN.html"
+            tournament_evolver.population.objectives, filename="BioGP.html"
         )
         while tournament_evolver.continue_evolution():
             tournament_evolver.iterate()
             figure = animate_next_(
                 tournament_evolver.population.objectives,
                 figure,
-                filename="evoNN.html",
+                filename="BioGP.html",
                 generation=tournament_evolver._iteration_counter,
             )
         population = tournament_evolver.population
@@ -412,7 +412,7 @@ class BioGP(BaseRegressor):
             figure = animate_next_(
                 evolver.population.objectives,
                 figure,
-                filename="evoNN.html",
+                filename="BioGP.html",
                 generation=evolver._iteration_counter
                 + tournament_evolver._iteration_counter,
             )
@@ -507,6 +507,8 @@ class BioGP(BaseRegressor):
         return np.asarray((loss, complexity)).T
 
     def predict(self, X: np.ndarray):
+        if isinstance(X, (np.ndarray, list)):
+            X = pd.DataFrame(X, columns=self.X.columns)
         sub_trees = []
         # Stack outputs of subtrees to form weight matrix
         for root in self.tree.roots:
@@ -527,6 +529,17 @@ class BioGP(BaseRegressor):
             y = np.asarray([y])
 
         return y
+
+    def select(self):
+        if self.model_selection_criterion == "min_error":
+            # Return the model with the lowest error
+            selected = np.argmin(self.model_population.objectives[:, 0])
+        else:
+            raise ModelError("Selection criterion not recognized. Use 'min_error'.")
+        self.tree = self.model_population.individuals[selected][0]
+        y_pred = self.predict(X=self.X)
+        self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
+        self.performance["R^2"] = r2_score(self.y, y_pred)
 
     @staticmethod
     def add(x, y):

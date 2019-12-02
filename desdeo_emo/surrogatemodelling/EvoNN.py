@@ -10,7 +10,7 @@ from sklearn.metrics import mean_squared_error, mean_squared_log_error, r2_score
 from desdeo_emo.EAs.BaseEA import BaseEA
 from desdeo_emo.EAs.PPGA import PPGA
 
-# from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
 from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
 from desdeo_emo.recombination.evonn_xover_mutation import EvoNNRecombination
 from desdeo_emo.surrogatemodelling.Problem import surrogateProblem
@@ -94,15 +94,15 @@ class EvoNN(BaseRegressor):
             evolver=evolver, mutation_type=self.mutation_type
         )
         evolver.population.recombination = recombinator
-        # figure = animate_init_(evolver.population.objectives, filename="evoNN.html")
+        figure = animate_init_(evolver.population.objectives, filename="EvoNN.html")
         while evolver.continue_evolution():
             evolver.iterate()
-            """figure = animate_next_(
+            figure = animate_next_(
                 evolver.population.objectives,
                 figure,
-                filename="evoNN.html",
+                filename="EvoNN.html",
                 generation=evolver._iteration_counter,
-            )"""
+            )
         self.model_population = evolver.population
         # Selection
         self.select()
