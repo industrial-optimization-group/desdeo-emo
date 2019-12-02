@@ -1,10 +1,19 @@
-from pyrvea.Population.Population import Population
-from pyrvea.Selection.tournament_select import tour_select
+from desdeo_emo.population.Population import Population
+from desdeo_emo.EAs.BaseEA import BaseEA, eaError
+from desdeo_emo.selection.tournament_select import tour_select
 import numpy as np
 
 
-class TournamentEA:
-    def __init__(self, population: "Population", ea_parameters):
+class TournamentEA(BaseEA):
+    def __init__(
+        self,
+        problem,
+        initial_population: Population,
+        n_gen_per_iter: int = 10,
+        n_iterations: int = 10,
+        tournament_size: int = 5,
+        population_size: int = 500,
+    ):
         """Run generations of evolutionary algorithm using tournament selection.
 
         Parameters
@@ -19,84 +28,15 @@ class TournamentEA:
         Population:
             Returns the Population after evolution.
         """
+        super().__init__(n_gen_per_iter=n_gen_per_iter, n_iterations=n_iterations)
+        if initial_population is None:
+            msg = "Provide initial population"
+            raise eaError(msg)
+        self.population = initial_population
+        self.target_pop_size = population_size
+        self.tournament_size = tournament_size
 
-        self.params = self.set_params(population, **ea_parameters)
-
-    def set_params(
-        self,
-        population: "Population",
-        tournament_size: int = 5,
-        target_pop_size: int = 500,
-        generations_per_iteration: int = 10,
-        iterations: int = 10,
-        prob_crossover: float = 0.9,
-        prob_mutation: float = 0.3,
-        min_fitness: float = 0.001,
-    ):
-        """Set up the parameters.
-
-        Parameters
-        ----------
-        population : Population
-            Population object.
-        tournament_size : int
-            Number of participants in tournament selection.
-        target_pop_size : int
-            Desired population size.
-        generations_per_iteration : int
-            Number of generations per iteration.
-        iterations : int
-            Total number of iterations.
-        prob_crossover : float
-            Probability of crossover occurring.
-        prob_mutation : float
-            Probability of mutation occurring.
-        min_fitness : float
-            If error of the best solution < min_fitness, stop evolution.
-
-        Returns
-        -------
-        params : dict
-            Parameters for the algorithm.
-
-        """
-
-        params = {
-            "population": population,
-            "tournament_size": tournament_size,
-            "target_pop_size": target_pop_size,
-            "generations": generations_per_iteration,
-            "iterations": iterations,
-            "total_generations": iterations * generations_per_iteration,
-            "current_iteration_gen_count": 0,
-            "current_total_gen_count": 0,
-            "current_iteration_count": 0,
-            "prob_crossover": prob_crossover,
-            "prob_mutation": prob_mutation,
-            "min_fitness": min_fitness,
-        }
-        return params
-
-    def _next_iteration(self, population: "Population"):
-        """Run one iteration of EA.
-
-        One iteration consists of a constant or variable number of
-        generations. This method leaves EA.params unchanged, except the current
-        iteration count and gen count.
-
-        Parameters
-        ----------
-        population : "Population"
-            Contains current population
-        """
-        self.params["current_iteration_gen_count"] = 1
-        while self.continue_iteration():
-            self._next_gen(population)
-            self.params["current_iteration_gen_count"] += 1
-            self.params["current_total_gen_count"] += 1
-        self.params["current_iteration_count"] += 1
-
-    def _next_gen(self, population: "Population"):
+    def _next_gen(self):
         """Run one generation of decomposition based EA.
 
         This method leaves method.params unchanged. Intended to be used by
@@ -108,36 +48,17 @@ class TournamentEA:
             Population object
         """
 
-        selected = self.select(population)
-        offspring = population.mate(mating_pop=selected, params=self.params)
-        population.delete(np.arange(len(population.individuals)))
-        population.add(offspring)
+        selected = self.select()
+        offspring = self.population.mate(mating_individuals=selected)
+        self.population.delete(np.arange(len(self.population.individuals)))
+        self.population.add(offspring)
+        self._current_gen_count += 1
+        self._gen_count_in_curr_iteration += 1
+        self._function_evaluation_count += offspring.shape[0]
 
-    def continue_iteration(self):
-        """Checks whether the current iteration should be continued or not."""
-        return self.params["current_iteration_gen_count"] <= self.params["generations"]
-
-    def _run_interruption(self, population: "Population"):
-        """Run the interruption phase of PPGA.
-
-        Use this phase to make changes to PPGA.params or other objects.
-
-        Parameters
-        ----------
-        population : Population
-        """
-
-        pass
-
-    def select(self, population) -> list:
+    def select(self) -> list:
         """Select parents for recombination using tournament selection.
         Chooses two parents, which are needed for crossover.
-
-        Parameters
-        ----------
-        population : Population
-            Contains the current population and problem
-            information.
 
         Returns
         -------
@@ -145,15 +66,11 @@ class TournamentEA:
             List of indices of individuals to be selected.
         """
         parents = []
-        for i in range(int(self.params["target_pop_size"] / 2)):
+        for i in range(int(self.target_pop_size / 2)):
             parents.append(
                 [
-                    tour_select(
-                        population.fitness, self.params["tournament_size"]
-                    ),
-                    tour_select(
-                        population.fitness, self.params["tournament_size"]
-                    ),
+                    tour_select(self.population.fitness[:, 0], self.tournament_size),
+                    tour_select(self.population.fitness[:, 0], self.tournament_size),
                 ]
             )
         return parents

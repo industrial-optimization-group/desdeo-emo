@@ -326,19 +326,19 @@ class EvoNNModel(EvoNN):
     def set_params(
         self,
         name="EvoNN_Model",
-        training_algorithm=PPGA,
-        pop_size=500,
-        num_nodes=20,
-        prob_omit=0.2,
-        w_low=-5.0,
-        w_high=5.0,
-        activation_func="sigmoid",
-        opt_func="llsq",
-        loss_func="root_median_square",
-        selection="akaike_corrected",
-        recombination_type="evonn_xover_mutation",
-        crossover_type="standard",
-        mutation_type="gaussian",
+        training_algorithm=PPGA,  # done
+        pop_size=500,  # done
+        num_nodes=20,  # done
+        prob_omit=0.2,  # done
+        w_low=-5.0,  # done
+        w_high=5.0,  # done
+        activation_func="sigmoid",  # done
+        opt_func="llsq",  # done
+        loss_func="root_median_square",  # done
+        selection="akaike_corrected",  # done
+        recombination_type="evonn_xover_mutation",  # done
+        crossover_type="standard",  # done
+        mutation_type="gaussian",  # done
         logging=False,
         plotting=False,
     ):

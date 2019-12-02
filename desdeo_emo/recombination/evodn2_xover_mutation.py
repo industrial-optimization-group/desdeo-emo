@@ -1,5 +1,6 @@
 import numpy as np
 from copy import deepcopy
+from random import shuffle
 
 
 def mate(
@@ -119,3 +120,115 @@ def mate(
         pass
 
     return offspring
+
+
+class EvoDN2Recombination:
+    def __init__(
+        self,
+        evolver: "BaseEA",
+        ProC: float = 0.8,
+        ProM: float = 0.3,
+        mutation_strength: float = 1.0,
+    ):
+        self.evolver = evolver
+        self.ProC: float = ProC
+        self.ProM: float = ProM
+        self.mutation_strength: float = mutation_strength
+
+    def do(self, pop, mating_pop_ids: list = None):
+        cur_gen = self.evolver.__getattribute__("_current_gen_count")
+        total_gen = self.evolver.__getattribute__("total_gen_count")
+        pop_size = pop.shape[0]
+        if mating_pop_ids is None:
+            shuffled_ids = list(range(pop_size))
+            shuffle(shuffled_ids)
+        else:
+            shuffled_ids = mating_pop_ids
+        # TODO fix the need for the following
+        # [1,2,3,4] -> [[1,2],[3,4]]
+        if np.asarray(shuffled_ids).ndim == 1:
+            mating_pop = [
+                [shuffled_ids[x], shuffled_ids[x]]
+                for x in range(len(shuffled_ids))
+                if x % 2 == 0
+            ]
+        elif np.asarray(shuffled_ids).ndim == 2:
+            mating_pop = shuffled_ids
+
+        std_dev = (5 / 3) * (1 - cur_gen / total_gen)
+        if std_dev < 0:
+            std_dev = 0
+
+        offspring = []
+
+        for mates in mating_pop:
+
+            offspring1, offspring2 = (deepcopy(pop[mates[0]]), deepcopy(pop[mates[1]]))
+
+            for subnet in range(len(offspring1)):
+
+                sub1 = offspring1[subnet]
+                sub2 = offspring2[subnet]
+
+                for layer in range(max(len(sub1), len(sub2))):
+
+                    try:
+                        connections = min(sub1[layer].size, sub2[layer].size)
+
+                        # Crossover
+                        exchange = np.random.choice(
+                            connections,
+                            np.random.binomial(connections, self.ProC),
+                            replace=False,
+                        )
+                        tmp = np.copy(sub1[layer])
+                        sub1[layer].ravel()[exchange] = sub2[layer].ravel()[exchange]
+                        sub2[layer].ravel()[exchange] = tmp.ravel()[exchange]
+
+                    except IndexError:
+                        pass
+
+                    # Mutate the first offspring
+                    try:
+                        connections = sub1[layer].size
+
+                        mut_val = (
+                            np.random.normal(0, std_dev, connections)
+                            * self.mutation_strength
+                        )
+
+                        mut = np.random.choice(
+                            connections,
+                            np.random.binomial(connections, self.ProM),
+                            replace=False,
+                        )
+                        sub1[layer].ravel()[mut] += (
+                            sub1[layer].ravel()[mut] * mut_val[mut]
+                        )
+
+                    except IndexError:
+                        pass
+
+                    # Mutate the second offspring
+                    try:
+                        connections = sub2[layer].size
+
+                        mut_val = (
+                            np.random.normal(0, std_dev, connections)
+                            * self.mutation_strength
+                        )
+
+                        mut = np.random.choice(
+                            connections,
+                            np.random.binomial(connections, self.ProM),
+                            replace=False,
+                        )
+                        sub2[layer].ravel()[mut] += (
+                            sub2[layer].ravel()[mut] * mut_val[mut]
+                        )
+
+                    except IndexError:
+                        continue
+
+            offspring.extend((offspring1, offspring2))
+        return np.asarray(offspring)
