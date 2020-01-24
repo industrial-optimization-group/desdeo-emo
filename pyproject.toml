@@ -24,7 +24,7 @@ scikit-learn = "^0.21.2"
 # numpydoc = "^0.9.1"
 # plotly = "^4.1"
 plotly = "^4.1"
-desdeo-problem = "^0.8.1"
+desdeo-problem = "^0.8.3"
 desdeo-tools = "^0.1.3"
 
 
