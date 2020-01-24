@@ -163,7 +163,7 @@ class BaseDecompositionEA(BaseEA):
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
-            selection_operator=selection_operator
+            selection_operator=selection_operator,
         )
         lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
         if problem.n_of_objectives < 11:
@@ -258,9 +258,13 @@ class BaseDecompositionEA(BaseEA):
         )
 
     def request_preferences(self) -> Union[None, ReferencePointPreference]:
-        if self.a_priori is False and self._iteration_counter == 0:
+        if self.a_priori is False and self.interact is False:
             return
-        if self.interact is False and self._iteration_counter > 0:
+        if (
+            self.a_priori is True
+            and self.interact is False
+            and self._iteration_counter > 0
+        ):
             return
         dimensions_data = pd.DataFrame(
             index=["minimize", "ideal", "nadir"],
