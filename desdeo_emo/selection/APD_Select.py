@@ -72,7 +72,7 @@ class APD_Select(SelectionBase):
             cosine[np.where(cosine < 0)] = 0
         # Calculation of angles between reference vectors and solutions
         theta = np.arccos(cosine)
-        # Reference vector asub_population_indexssignment
+        # Reference vector assignment
         assigned_vectors = np.argmax(cosine, axis=1)
         selection = np.array([], dtype=int)
         # Selection
@@ -83,6 +83,28 @@ class APD_Select(SelectionBase):
             sub_population_index = np.atleast_1d(
                 np.squeeze(np.where(assigned_vectors == i))
             )
+
+            # Constraint check
+            if len(sub_population_index) > 1 and pop.constraint_violation is not None:
+                constraint_following_index = []
+                violation_values = []
+                for individual in sub_population_index:
+                    violation_values.append(pop.constraint_violation[individual])
+
+                    if((pop.constraint_violation[individual] > 0).all()):
+                        constraint_following_index.append(individual)
+
+                violation_values = np.asarray(violation_values)
+                violation_values = violation_values.sum(0)
+
+                # Case when entire subpopulation is infeasible
+                if len(constraint_following_index) == 0:
+                    sub_population_index = sub_population_index[np.where(violation_values == violation_values.max())]
+                # Case when only some are infeasible
+                else:
+                    sub_population_index = constraint_following_index
+            sub_population_index = np.asarray(sub_population_index)
+
             sub_population_fitness = translated_fitness[sub_population_index]
             if len(sub_population_fitness > 0):
                 # APD Calculation
