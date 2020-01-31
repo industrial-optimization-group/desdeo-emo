@@ -56,6 +56,7 @@ class NSGAIII(BaseDecompositionEA):
         lattice_resolution: int = None,
         a_priori: bool = False,
         interact: bool = False,
+        use_surrogates: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
@@ -68,6 +69,7 @@ class NSGAIII(BaseDecompositionEA):
             lattice_resolution=lattice_resolution,
             a_priori=a_priori,
             interact=interact,
+            use_surrogates=use_surrogates,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations

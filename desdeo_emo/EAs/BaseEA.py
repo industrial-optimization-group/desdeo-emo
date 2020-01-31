@@ -32,6 +32,7 @@ class BaseEA:
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
+        use_surrogates: bool = False,
     ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
         self.a_priori: bool = a_priori
@@ -41,6 +42,7 @@ class BaseEA:
         self.total_gen_count: int = n_gen_per_iter * n_iterations
         self.total_function_evaluations = total_function_evaluations
         self.selection_operator = selection_operator
+        self.use_surrogates: bool = use_surrogates
         # Internal counters and state trackers
         self._iteration_counter: int = 0
         self._gen_count_in_curr_iteration: int = 0
@@ -156,6 +158,7 @@ class BaseDecompositionEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         lattice_resolution: int = None,
+        use_surrogates: bool = False,
     ):
         super().__init__(
             a_priori=a_priori,
@@ -164,6 +167,7 @@ class BaseDecompositionEA(BaseEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
             selection_operator=selection_operator,
+            use_surrogates=use_surrogates,
         )
         lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
         if problem.n_of_objectives < 11:
@@ -179,7 +183,9 @@ class BaseDecompositionEA(BaseEA):
         elif initial_population is None:
             if population_size is None:
                 population_size = self.reference_vectors.number_of_vectors
-            self.population = Population(problem, population_size, population_params)
+            self.population = Population(
+                problem, population_size, population_params, use_surrogates
+            )
             self._function_evaluation_count += population_size
         self._ref_vectors_are_focused: bool = False
         # print("Using BaseDecompositionEA init")
@@ -189,7 +195,7 @@ class BaseDecompositionEA(BaseEA):
         next_iteration.
         """
         offspring = self.population.mate()  # (params=self.params)
-        self.population.add(offspring)
+        self.population.add(offspring, self.use_surrogates)
         selected = self._select()
         self.population.keep(selected)
         self._current_gen_count += 1

@@ -94,7 +94,13 @@ class BasePopulation(ABC):
 
 
 class Population(BasePopulation):
-    def __init__(self, problem: MOProblem, pop_size: int, pop_params: Dict = None):
+    def __init__(
+        self,
+        problem: MOProblem,
+        pop_size: int,
+        pop_params: Dict = None,
+        use_surrogates: bool = False,
+    ):
         super().__init__(problem, pop_size)
         self.lower_limits = self.problem.get_variable_lower_bounds()
         self.upper_limits = self.problem.get_variable_upper_bounds()
@@ -106,24 +112,29 @@ class Population(BasePopulation):
             else:
                 design = "LHSDesign"
         individuals = create_new_individuals(design, problem, pop_size)
-        self.add(individuals)
+        self.add(individuals, use_surrogates)
         self.xover = SBX_xover()
         self.mutation = BP_mutation(self.lower_limits, self.upper_limits)
 
-    def add(self, offsprings: Union[List, np.ndarray]) -> List:
+    def add(
+        self, offsprings: Union[List, np.ndarray], use_surrogates: bool = False
+    ) -> List:
         """Evaluate and add offspring to the population.
 
         Parameters
         ----------
         offsprings : Union[List, np.ndarray]
             List or array of individuals to be evaluated and added to the population.
+        
+        use_surrogates: bool
+            If true, use surrogate models rather than true function evaluations.
 
         Returns
         -------
         List
             Indices of the evaluated individuals
         """
-        results = self.problem.evaluate(offsprings)
+        results = self.problem.evaluate(offsprings, use_surrogates)
         objectives = results.objectives
         fitness = results.fitness
         constraints = results.constraints
@@ -169,6 +180,7 @@ class Population(BasePopulation):
         self.individuals = self.individuals[mask]
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
+        self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
             self.constraint_violation = self.constraint_violation[mask]
 
@@ -188,6 +200,7 @@ class Population(BasePopulation):
             self.individuals = None
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
+        self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
             self.constraint_violation = self.constraint_violation[mask]
 

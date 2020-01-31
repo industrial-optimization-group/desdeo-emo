@@ -3,6 +3,8 @@ from typing import Dict, Union
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA, eaError
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.APD_Select import APD_Select
+from desdeo_emo.selection.oAPD import Optimistic_APD_Select
+from desdeo_emo.selection.robust_APD import robust_APD_Select
 from desdeo_problem.Problem import MOProblem
 
 
@@ -92,6 +94,7 @@ class RVEA(BaseDecompositionEA):
         lattice_resolution: int = None,
         a_priori: bool = False,
         interact: bool = False,
+        use_surrogates: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
@@ -105,6 +108,7 @@ class RVEA(BaseDecompositionEA):
             lattice_resolution=lattice_resolution,
             a_priori=a_priori,
             interact=interact,
+            use_surrogates=use_surrogates,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
@@ -147,8 +151,11 @@ class RVEA(BaseDecompositionEA):
                     f"Provided value = {time_penalty_component}"
                 )
                 eaError(msg)
-
-        selection_operator = APD_Select(self.population, time_penalty_function, alpha)
+        self.time_penalty_function = time_penalty_function
+        self.alpha = alpha
+        selection_operator = APD_Select(
+            self.population, self.time_penalty_function, alpha
+        )
         self.selection_operator = selection_operator
 
     def _time_penalty_constant(self):
@@ -170,3 +177,75 @@ class RVEA(BaseDecompositionEA):
         """Calculates the appropriate time penalty value.
         """
         return self._function_evaluation_count / self.total_function_evaluations
+
+
+class oRVEA(RVEA):
+    def __init__(
+        self,
+        problem: MOProblem,
+        population_size: int = None,
+        population_params: Dict = None,
+        initial_population: Population = None,
+        alpha: float = 2,
+        lattice_resolution: int = None,
+        a_priori: bool = False,
+        interact: bool = False,
+        use_surrogates: bool = False,
+        n_iterations: int = 10,
+        n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
+        time_penalty_component: Union[str, float] = None,
+    ):
+        super().__init__(
+            problem=problem,
+            population_size=population_size,
+            population_params=population_params,
+            initial_population=initial_population,
+            lattice_resolution=lattice_resolution,
+            a_priori=a_priori,
+            interact=interact,
+            use_surrogates=use_surrogates,
+            n_iterations=n_iterations,
+            n_gen_per_iter=n_gen_per_iter,
+            total_function_evaluations=total_function_evaluations,
+        )
+        selection_operator = Optimistic_APD_Select(
+            self.population, self.time_penalty_function, alpha
+        )
+        self.selection_operator = selection_operator
+
+
+class robust_RVEA(RVEA):
+    def __init__(
+        self,
+        problem: MOProblem,
+        population_size: int = None,
+        population_params: Dict = None,
+        initial_population: Population = None,
+        alpha: float = 2,
+        lattice_resolution: int = None,
+        a_priori: bool = False,
+        interact: bool = False,
+        use_surrogates: bool = False,
+        n_iterations: int = 10,
+        n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
+        time_penalty_component: Union[str, float] = None,
+    ):
+        super().__init__(
+            problem=problem,
+            population_size=population_size,
+            population_params=population_params,
+            initial_population=initial_population,
+            lattice_resolution=lattice_resolution,
+            a_priori=a_priori,
+            interact=interact,
+            use_surrogates=use_surrogates,
+            n_iterations=n_iterations,
+            n_gen_per_iter=n_gen_per_iter,
+            total_function_evaluations=total_function_evaluations,
+        )
+        selection_operator = robust_APD_Select(
+            self.population, self.time_penalty_function, alpha
+        )
+        self.selection_operator = selection_operator
