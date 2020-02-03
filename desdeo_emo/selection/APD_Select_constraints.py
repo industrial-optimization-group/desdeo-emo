@@ -87,19 +87,17 @@ class APD_Select(SelectionBase):
             # Constraint check
             if len(sub_population_index) > 1 and pop.constraint_violation is not None:
                 constraint_following_index = []
-                violation_values = []
+                violation_values = pop.constraint_violation[sub_population_index]
                 for individual in sub_population_index:
-                    violation_values.append(pop.constraint_violation[individual])
 
-                    if((pop.constraint_violation[individual] > 0).all()):
+                    if((pop.constraint_violation[individual] < 0).all()):
                         constraint_following_index.append(individual)
 
-                violation_values = np.asarray(violation_values)
-                violation_values = violation_values.sum(0)
+                violation_values = violation_values.sum(axis = 0)
 
                 # Case when entire subpopulation is infeasible
                 if len(constraint_following_index) == 0:
-                    sub_population_index = sub_population_index[np.where(violation_values == violation_values.max())]
+                    sub_population_index = sub_population_index[np.where(violation_values == violation_values.min())]
                 # Case when only some are infeasible
                 else:
                     sub_population_index = constraint_following_index
