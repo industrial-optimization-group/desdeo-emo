@@ -2,7 +2,8 @@ from typing import Dict, Union
 
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA, eaError
 from desdeo_emo.population.Population import Population
-from desdeo_emo.selection.APD_Select import APD_Select
+#from desdeo_emo.selection.APD_Select import APD_Select
+from desdeo_emo.selection.APD_Select_constraints import APD_Select
 from desdeo_emo.selection.oAPD import Optimistic_APD_Select
 from desdeo_emo.selection.robust_APD import robust_APD_Select
 from desdeo_problem.Problem import MOProblem

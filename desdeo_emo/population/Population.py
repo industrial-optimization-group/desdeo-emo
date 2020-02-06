@@ -18,7 +18,7 @@ class BasePopulation(ABC):
         self.uncertainity: np.ndarray = None
         self.fitness: np.ndarray = None
         if not problem.n_of_constraints == 0:
-            self.constraint_violation = None
+            self.constraint = None
         self.ideal_objective_vector = problem.ideal
         self.nadir_objective_vector = problem.nadir
         self.ideal_fitness_val = None
@@ -143,7 +143,7 @@ class Population(BasePopulation):
             self.individuals = offsprings
             self.objectives = objectives
             self.fitness = fitness
-            self.constraint_violation = constraints
+            self.constraint = constraints
             self.uncertainity = uncertainity
             first_offspring_index = 0
         else:
@@ -157,8 +157,8 @@ class Population(BasePopulation):
             self.objectives = np.vstack((self.objectives, objectives))
             self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
-                self.constraint_violation = np.vstack(
-                    (self.constraint_violation, constraints)
+                self.constraint = np.vstack(
+                    (self.constraint, constraints)
                 )
             self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
@@ -182,7 +182,7 @@ class Population(BasePopulation):
         self.fitness = self.fitness[mask]
         self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
-            self.constraint_violation = self.constraint_violation[mask]
+            self.constraint = self.constraint[mask]
 
     def delete(self, indices: List):
         """Delete the population members given by the list of indices for the next
@@ -202,7 +202,7 @@ class Population(BasePopulation):
         self.fitness = self.fitness[mask]
         self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
-            self.constraint_violation = self.constraint_violation[mask]
+            self.constraint = self.constraint[mask]
 
     def mate(self, mating_individuals: List = None) -> Union[List, np.ndarray]:
         """Perform crossover and mutation over the population members.

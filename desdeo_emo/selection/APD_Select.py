@@ -72,7 +72,7 @@ class APD_Select(SelectionBase):
             cosine[np.where(cosine < 0)] = 0
         # Calculation of angles between reference vectors and solutions
         theta = np.arccos(cosine)
-        # Reference vector assignment
+        # Reference vector asub_population_indexssignment
         assigned_vectors = np.argmax(cosine, axis=1)
         selection = np.array([], dtype=int)
         # Selection
@@ -83,35 +83,8 @@ class APD_Select(SelectionBase):
             sub_population_index = np.atleast_1d(
                 np.squeeze(np.where(assigned_vectors == i))
             )
-
-            # Constraint check
-            if len(sub_population_index) > 1 and pop.constraint is not None:
-                constraint_following_index = []
-                violation_values = pop.constraint[sub_population_index]
-                violation_values = -violation_values
-                violation_values = np.maximum(0, violation_values)
-                # True if feasible
-                feasible_bool = (violation_values == 0).all(axis=1)
-
-                # Case when entire subpopulation is infeasible
-                if (feasible_bool==False).all():
-                    violation_values = violation_values.sum(axis=1)
-                    sub_population_index = sub_population_index[
-                        np.where(violation_values == violation_values.min())
-                    ]
-                # Case when only some are infeasible
-                else:
-                    sub_population_index = sub_population_index[feasible_bool]
-
             sub_population_fitness = translated_fitness[sub_population_index]
-            # fast tracking singly selected individuals
-            if len(sub_population_index == 1):
-                selx = sub_population_index
-                if selection.shape[0] == 0:
-                    selection = np.hstack((selection, np.transpose(selx[0])))
-                else:
-                    selection = np.vstack((selection, np.transpose(selx[0])))
-            elif len(sub_population_index > 1):
+            if len(sub_population_fitness > 0):
                 # APD Calculation
                 angles = theta[sub_population_index, i]
                 angles = np.divide(angles, refV[i])  # This is correct.
@@ -144,7 +117,9 @@ class APD_Select(SelectionBase):
         float
             The partial penalty value
         """
-        penalty = ((self.time_penalty_function()) ** self.alpha) * self.n_of_objectives
+        penalty = (
+            (self.time_penalty_function()) ** self.alpha
+        ) * self.n_of_objectives
         if penalty < 0:
             penalty = 0
         if penalty > 1:

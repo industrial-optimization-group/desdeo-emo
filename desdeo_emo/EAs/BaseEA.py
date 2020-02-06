@@ -169,11 +169,12 @@ class BaseDecompositionEA(BaseEA):
             selection_operator=selection_operator,
             use_surrogates=use_surrogates,
         )
-        lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
-        if problem.n_of_objectives < 11:
-            lattice_resolution = lattice_res_options[problem.n_of_objectives - 2]
-        else:
-            lattice_resolution = 3
+        if lattice_resolution is None:
+            lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
+            if problem.n_of_objectives < 11:
+                lattice_resolution = lattice_res_options[problem.n_of_objectives - 2]
+            else:
+                lattice_resolution = 3
         self.reference_vectors = ReferenceVectors(
             lattice_resolution, problem.n_of_objectives
         )
