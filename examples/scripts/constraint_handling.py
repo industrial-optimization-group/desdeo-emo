@@ -26,12 +26,12 @@ def c_1(x, y):
     a = 0.1
     b = 16
     return (
-        x[:, 0] ** 2 + x[:, 1] ** 2 - 1 - a * np.cos(b * np.arctan(x[:, 0] / x[:, 1]))
+        -x[:, 0] ** 2 - x[:, 1] ** 2 + 1 + a * np.cos(b * np.arctan(x[:, 0] / x[:, 1]))
     )
 
 
 def c_2(x, y):
-    return 0.5 - (0.5 - x[:, 0]) ** 2 - (0.5 - x[:, 1]) ** 2
+    return -0.5 + (x[:, 0] - 0.5) ** 2 + (x[:, 1] - 0.5) ** 2
 
 
 list_vars = variable_builder(

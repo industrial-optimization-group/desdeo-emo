@@ -26,7 +26,7 @@ class APD_Select(SelectionBase):
         self, pop: Population, time_penalty_function: Callable, alpha: float = 2
     ):
         self.time_penalty_function = time_penalty_function
-        self.alpha = 2
+        self.alpha = alpha
         self.n_of_objectives = pop.problem.n_of_objectives
 
     def do(self, pop: Population, vectors: ReferenceVectors) -> List[int]:
