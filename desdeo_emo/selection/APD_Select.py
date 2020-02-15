@@ -117,9 +117,7 @@ class APD_Select(SelectionBase):
         float
             The partial penalty value
         """
-        penalty = (
-            (self.time_penalty_function()) ** self.alpha
-        ) * self.n_of_objectives
+        penalty = ((self.time_penalty_function()) ** self.alpha) * self.n_of_objectives
         if penalty < 0:
             penalty = 0
         if penalty > 1:

@@ -106,13 +106,13 @@ class APD_Select(SelectionBase):
 
             sub_population_fitness = translated_fitness[sub_population_index]
             # fast tracking singly selected individuals
-            if len(sub_population_index == 1):
+            if len(sub_population_index) == 1:
                 selx = sub_population_index
                 if selection.shape[0] == 0:
                     selection = np.hstack((selection, np.transpose(selx[0])))
                 else:
                     selection = np.vstack((selection, np.transpose(selx[0])))
-            elif len(sub_population_index > 1):
+            elif len(sub_population_index) > 1:
                 # APD Calculation
                 angles = theta[sub_population_index, i]
                 angles = np.divide(angles, refV[i])  # This is correct.
