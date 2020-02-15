@@ -91,7 +91,7 @@ class RVEA(BaseDecompositionEA):
         population_size: int = None,
         population_params: Dict = None,
         initial_population: Population = None,
-        alpha: float = None,
+        alpha: float = 2,
         lattice_resolution: int = None,
         a_priori: bool = False,
         interact: bool = False,
