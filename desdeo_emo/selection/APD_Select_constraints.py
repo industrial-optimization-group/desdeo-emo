@@ -60,7 +60,7 @@ class APD_Select(SelectionBase):
         fitness = self._calculate_fitness(pop)
         fmin = np.amin(fitness, axis=0)
         self.ideal = np.amin(
-            np.vstack((self.optimistic_ideal, fmin, pop.ideal_fitness_val)), axis=0
+            np.vstack((self.ideal, fmin, pop.ideal_fitness_val)), axis=0
         )
         translated_fitness = fitness - self.ideal
         fitness_norm = np.linalg.norm(translated_fitness, axis=1)

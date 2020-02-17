@@ -46,6 +46,7 @@ class NSGAIII(BaseDecompositionEA):
         Set an upper limit to the total number of function evaluations. When set to
         zero, this argument is ignored and other termination criteria are used.
     """
+
     def __init__(
         self,
         problem: MOProblem,
@@ -54,6 +55,7 @@ class NSGAIII(BaseDecompositionEA):
         n_survive: int = None,
         initial_population: Population = None,
         lattice_resolution: int = None,
+        selection_type: str = None,
         a_priori: bool = False,
         interact: bool = False,
         use_surrogates: bool = False,
@@ -72,7 +74,10 @@ class NSGAIII(BaseDecompositionEA):
             use_surrogates=use_surrogates,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
-            total_function_evaluations=total_function_evaluations
+            total_function_evaluations=total_function_evaluations,
         )
-        selection_operator = NSGAIII_select(self.population, n_survive)
+        self.selection_type = selection_type
+        selection_operator = NSGAIII_select(
+            self.population, n_survive, selection_type=selection_type
+        )
         self.selection_operator = selection_operator

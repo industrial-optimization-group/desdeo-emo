@@ -19,11 +19,17 @@ class NSGAIII_select(SelectionBase):
 
     """
 
-    def __init__(self, pop: Population, n_survive: int = None):
+    def __init__(
+        self, pop: Population, n_survive: int = None, selection_type: str = None
+    ):
         self.worst_fitness: np.ndarray = -np.full((1, pop.fitness.shape[1]), np.inf)
         self.extreme_points: np.ndarray = None
         if n_survive is None:
             self.n_survive: int = pop.pop_size
+        if selection_type is None:
+            selection_type = "mean"
+        self.selection_type = selection_type
+        self.ideal: np.ndarray = pop.ideal_fitness_val
 
     def do(self, pop: Population, vectors: ReferenceVectors) -> List[int]:
         """Select individuals for mating for NSGA-III.
@@ -41,25 +47,25 @@ class NSGAIII_select(SelectionBase):
             List of indices of the selected individuals
         """
         ref_dirs = vectors.values_planar
-        fitness = pop.fitness
+        fitness = self._calculate_fitness(pop)
         # Calculating fronts and ranks
         fronts, dl, dc, rank = nds(fitness)
         non_dominated = fronts[0]
+        fmin = np.amin(fitness, axis=0)
+        self.ideal = np.amin(
+            np.vstack((self.ideal, fmin, pop.ideal_fitness_val)), axis=0
+        )
 
         # Calculating worst points
-        self.worst_fitness = np.amax(
-            np.vstack((self.worst_fitness, pop.fitness)), axis=0
-        )
+        self.worst_fitness = np.amax(np.vstack((self.worst_fitness, fitness)), axis=0)
         worst_of_population = np.amax(fitness, axis=0)
         worst_of_front = np.max(fitness[non_dominated, :], axis=0)
         self.extreme_points = self.get_extreme_points_c(
-            fitness[non_dominated, :],
-            pop.ideal_fitness_val,
-            extreme_points=self.extreme_points,
+            fitness[non_dominated, :], self.ideal, extreme_points=self.extreme_points
         )
         nadir_point = self.get_nadir_point(
             self.extreme_points,
-            pop.ideal_fitness_val,
+            self.ideal,
             self.worst_fitness,
             worst_of_population,
             worst_of_front,
@@ -82,7 +88,7 @@ class NSGAIII_select(SelectionBase):
         # Selecting individuals from the last acceptable front.
         if len(selection) > self.n_survive:
             niche_of_individuals, dist_to_niche = self.associate_to_niches(
-                F, ref_dirs, pop.ideal_fitness_val, nadir_point
+                F, ref_dirs, self.ideal, nadir_point
             )
             # if there is only one front
             if len(fronts) == 1:
@@ -248,3 +254,11 @@ class NSGAIII_select(SelectionBase):
         matrix = np.reshape(val, (len(N), len(ref_dirs)))
 
         return matrix
+
+    def _calculate_fitness(self, pop) -> np.ndarray:
+        if self.selection_type == "mean":
+            return pop.fitness
+        if self.selection_type == "optimistic":
+            return pop.fitness - pop.uncertainity
+        if self.selection_type == "robust":
+            return pop.fitness + pop.uncertainity

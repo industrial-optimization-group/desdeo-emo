@@ -2,7 +2,8 @@ from typing import Dict, Union
 
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA, eaError
 from desdeo_emo.population.Population import Population
-#from desdeo_emo.selection.APD_Select import APD_Select
+
+# from desdeo_emo.selection.APD_Select import APD_Select
 from desdeo_emo.selection.APD_Select_constraints import APD_Select
 from desdeo_emo.selection.oAPD import Optimistic_APD_Select
 from desdeo_emo.selection.robust_APD import robust_APD_Select
@@ -93,6 +94,7 @@ class RVEA(BaseDecompositionEA):
         initial_population: Population = None,
         alpha: float = 2,
         lattice_resolution: int = None,
+        selection_type: str = None,
         a_priori: bool = False,
         interact: bool = False,
         use_surrogates: bool = False,
@@ -154,8 +156,12 @@ class RVEA(BaseDecompositionEA):
                 eaError(msg)
         self.time_penalty_function = time_penalty_function
         self.alpha = alpha
+        self.selection_type = selection_type
         selection_operator = APD_Select(
-            self.population, self.time_penalty_function, alpha
+            pop=self.population,
+            time_penalty_function=self.time_penalty_function,
+            alpha=alpha,
+            selection_type=selection_type,
         )
         self.selection_operator = selection_operator
 

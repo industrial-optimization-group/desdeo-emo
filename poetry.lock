@@ -17,7 +17,7 @@ version = "1.4.3"
 [[package]]
 category = "dev"
 description = "Disable App Nap on OS X 10.9"
-marker = "sys_platform == \"darwin\" or platform_system == \"Darwin\" or python_version >= \"3.3\" and sys_platform == \"darwin\""
+marker = "python_version >= \"3.3\" and sys_platform == \"darwin\" or platform_system == \"Darwin\""
 name = "appnope"
 optional = false
 python-versions = "*"
@@ -68,6 +68,7 @@ pytz = ">=2015.7"
 [[package]]
 category = "dev"
 description = "Specifications for callback functions passed in to an API"
+marker = "python_version >= \"3.3\""
 name = "backcall"
 optional = false
 python-versions = "*"
@@ -176,7 +177,7 @@ description = "This package contains the problem classes for desdeo framework."
 name = "desdeo-problem"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.10.0"
+version = "0.11.0"
 
 [package.dependencies]
 diversipy = ">=0.8.0,<0.9.0"
@@ -367,6 +368,7 @@ xdg_home = ["appdirs (>=1.4.0)"]
 [[package]]
 category = "dev"
 description = "An autocompletion tool for Python that can be used for text editors."
+marker = "python_version >= \"3.3\""
 name = "jedi"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -669,6 +671,7 @@ version = "1.4.2"
 [[package]]
 category = "dev"
 description = "A Python Parser"
+marker = "python_version >= \"3.3\""
 name = "parso"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -680,7 +683,7 @@ testing = ["docopt", "pytest (>=3.0.7)"]
 [[package]]
 category = "dev"
 description = "Pexpect allows easy control of interactive console applications."
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\""
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\""
 name = "pexpect"
 optional = false
 python-versions = "*"
@@ -692,6 +695,7 @@ ptyprocess = ">=0.5"
 [[package]]
 category = "dev"
 description = "Tiny 'shelve'-like database with concurrency support"
+marker = "python_version >= \"3.3\""
 name = "pickleshare"
 optional = false
 python-versions = "*"
@@ -734,7 +738,7 @@ wcwidth = "*"
 [[package]]
 category = "dev"
 description = "Run a subprocess in a pseudo terminal"
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\" or os_name != \"nt\" or python_version >= \"3.3\" and sys_platform != \"win32\" and (python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\")"
+marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or os_name != \"nt\""
 name = "ptyprocess"
 optional = false
 python-versions = "*"
@@ -1197,7 +1201,7 @@ description = "Module for decorators, wrappers and monkey patching."
 name = "wrapt"
 optional = false
 python-versions = "*"
-version = "1.11.2"
+version = "1.12.0"
 
 [[package]]
 category = "dev"
@@ -1213,7 +1217,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools"]
 
 [metadata]
-content-hash = "e1b879ea5a86f82e1fb8a44d84d31f8eba556827b1438ffef3e0847c5da8ace9"
+content-hash = "5998e728f1a2426be95ebcd06c75b1c670f450a43b15df920808b7fb1dc803cb"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1286,8 +1290,8 @@ defusedxml = [
     {file = "defusedxml-0.6.0.tar.gz", hash = "sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5"},
 ]
 desdeo-problem = [
-    {file = "desdeo_problem-0.10.0-py3-none-any.whl", hash = "sha256:82f831a4eb9f3126abe015f8909207e10c78710044fd187036cb67d9ca6530da"},
-    {file = "desdeo_problem-0.10.0.tar.gz", hash = "sha256:b245d4c392d04e8701b70fd2ff66720e995c3a4d61649a79a48288cb1a7a30ec"},
+    {file = "desdeo_problem-0.11.0-py3-none-any.whl", hash = "sha256:0ac33096b9860edd537d4a7840a5ace39b07eac99a2e1e10d598b408a04ade39"},
+    {file = "desdeo_problem-0.11.0.tar.gz", hash = "sha256:35e5d49f92662d26f5bc170156a360f75978551192a78bd9c9c391ef24c9a6b8"},
 ]
 desdeo-tools = [
     {file = "desdeo-tools-0.2.0.tar.gz", hash = "sha256:5680164cd914349d2efdb1ab3df52d1df112b3e742768abec4f51c928e021112"},
@@ -1809,7 +1813,7 @@ widgetsnbextension = [
     {file = "widgetsnbextension-3.5.1.tar.gz", hash = "sha256:079f87d87270bce047512400efd70238820751a11d2d8cb137a5a5bdbaf255c7"},
 ]
 wrapt = [
-    {file = "wrapt-1.11.2.tar.gz", hash = "sha256:565a021fd19419476b9362b05eeaa094178de64f8361e44468f9e9d7843901e1"},
+    {file = "wrapt-1.12.0.tar.gz", hash = "sha256:0ec40d9fd4ec9f9e3ff9bdd12dbd3535f4085949f4db93025089d7a673ea94e8"},
 ]
 zipp = [
     {file = "zipp-2.2.0-py36-none-any.whl", hash = "sha256:d65287feb793213ffe11c0f31b81602be31448f38aeb8ffc2eb286c4f6f6657e"},
