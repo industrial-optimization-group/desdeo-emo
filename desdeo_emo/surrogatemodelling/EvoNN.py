@@ -246,3 +246,16 @@ class EvoNN(BaseRegressor):
         self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
         self.performance["R^2"] = r2_score(self.y, y_pred)
         self.performance["AICc"] = aicc_array[selected]
+
+
+# TODO: RENAME!
+class EvoNNforDESDEO(EvoNN):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def predict(self, X: np.ndarray, *args, **kwargs):
+        y = super().predict(X, *args, **kwargs)
+        if args or kwargs:
+            return y
+        else:
+            return y[:, 0], np.zeros_like(y[:, 0])
