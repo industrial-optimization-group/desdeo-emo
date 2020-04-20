@@ -27,8 +27,8 @@ model.fit(data[["x1", "x2", "x3"]], data['y'])"""
 
 
 # %% EvoDN2
-model = EvoDN2(training_algorithm=RVEA)
-model.fit(data[["x1", "x2", "x3"]], data['y'])
+"""model = EvoDN2(training_algorithm=RVEA)
+model.fit(data[["x1", "x2", "x3"]], data['y'])"""
 
 
 # %%

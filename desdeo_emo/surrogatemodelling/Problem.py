@@ -9,7 +9,7 @@ class surrogateProblem(ProblemBase):
         self._max_multiplier = 1
         self.objective_names = ["error", "complexity"]
 
-    def evaluate(self, model_parameters):
+    def evaluate(self, model_parameters, use_surrogates=False):
         results = self.performance_evaluator(model_parameters)
         return EvaluationResults(results, results, None, None)
 

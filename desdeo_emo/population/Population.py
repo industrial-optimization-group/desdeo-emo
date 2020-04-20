@@ -160,7 +160,10 @@ class Population(BasePopulation):
                 self.constraint = np.vstack(
                     (self.constraint, constraints)
                 )
-            self.uncertainity = np.vstack((self.uncertainity, uncertainity))
+            if uncertainity is None:
+                self.uncertainity = None
+            else:    
+                self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
         return list(range(first_offspring_index, last_offspring_index))
@@ -180,7 +183,8 @@ class Population(BasePopulation):
         self.individuals = self.individuals[mask]
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
-        self.uncertainity = self.uncertainity[mask]
+        if self.uncertainity is not None:
+            self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
             self.constraint = self.constraint[mask]
 
@@ -200,7 +204,8 @@ class Population(BasePopulation):
             self.individuals = None
         self.objectives = self.objectives[mask]
         self.fitness = self.fitness[mask]
-        self.uncertainity = self.uncertainity[mask]
+        if self.uncertainity is not None:
+            self.uncertainity = self.uncertainity[mask]
         if self.problem.n_of_constraints > 0:
             self.constraint = self.constraint[mask]
 
