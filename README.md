@@ -19,7 +19,7 @@ To test the code, open the [binder link](https://mybinder.org/v2/gh/industrial-o
 Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
 
 ### Requirements:
-* Python 3.7 or up
+* Python 3.7 (3.8 is NOT supported)
 * [Poetry dependency manager](https://github.com/sdispater/poetry): Only for developers
 
 ### Installation process for normal users:
