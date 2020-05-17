@@ -178,7 +178,7 @@ description = "This package contains the problem classes for desdeo framework."
 name = "desdeo-problem"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.13.0"
+version = "0.14.0"
 
 [package.dependencies]
 diversipy = ">=0.8.0,<0.9.0"
@@ -497,19 +497,6 @@ name = "lazy-object-proxy"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "1.4.3"
-
-[[package]]
-category = "main"
-description = "LightGBM Python Package"
-name = "lightgbm"
-optional = false
-python-versions = "*"
-version = "2.3.1"
-
-[package.dependencies]
-numpy = "*"
-scikit-learn = "*"
-scipy = "*"
 
 [[package]]
 category = "dev"
@@ -1232,33 +1219,6 @@ python-versions = "*"
 version = "1.12.1"
 
 [[package]]
-category = "main"
-description = "XGBoost Python Package"
-name = "xgboost"
-optional = false
-python-versions = ">=3.5"
-version = "1.0.2"
-
-[package.dependencies]
-numpy = "*"
-scipy = "*"
-
-[package.extras]
-dask = ["dask", "pandas", "distributed"]
-datatable = ["datatable"]
-pandas = ["pandas"]
-plotting = ["graphviz", "matplotlib"]
-sklearn = ["sklearn"]
-
-[[package]]
-category = "main"
-description = "Library for developers to extract data from Microsoft Excel (tm) spreadsheet files"
-name = "xlrd"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "1.2.0"
-
-[[package]]
 category = "dev"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 marker = "python_version < \"3.8\""
@@ -1272,8 +1232,8 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "67d38b8327414a3fb1b30ac11d841119186dbc4be44d8a3b4939fc45ce7e5e55"
-python-versions = "^3.7"
+content-hash = "c62232016232b89a005b35b9948d785913aa5e295832f07d8fb5963f05d5bd11"
+python-versions = "=3.7"
 
 [metadata.files]
 alabaster = [
@@ -1345,8 +1305,8 @@ defusedxml = [
     {file = "defusedxml-0.6.0.tar.gz", hash = "sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5"},
 ]
 desdeo-problem = [
-    {file = "desdeo_problem-0.13.0-py3-none-any.whl", hash = "sha256:dba0c78364f29746a3f0c78b808867405e70ded574ca02a66b362703ad94fd27"},
-    {file = "desdeo_problem-0.13.0.tar.gz", hash = "sha256:64714cbb6ee7a11875af37fb3ec2a1e5b5a87aeeafad8ef4db6239428f468591"},
+    {file = "desdeo_problem-0.14.0-py3-none-any.whl", hash = "sha256:05c0aa67296816d7f37dbe1973a2a0a4492205fdcf1251036f1e951338b6d4e8"},
+    {file = "desdeo_problem-0.14.0.tar.gz", hash = "sha256:dc7feeae9018d54348464051eb85552fd64e0987ee5f97e33927afafc1f1602d"},
 ]
 desdeo-tools = [
     {file = "desdeo-tools-0.2.1.tar.gz", hash = "sha256:9b7c1b6eb001d58f9b1438ecc7d7d0acac0cede524cf87470a05e1ab4aa8e4ef"},
@@ -1454,12 +1414,6 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:a6ae12d08c0bf9909ce12385803a543bfe99b95fe01e752536a60af2b7797c62"},
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-win32.whl", hash = "sha256:5541cada25cd173702dbd99f8e22434105456314462326f06dba3e180f203dfd"},
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-win_amd64.whl", hash = "sha256:59f79fef100b09564bc2df42ea2d8d21a64fdcda64979c0fa3db7bdaabaf6239"},
-]
-lightgbm = [
-    {file = "lightgbm-2.3.1-py2.py3-none-macosx_10_9_x86_64.macosx_10_10_x86_64.macosx_10_11_x86_64.macosx_10_12_x86_64.macosx_10_13_x86_64.macosx_10_14_x86_64.macosx_10_15_x86_64.whl", hash = "sha256:c35743f825af65bd96106d4df1ee36a5f0f2d1140e2ed2e98e6742a931771730"},
-    {file = "lightgbm-2.3.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:d0c51c79cf34c6dc717fd6a1c1e5c73eb428ade51228fedd6e6ca26ed4756190"},
-    {file = "lightgbm-2.3.1-py2.py3-none-win_amd64.whl", hash = "sha256:c6968efcc5c19f9867592f885edbfaf2d753f7fd8ce924453ac8b453dbf81f55"},
-    {file = "lightgbm-2.3.1.tar.gz", hash = "sha256:bd1817be401e74c0d8b049e97ea2f35d2ce155cfa130119ce4195ea207bd6388"},
 ]
 markupsafe = [
     {file = "MarkupSafe-1.1.1-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161"},
@@ -1884,15 +1838,6 @@ widgetsnbextension = [
 ]
 wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
-]
-xgboost = [
-    {file = "xgboost-1.0.2-py3-none-manylinux1_x86_64.whl", hash = "sha256:0ac03dd7477fe40ba9f716ac59a48af439c371da592675db72319219a1040870"},
-    {file = "xgboost-1.0.2-py3-none-win_amd64.whl", hash = "sha256:649c6e297f4729270233ddfd7b71f5fdf2d61785221245af4704da70356b3b0d"},
-    {file = "xgboost-1.0.2.tar.gz", hash = "sha256:74d0984ed4c338b4b72ff4855f07c12e73fe8c60122b5b303b6e59f7e207da67"},
-]
-xlrd = [
-    {file = "xlrd-1.2.0-py2.py3-none-any.whl", hash = "sha256:e551fb498759fa3a5384a94ccd4c3c02eb7c00ea424426e212ac0c57be9dfbde"},
-    {file = "xlrd-1.2.0.tar.gz", hash = "sha256:546eb36cee8db40c3eaa46c351e67ffee6eeb5fa2650b71bc4c758a29a1b29b2"},
 ]
 zipp = [
     {file = "zipp-3.1.0-py3-none-any.whl", hash = "sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b"},
