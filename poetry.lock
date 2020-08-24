@@ -204,7 +204,7 @@ description = "This package contains the problem classes for desdeo framework."
 name = "desdeo-problem"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.14.0"
+version = "0.15.0"
 
 [package.dependencies]
 diversipy = ">=0.8.0,<0.9.0"
@@ -1326,7 +1326,8 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "5761e2dd186911baa6ee374a13a35eacc009ed59171cad97b4f878b6a29101ee"
+content-hash = "120981af306e4fcfcbec13ae27cf26db3214560ffc348c3a20d5793340d56b95"
+lock-version = "1.0"
 python-versions = "^3.7.0"
 
 [metadata.files]
@@ -1447,8 +1448,8 @@ defusedxml = [
     {file = "defusedxml-0.6.0.tar.gz", hash = "sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5"},
 ]
 desdeo-problem = [
-    {file = "desdeo_problem-0.14.0-py3-none-any.whl", hash = "sha256:05c0aa67296816d7f37dbe1973a2a0a4492205fdcf1251036f1e951338b6d4e8"},
-    {file = "desdeo_problem-0.14.0.tar.gz", hash = "sha256:dc7feeae9018d54348464051eb85552fd64e0987ee5f97e33927afafc1f1602d"},
+    {file = "desdeo_problem-0.15.0-py3-none-any.whl", hash = "sha256:9628fccf07677b000f522773d5ee24c4592529a5923f957d915d50b7076f8fc4"},
+    {file = "desdeo_problem-0.15.0.tar.gz", hash = "sha256:7bf49dd54f20aea889df3dfc5b47d9e284599528fdefbe625b8a305607a92e0e"},
 ]
 desdeo-tools = [
     {file = "desdeo-tools-0.2.6.tar.gz", hash = "sha256:f47ff2acdd40a93d19951ba47083a8428dd66b8811817bb0020e9e863557a5d4"},
