@@ -1,1 +1,1 @@
-/home/rishi/Projects/desdeo-emo/README.md
+../README.md
