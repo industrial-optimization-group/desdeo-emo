@@ -6,4 +6,4 @@ Examples
    :caption: Available examples:
 
    notebooks/Example
-   notebooks/River_pollution
+   notebooks/River_Pollution
