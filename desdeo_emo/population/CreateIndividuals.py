@@ -94,7 +94,6 @@ def create_new_individuals(design, problem, pop_size=None):
         nodes per layer. The subnets are evolved via evolutionary algorithms, and they
         converge
         on the final linear layer of the DNN.
-
         """
 
         individuals = []

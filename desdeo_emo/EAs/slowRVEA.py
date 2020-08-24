@@ -1,3 +1,5 @@
+"Legacy code. To be updated or depreciated."
+
 from pyrvea.EAs.RVEA import RVEA
 from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
 from typing import TYPE_CHECKING

@@ -7,11 +7,13 @@ from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 
 
 class APD_Select(SelectionBase):
-    """The selection operator for the RVEA algorithm. Read the following paper for more
-        details.
-        R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff, A Reference Vector Guided
-        Evolutionary Algorithm for Many-objective Optimization, IEEE Transactions on
-        Evolutionary Computation, 2016
+    """
+    The selection operator for the RVEA algorithm. Read the following paper for more
+    details.
+    R. Cheng, Y. Jin, M. Olhofer and B. Sendhoff, A Reference Vector Guided
+    Evolutionary Algorithm for Many-objective Optimization, IEEE Transactions on
+    Evolutionary Computation, 2016
+
     Parameters
     ----------
     pop : Population

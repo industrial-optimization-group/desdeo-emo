@@ -1,5 +1,5 @@
 from math import ceil
-from typing import Callable, Dict, Type, Union
+from typing import Callable, Dict, Type
 
 import numpy as np
 import pandas as pd

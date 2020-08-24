@@ -48,6 +48,15 @@ class RVEA(BaseDecompositionEA):
         The number of divisions along individual axes in the objective space to be
         used while creating the reference vector lattice by the simplex lattice
         design. By default None
+    selection_type : str, optional
+        One of ["mean", "optimistic", "robust"]. To be used in data-driven optimization.
+        To be used only with surrogate models which return an "uncertainity" factor.
+        Using "mean" is equivalent to using the mean predicted values from the surrogate
+        models and is the default case.
+        Using "optimistic" results in using (mean - uncertainity) values from the
+        the surrogate models as the predicted value (in case of minimization). It is
+        (mean + uncertainity for maximization).
+        Using "robust" is the opposite of using "optimistic".
     a_priori : bool, optional
         A bool variable defining whether a priori preference is to be used or not.
         By default False
@@ -187,6 +196,11 @@ class RVEA(BaseDecompositionEA):
 
 
 class oRVEA(RVEA):
+    """
+    Feature incorporated in the RVEA class using the "selection_type" argument.
+    To be depreciated.
+    """
+
     def __init__(
         self,
         problem: MOProblem,
@@ -223,6 +237,11 @@ class oRVEA(RVEA):
 
 
 class robust_RVEA(RVEA):
+    """
+    Feature incorporated in the RVEA class using the "selection_type" argument.
+    To be depreciated.
+    """
+
     def __init__(
         self,
         problem: MOProblem,

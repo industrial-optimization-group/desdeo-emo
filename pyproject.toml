@@ -7,7 +7,7 @@ license = "MPL-2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "=3.7"
+python = "^3.7.0"
 numpy = "^1.16"
 pandas = "^0.25"
 optproblems = "^1.2"
@@ -22,18 +22,22 @@ scikit-learn = "^0.21.2"
 # numpydoc = "^0.9.1"
 plotly = "^4.1"
 desdeo-tools = "^0.2.1"
-desdeo-problem = "^0.14.0"
+desdeo-problem = "^0.14"
 
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"
 black = {version = "^18.3-alpha.0",allow-prereleases = true}
-sphinx = "^2.0"
 recommonmark = "^0.5.0"
 sphinx_rtd_theme = "^0.4.3"
 pylint = "^2.3"
 mypy = "^0.701.0"
 jupyter = "^1.0"
+sphinx = "^3.2.1"
+sphinx_autodoc_typehints = "^1.11.0"
+sphinx-automodapi = "^0.12"
+rstcheck = "^3.3.1"
+nbsphinx = "^0.7.1"
 
 
 [build-system]
