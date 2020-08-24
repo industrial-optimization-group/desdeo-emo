@@ -15,7 +15,7 @@ Currently _NOT_ supported:
 
 To test the code, open the [binder link](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master) and read example.ipynb.
 
-Read the documentation [here](https://pyrvea.readthedocs.io/en/latest/)
+Read the documentation [here](https://desdeo-emo.readthedocs.io/en/latest/)
 
 ### Requirements:
 * Python 3.7 (3.8 is NOT supported at the moment)
