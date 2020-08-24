@@ -12,6 +12,8 @@
 #
 import os
 import sys
+from recommonmark.parser import CommonMarkParser
+
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../desdeo_emo"))
@@ -46,6 +48,8 @@ extensions = [
     "sphinx.ext.mathjax",
 ]
 numpydoc_show_class_members = False
+
+source_parsers = {".md": CommonMarkParser}
 
 source_suffix = [".rst", ".md", ".ipynb"]  # .ipynb
 # Add any paths that contain templates here, relative to this directory.
