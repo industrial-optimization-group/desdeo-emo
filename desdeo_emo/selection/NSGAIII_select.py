@@ -52,9 +52,7 @@ class NSGAIII_select(SelectionBase):
         fronts, dl, dc, rank = nds(fitness)
         non_dominated = fronts[0]
         fmin = np.amin(fitness, axis=0)
-        self.ideal = np.amin(
-            np.vstack((self.ideal, fmin, pop.ideal_fitness_val)), axis=0
-        )
+        self.ideal = np.amin(np.vstack((self.ideal, fmin)), axis=0)
 
         # Calculating worst points
         self.worst_fitness = np.amax(np.vstack((self.worst_fitness, fitness)), axis=0)

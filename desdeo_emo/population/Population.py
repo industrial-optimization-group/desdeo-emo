@@ -129,6 +129,9 @@ class Population(BasePopulation):
         use_surrogates: bool
             If true, use surrogate models rather than true function evaluations.
 
+        use_surrogates: bool
+            If true, use surrogate models rather than true function evaluations.
+
         Returns
         -------
         List
