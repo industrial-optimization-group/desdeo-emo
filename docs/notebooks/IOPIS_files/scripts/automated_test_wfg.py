@@ -6,7 +6,7 @@ from desdeo_problem.Variable import variable_builder
 from desdeo_problem.Objective import _ScalarObjective, VectorObjective
 from desdeo_problem.Problem import MOProblem
 
-from desdeo_emo.EAs.NIMBUS_EA import NIMBUS_RVEA, NIMBUS_NSGAIII
+from desdeo_emo.EAs import IOPIS_RVEA, IOPIS_NSGAIII
 from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.EAs.NSGAIII import NSGAIII
 
@@ -60,7 +60,7 @@ n_vars = K + n_objs - 1
 
 num_gen_per_iter = [100]
 
-algorithms = ["RVEA", "NSGAIII", "iRVEA", "iNSGAIII", "NIMBUS-RVEA", "NIMBUS-NSGAIII"]
+algorithms = ["RVEA", "NSGAIII", "iRVEA", "iNSGAIII", "IOPIS-RVEA", "IOPIS-NSGAIII"]
 column_names = (
     ["problem", "num_obj", "iteration", "num_gens"]
     + [algorithm + "_median_asf" for algorithm in algorithms]
@@ -136,8 +136,8 @@ for gen in num_gen_per_iter:
             int_rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
             int_nsga = NSGAIII(problem=problem, interact=True, n_gen_per_iter=gen)
             # New algorithm
-            nimb_rvea = NIMBUS_RVEA(problem, n_gen_per_iter=gen)
-            nimb_nsga = NIMBUS_NSGAIII(problem, n_gen_per_iter=gen)
+            nimb_rvea = IOPIS_RVEA(problem, n_gen_per_iter=gen)
+            nimb_nsga = IOPIS_NSGAIII(problem, n_gen_per_iter=gen)
 
             responses = np.random.rand(4, n_obj)
 
@@ -247,7 +247,7 @@ for gen in num_gen_per_iter:
                     int_nsga._function_evaluation_count,
                 ]
                 data_row[
-                    ["NIMBUS-RVEA" + excess_col for excess_col in excess_columns]
+                    ["IOPIS-RVEA" + excess_col for excess_col in excess_columns]
                 ] = [
                     np.median(scalar_nrvea),
                     np.min(scalar_nrvea),
@@ -263,7 +263,7 @@ for gen in num_gen_per_iter:
                     nimb_rvea._function_evaluation_count,
                 ]
                 data_row[
-                    ["NIMBUS-NSGAIII" + excess_col for excess_col in excess_columns]
+                    ["IOPIS-NSGAIII" + excess_col for excess_col in excess_columns]
                 ] = [
                     np.median(scalar_nnsga),
                     np.min(scalar_nnsga),
