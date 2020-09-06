@@ -9,6 +9,7 @@ Currently supported:
 * Surrogate modelling (neural networks and genetic trees) evolved via EAs.
 * Surrogate assisted optimization
 * Constraint handling using `RVEA`
+* IOPIS optimization using `RVEA` and `NSGA-III`
 
 Currently _NOT_ supported:
 * Binary and integer variables.
