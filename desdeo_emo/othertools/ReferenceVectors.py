@@ -261,7 +261,7 @@ class ReferenceVectors:
         )
         self.normalize()
 
-    def iteractive_adapt_1(self, ref_point, translation_param=0.2):
+    def iteractive_adapt_3(self, ref_point, translation_param=0.2):
         """Adapt reference vectors linearly towards a reference point. Then normalize.
 
         The details can be found in the following paper: Hakanen, Jussi &
@@ -285,6 +285,53 @@ class ReferenceVectors:
             (1 - translation_param) * ref_point
         )
         self.normalize()
+
+    def interactive_adapt_1(self, z: np.ndarray, translation_param: float = 0.2) -> None:
+        """
+        Adapt reference vectors using the information about prefererred solution(s) selected by the Decision maker.
+
+        Args:
+            z (np.ndarray): Preferred solution(s).
+            translation_param (float): Parameter determining how close the reference vectors are to the central vector
+            **v** defined by using the selected solution(s) z.
+
+        Returns:
+
+        """
+
+        self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
+        self.values_planar = self.initial_values_planar * translation_param + ((1 - translation_param) * z)
+        self.normalize()
+
+    def interactive_adapt_2(self, z: np.ndarray, predefined_distance: float) -> None:
+        """
+        Adapt reference vectors by using the information about non-preferred solution(s) selected by the Decision maker.
+        After the Decision maker has specified non-preferred solution(s), Euclidian distance between normalized solution
+        vector(s) and each of the reference vectors are calculated. Those reference vectors that are **closer** than a
+        predefined distance are either **removed** or **re-positioned** somewhere else.
+
+        Note:
+            At this moment, only the **removal** of reference vectors is supported. Repositioning of the reference
+            vectors is **not** supported.
+
+        Args:
+            z (np.ndarray): Non-preferred solution(s).
+            predefined_distance (float): The reference vectors that are closer than this distance are either removed or
+            re-positioned somewhere else.
+
+        Returns:
+
+        """
+
+        z = np.atleast_2d(z)
+        norm = np.linalg.norm(z, ord=1, axis=1).reshape(np.shape(z)[0], 1)
+
+        # non-preferred solutions normalized
+        v_c = np.divide(z, norm)
+
+        # distances from non-preferred solution(s) to each reference vector
+        distances = [np.linalg.norm(v_ci - self.values, ord=2) for v_ci in v_c]  # works when number of z == 1
+        # TODO: Continue from here
 
     def slow_interactive_adapt(self, ref_point):
         """Basically a wrapper around rotate_toward. Slowly rotate ref vectors toward
