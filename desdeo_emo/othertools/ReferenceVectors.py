@@ -1,6 +1,7 @@
 from itertools import combinations, product
 
 import numpy as np
+from pyDOE import lhs
 from scipy.special import comb
 
 
@@ -336,11 +337,42 @@ class ReferenceVectors:
 
         # find out reference vectors that are not closer than threshold value to any non-preferred solution
         mask = [all(d >= predefined_distance) for d in distances]
+        # TODO: should vectors for which all distances are less be dropped or even one distance? ATM even with one distance is dropped
 
         # set those reference vectors that met previous condition as new reference vectors, drop others
         self.values = self.values[mask]
 
-        self.normalize()
+        self.normalize()  # TODO: Should this be applied or not, already normalized above?
+
+    def interactive_adapt_4(self, preferred_ranges: np.ndarray) -> None:
+        """
+        Adapt reference vectors by using the information about the Decision maker's preferred range for each of the
+        objective. Using these ranges, Latin hypercube sampling is applied to generate m number of samples between
+        within these ranges, where m is the number of reference vectors. Normalized vectors constructed of these samples
+        are then set as new reference vectors.
+
+        Args:
+            preferred_ranges (np.ndarray): Preferred lower and upper bound for each of the objective function values.
+
+        Returns:
+
+        """
+
+        # bounds
+        lower_limits = np.array([ranges[0] for ranges in preferred_ranges])
+        upper_limits = np.array([ranges[1] for ranges in preferred_ranges])
+
+        # generate samples using Latin hypercube sampling
+        w = lhs(self.number_of_objectives, samples=self.number_of_vectors)
+
+        # scale between bounds and calculate norm
+        w = w * (upper_limits - lower_limits) + lower_limits
+        norm = np.linalg.norm(w, ord=1, axis=1).reshape(np.shape(w)[0], 1)
+
+        # set new reference vectors
+        self.values = w / norm
+
+        self.normalize()  # TODO: Should this be applied or not, already normalized above?
 
     def slow_interactive_adapt(self, ref_point):
         """Basically a wrapper around rotate_toward. Slowly rotate ref vectors toward
