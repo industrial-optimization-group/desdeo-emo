@@ -323,6 +323,7 @@ class ReferenceVectors:
 
         """
 
+        # calculate L1 norm of non-preferred solution(s)
         z = np.atleast_2d(z)
         norm = np.linalg.norm(z, ord=1, axis=1).reshape(np.shape(z)[0], 1)
 
@@ -330,8 +331,16 @@ class ReferenceVectors:
         v_c = np.divide(z, norm)
 
         # distances from non-preferred solution(s) to each reference vector
-        distances = [np.linalg.norm(v_ci - self.values, ord=2) for v_ci in v_c]  # works when number of z == 1
-        # TODO: Continue from here
+        distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
+                              for value in self.values])
+
+        # find out reference vectors that are not closer than threshold value to any non-preferred solution
+        mask = [all(d >= predefined_distance) for d in distances]
+
+        # set those reference vectors that met previous condition as new reference vectors, drop others
+        self.values = self.values[mask]
+
+        self.normalize()
 
     def slow_interactive_adapt(self, ref_point):
         """Basically a wrapper around rotate_toward. Slowly rotate ref vectors toward
