@@ -1,7 +1,8 @@
-from typing import Dict, Type, Union, Tuple
+from typing import Dict, Type, Union, Tuple, Callable
 
 import numpy as np
 import pandas as pd
+from desdeo_tools.interaction.request import BaseRequest
 
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
@@ -25,14 +26,14 @@ class BaseEA:
     """This class provides the basic structure for Evolutionary algorithms."""
 
     def __init__(
-        self,
-        a_priori: bool = False,
-        interact: bool = False,
-        selection_operator: Type[SelectionBase] = None,
-        n_iterations: int = 10,
-        n_gen_per_iter: int = 100,
-        total_function_evaluations: int = 0,
-        use_surrogates: bool = False,
+            self,
+            a_priori: bool = False,
+            interact: bool = False,
+            selection_operator: Type[SelectionBase] = None,
+            n_iterations: int = 10,
+            n_gen_per_iter: int = 100,
+            total_function_evaluations: int = 0,
+            use_surrogates: bool = False,
     ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
         self.a_priori: bool = a_priori
@@ -69,8 +70,8 @@ class BaseEA:
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
         return (
-            self._gen_count_in_curr_iteration < self.n_gen_per_iter
-            and self.check_FE_count()
+                self._gen_count_in_curr_iteration < self.n_gen_per_iter
+                and self.check_FE_count()
         )
 
     def continue_evolution(self) -> bool:
@@ -146,19 +147,19 @@ class BaseDecompositionEA(BaseEA):
     """
 
     def __init__(
-        self,
-        problem: MOProblem,
-        selection_operator: Type[SelectionBase] = None,
-        population_size: int = None,
-        population_params: Dict = None,
-        initial_population: Population = None,
-        a_priori: bool = False,
-        interact: bool = False,
-        n_iterations: int = 10,
-        n_gen_per_iter: int = 100,
-        total_function_evaluations: int = 0,
-        lattice_resolution: int = None,
-        use_surrogates: bool = False,
+            self,
+            problem: MOProblem,
+            selection_operator: Type[SelectionBase] = None,
+            population_size: int = None,
+            population_params: Dict = None,
+            initial_population: Population = None,
+            a_priori: bool = False,
+            interact: bool = False,
+            n_iterations: int = 10,
+            n_gen_per_iter: int = 100,
+            total_function_evaluations: int = 0,
+            lattice_resolution: int = None,
+            use_surrogates: bool = False,
     ):
         super().__init__(
             a_priori=a_priori,
@@ -226,15 +227,26 @@ class BaseDecompositionEA(BaseEA):
                 raise eaError(msg)
         if preference is None and not self._ref_vectors_are_focused:
             self.reference_vectors.adapt(self.population.fitness)
-        if preference is not None:
+        if isinstance(preference, ReferencePointPreference):
             ideal = self.population.ideal_fitness_val
             refpoint = (
-                preference.response.values * self.population.problem._max_multiplier
+                    preference.response.values * self.population.problem._max_multiplier
             )
             refpoint = refpoint - ideal
             norm = np.sqrt(np.sum(np.square(refpoint)))
             refpoint = refpoint / norm
             self.reference_vectors.iteractive_adapt_1(refpoint)
+            self.reference_vectors.add_edge_vectors()
+        elif isinstance(preference, PreferredSolutionPreference):
+            # TODO: preferred solution(s)
+            self.reference_vectors.interactive_adapt_1(z=self.population.objectives[preference.response.values])
+        elif isinstance(preference, NonPreferredSolutionPreference):
+            # TODO: non-preferred solution(s)
+            self.reference_vectors.interactive_adapt_2(z=self.population.objectives[preference.response.values])
+            self.reference_vectors.add_edge_vectors()
+        else:
+            # TODO: Bounds, validate preferences
+            self.reference_vectors.interactive_adapt_4(preference)
             self.reference_vectors.add_edge_vectors()
         self.reference_vectors.neighbouring_angles()
 
@@ -268,9 +280,9 @@ class BaseDecompositionEA(BaseEA):
         if self.a_priori is False and self.interact is False:
             return
         if (
-            self.a_priori is True
-            and self.interact is False
-            and self._iteration_counter > 0
+                self.a_priori is True
+                and self.interact is False
+                and self._iteration_counter > 0
         ):
             return
         dimensions_data = pd.DataFrame(
@@ -309,3 +321,107 @@ class BaseDecompositionEA(BaseEA):
 
     def requests(self) -> Tuple:
         return (self.request_plot(), self.request_preferences())
+
+
+class RequestError(Exception):
+    """Raised when an error related to the Request class is encountered.
+    """
+
+
+def validate_preferred_solutions(preferred_indeces: np.ndarray, n_objectives: int):
+    """
+    Validate the Decision maker's choice of preferred solutions.
+
+    Args:
+        preferred_indeces (np.ndarray): Index/indeces of preferred solutions specified by the Decision maker.
+        n_objectives (int): Number of objectives in problem.
+
+    Returns:
+
+    Raises:
+        RequestError: In case the preference is invalid.
+
+    """
+    # TODO: if dm prefers none or all
+
+    if not isinstance(preferred_indeces, (np.ndarray, list)):
+        raise RequestError("Please specify index/indeces of preferred solutions in a list, even if there is only one.")
+    if not all(0 <= preferred_indeces <= (n_objectives - 1)):
+        msg = "Indeces of preferred solutions should be between 0 and {}. Current indeces are {}." \
+            .format(n_objectives - 1, preferred_indeces)
+        raise RequestError(msg)
+
+
+class PreferredSolutionPreference(BaseRequest):
+    """
+    Methods can use this class to ask the Decision maker to provide their preferences in form of preferred solution(s).
+    """
+
+    def __init__(
+            self,
+            n_objectives: int,
+            message: str = None,
+            interaction_priority: str = "required",
+            preference_validator: Callable = None,
+            request_id: int = None,
+    ):
+        """
+        Initialize preference-class with information about problem.
+
+        Args:
+            n_objectives (int): Number of objectives in problem.
+            message (str): Message to be displayed to the Decision maker.
+            interaction_priority (str): Level of priority.
+            preference_validator (Callable): Function that validates the Decision maker's preferences.
+            request_id (int): Identification number of request.
+        """
+
+        self._n_objectives = n_objectives
+
+        if message is None:
+            message = (
+                "Please specify preferred solution(s) by their index, so that the first solution's index is 0. Please "
+                "specify the index/indeces in a list."
+            )
+
+        if preference_validator is None:
+            preference_validator = validate_preferred_solutions
+
+        if not isinstance(message, str):
+            if not isinstance(message, list):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Message provided is of type: {type(message)}"
+                )
+                raise RequestError(msg)
+            elif not all(isinstance(x, str) for x in message):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Some elements of the list are not strings"
+                )
+                raise RequestError(msg)
+        content = {
+            "message": message,
+            "validator": preference_validator,
+        }
+        super().__init__(
+            request_type="preferred_solution_preference",  # TODO: Has to be added as an option to desdeo.tools.request.py.BaseRequest
+            interaction_priority=interaction_priority,
+            content=content,
+            request_id=request_id,
+        )
+
+    @BaseRequest.response.setter
+    def response(self, value):
+        # validate the response
+        self.content["validator"](
+            preferred_indeces=value, n_objectives=self._n_objectives
+        )
+        self._response = value
+
+
+class NonPreferredSolutionPreference(BaseRequest):
+    """
+    Methods can use this class to ask the Decision maker to provide their preferences in form of non-preferred
+    solution(s).
+    """
