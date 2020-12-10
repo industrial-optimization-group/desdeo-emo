@@ -380,8 +380,8 @@ class PreferredSolutionPreference(BaseRequest):
 
         if message is None:
             message = (
-                "Please specify preferred solution(s) by their index, so that the first solution's index is 0. Please "
-                "specify the index/indeces in a list."
+                "Please specify preferred solution(s) by their index as 'preferred_solutions_indeces', so that the first"
+                " solution's index is 0. Please specify the index/indeces in a list."
             )
 
         if preference_validator is None:

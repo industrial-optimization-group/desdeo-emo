@@ -275,9 +275,16 @@ class ReferenceVectors:
 
         """
 
-        # calculate new reference vectors and normalize them
-        self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
-        self.values_planar = self.initial_values_planar * translation_param + ((1 - translation_param) * z)
+        if len(z) == self.number_of_objectives:
+            # if dm specifies all solutions as preferred, reinitialize reference vectors
+            self.values = self.initial_values
+            self.values_planar = self.initial_values_planar
+
+        else:
+            # calculate new reference vectors and normalize them
+            self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
+            self.values_planar = self.initial_values_planar * translation_param + ((1 - translation_param) * z)
+
         self.normalize()
 
     def interactive_adapt_2(self, z: np.ndarray, predefined_distance: float = 2) -> None:
@@ -305,23 +312,30 @@ class ReferenceVectors:
 
         """
 
-        # calculate L1 norm of non-preferred solution(s)
-        z = np.atleast_2d(z)
-        norm = np.linalg.norm(z, ord=1, axis=1).reshape(np.shape(z)[0], 1)
+        if len(z) == self.number_of_objectives:
+            # if dm specifies all solutions as non-preferred ones, reinitialize reference vectors
+            self.values = self.initial_values
+            self.values_planar = self.initial_values_planar
+            self.normalize()
 
-        # non-preferred solutions normalized
-        v_c = np.divide(z, norm)
+        else:
+            # calculate L1 norm of non-preferred solution(s)
+            z = np.atleast_2d(z)
+            norm = np.linalg.norm(z, ord=1, axis=1).reshape(np.shape(z)[0], 1)
 
-        # distances from non-preferred solution(s) to each reference vector
-        distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
-                              for value in self.values])
+            # non-preferred solutions normalized
+            v_c = np.divide(z, norm)
 
-        # find out reference vectors that are not closer than threshold value to any non-preferred solution
-        mask = [all(d >= predefined_distance) for d in distances]
+            # distances from non-preferred solution(s) to each reference vector
+            distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
+                                  for value in self.values])
 
-        # set those reference vectors that met previous condition as new reference vectors, drop others
-        self.values = self.values[mask]
-        self.values_planar = self.values_planar[mask]  # TODO: should normalize or not? values are not changed, only some are dropped
+            # find out reference vectors that are not closer than threshold value to any non-preferred solution
+            mask = [all(d >= predefined_distance) for d in distances]
+
+            # set those reference vectors that met previous condition as new reference vectors, drop others
+            self.values = self.values[mask]
+            self.values_planar = self.values_planar[mask]  # TODO: should normalize or not? values are not changed, only some are dropped
 
     def iteractive_adapt_3(self, ref_point, translation_param=0.2):
         """Adapt reference vectors linearly towards a reference point. Then normalize.
