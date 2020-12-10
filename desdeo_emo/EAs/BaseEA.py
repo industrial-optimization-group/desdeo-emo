@@ -240,6 +240,7 @@ class BaseDecompositionEA(BaseEA):
         elif isinstance(preference, PreferredSolutionPreference):
             # TODO: preferred solution(s)
             self.reference_vectors.interactive_adapt_1(z=self.population.objectives[preference.response.values])
+            self.reference_vectors.add_edge_vectors()
         elif isinstance(preference, NonPreferredSolutionPreference):
             # TODO: non-preferred solution(s)
             self.reference_vectors.interactive_adapt_2(z=self.population.objectives[preference.response.values])
@@ -328,12 +329,12 @@ class RequestError(Exception):
     """
 
 
-def validate_preferred_solutions(preferred_indeces: np.ndarray, n_objectives: int):
+def validate_specified_solutions(indeces: np.ndarray, n_objectives: int):
     """
-    Validate the Decision maker's choice of preferred solutions.
+    Validate the Decision maker's choice of preferred/non-preferred solutions.
 
     Args:
-        preferred_indeces (np.ndarray): Index/indeces of preferred solutions specified by the Decision maker.
+        indeces (np.ndarray): Index/indeces of preferred solutions specified by the Decision maker.
         n_objectives (int): Number of objectives in problem.
 
     Returns:
@@ -342,14 +343,66 @@ def validate_preferred_solutions(preferred_indeces: np.ndarray, n_objectives: in
         RequestError: In case the preference is invalid.
 
     """
-    # TODO: if dm prefers none or all
 
-    if not isinstance(preferred_indeces, (np.ndarray, list)):
-        raise RequestError("Please specify index/indeces of preferred solutions in a list, even if there is only one.")
-    if not all(0 <= preferred_indeces <= (n_objectives - 1)):
-        msg = "Indeces of preferred solutions should be between 0 and {}. Current indeces are {}." \
-            .format(n_objectives - 1, preferred_indeces)
+    if not isinstance(indeces, (np.ndarray, list)):
+        raise RequestError("Please specify index/indeces of (non-)preferred solutions in a list, even if there is only "
+                           "one.")
+    if not all(0 <= indeces <= (n_objectives - 1)):
+        msg = "Indeces of (non-)preferred solutions should be between 0 and {}. Current indeces are {}." \
+            .format(n_objectives - 1, indeces)
         raise RequestError(msg)
+
+
+def validate_bounds(dimensions_data: pd.DataFrame, bounds: np.ndarray, n_objectives: int) -> None:
+    """
+    Validate the Decision maker's desired lower and upper bounds for objective values.
+
+    Args:
+        dimensions_data (pd.DataFrame): DataFrame including information whether an objective is minimized or
+        maximized, for each objective. In addition, includes ideal and nadir vectors.
+        bounds (np.ndarray): Desired lower and upper bounds for each objective.
+        n_objectives (int): Number of objectives in problem.
+
+    Returns:
+
+    Raises:
+        RequestError: In case desired bounds are invalid.
+
+    """
+
+    if not isinstance(bounds, np.ndarray):
+        msg = "Please specify bounds as a numpy array. Current type: {}.".format(type(bounds))
+        raise RequestError(msg)
+    if len(bounds) != n_objectives:
+        msg = "Length of 'bounds' ({}) must be the same as number of objectives ({}).".format(len(bounds), n_objectives)
+        raise RequestError(msg)
+    if any(len(b) != 2 for b in bounds):
+        msg = "Length of each item of 'bounds' must 2, containing the lower and upper bound for an objective."
+        raise RequestError(msg)
+    if any(b[0] > b[1] for b in bounds):
+        msg = "Lower bound cannot be greater than upper bound. Please specify lower bound first, then upper bound."
+        raise RequestError(msg)
+
+    # check that bounds are within ideal and nadir points for each objective
+    for i, b in enumerate(bounds):
+        if dimensions_data.loc['minimize'].values.tolist()[i] == 1:  # minimized objectives
+            if b[0] < dimensions_data.loc['ideal'].values.tolist()[i]:
+                msg = "Lower bound cannot be lower than ideal value for objective. Ideal vector: {}."\
+                    .format(dimensions_data.loc['ideal'].values.tolist())
+                raise RequestError(msg)
+            if b[1] > dimensions_data.loc['nadir'].values.tolist()[i]:
+                msg = "Upper bound cannot be higher than nadir value for objective. Nadir vector: {}." \
+                    .format(dimensions_data.loc['nadir'].values.tolist())
+                raise RequestError(msg)
+        else:  # maximized objectives:
+            if b[0] < dimensions_data.loc['nadir'].values.tolist()[i]:
+                msg = "Lower bound cannot be lower than nadir value for objective. Nadir vector: {}."\
+                    .format(dimensions_data.loc['nadir'].values.tolist())
+                raise RequestError(msg)
+            if b[1] > dimensions_data.loc['ideal'].values.tolist()[i]:
+                msg = "Upper bound cannot be higher than ideal value for objective. Ideal vector: {}." \
+                    .format(dimensions_data.loc['ideal'].values.tolist())
+                raise RequestError(msg)
 
 
 class PreferredSolutionPreference(BaseRequest):
@@ -380,12 +433,12 @@ class PreferredSolutionPreference(BaseRequest):
 
         if message is None:
             message = (
-                "Please specify preferred solution(s) by their index as 'preferred_solutions_indeces', so that the first"
-                " solution's index is 0. Please specify the index/indeces in a list."
+                "Please specify preferred solution(s) by their index as 'preferred_solutions_indeces', so that the "
+                "indeces start at 0. Please specify the index/indeces in a list."
             )
 
         if preference_validator is None:
-            preference_validator = validate_preferred_solutions
+            preference_validator = validate_specified_solutions
 
         if not isinstance(message, str):
             if not isinstance(message, list):
@@ -405,7 +458,8 @@ class PreferredSolutionPreference(BaseRequest):
             "validator": preference_validator,
         }
         super().__init__(
-            request_type="preferred_solution_preference",  # TODO: Has to be added as an option to desdeo.tools.request.py.BaseRequest
+            request_type="preferred_solution_preference",
+            # TODO: Has to be added as an option to desdeo.tools.request.py.BaseRequest
             interaction_priority=interaction_priority,
             content=content,
             request_id=request_id,
@@ -425,3 +479,144 @@ class NonPreferredSolutionPreference(BaseRequest):
     Methods can use this class to ask the Decision maker to provide their preferences in form of non-preferred
     solution(s).
     """
+
+    def __init__(
+            self,
+            n_objectives: int,
+            message: str = None,
+            interaction_priority: str = "required",
+            preference_validator: Callable = None,
+            request_id: int = None,
+    ):
+        """
+        Initialize preference-class with information about problem.
+
+        Args:
+            n_objectives (int): Number of objectives in problem.
+            message (str): Message to be displayed to the Decision maker.
+            interaction_priority (str): Level of priority.
+            preference_validator (Callable): Function that validates the Decision maker's preferences.
+            request_id (int): Identification number of request.
+        """
+
+        self._n_objectives = n_objectives
+
+        if message is None:
+            message = (
+                "Please specify non-preferred solution(s) by their index as 'non-preferred_solutions_indeces', so that "
+                "the indeces start at 0. Please specify the index/indeces in a list."
+            )
+
+        if preference_validator is None:
+            preference_validator = validate_specified_solutions
+
+        if not isinstance(message, str):
+            if not isinstance(message, list):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Message provided is of type: {type(message)}"
+                )
+                raise RequestError(msg)
+            elif not all(isinstance(x, str) for x in message):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Some elements of the list are not strings"
+                )
+                raise RequestError(msg)
+        content = {
+            "message": message,
+            "validator": preference_validator,
+        }
+        super().__init__(
+            request_type="non-preferred_solution_preference",
+            # TODO: Has to be added as an option to desdeo.tools.request.py.BaseRequest
+            interaction_priority=interaction_priority,
+            content=content,
+            request_id=request_id,
+        )
+
+    @BaseRequest.response.setter
+    def response(self, value):
+        # validate the response
+        self.content["validator"](
+            preferred_indeces=value, n_objectives=self._n_objectives
+        )
+        self._response = value
+
+
+class BoundPreference(BaseRequest):
+    """
+    Methods can use this class to ask the Decision maker to provide their preferences in form of preferred lower and
+    upper bounds for objective values.
+    """
+
+    def __init__(
+            self,
+            dimensions_data: pd.DataFrame,
+            n_objectives: int,
+            message: str = None,
+            interaction_priority: str = "required",
+            preference_validator: Callable = None,
+            request_id: int = None,
+    ):
+        """
+        Initialize preference-class with information about problem.
+
+        Args:
+            dimensions_data (pd.DataFrame): DataFrame including information whether an objective is minimized or
+            maximized, for each objective. In addition, includes ideal and nadir vectors.
+            n_objectives (int): Number of objectives in problem.
+            message (str): Message to be displayed to the Decision maker.
+            interaction_priority (str): Level of priority.
+            preference_validator (Callable): Function that validates the Decision maker's preferences.
+            request_id (int): Identification number of request.
+        """
+
+        self._n_objectives = n_objectives
+
+        if message is None:
+            message = (
+                "Please specify desired lower and upper bound for each objective as 'bounds', starting from the first "
+                "objective and ending with the last one. Please specify the bounds as a numpy array containing lists, "
+                "so that the first item of list is the lower bound and the second the upper bound, for each objective."
+                "For example: numpy.array([[1, 2], [2, 5], [0, 3.5]]), for problem with three objectives."
+                "Ideal vector: {}\nNadir vector: {}.".format(dimensions_data.loc['ideal'].values.tolist(),
+                                                             dimensions_data.loc['nadir'].values.tolist())
+            )
+
+        if preference_validator is None:
+            preference_validator = validate_bounds
+
+        if not isinstance(message, str):
+            if not isinstance(message, list):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Message provided is of type: {type(message)}"
+                )
+                raise RequestError(msg)
+            elif not all(isinstance(x, str) for x in message):
+                msg = (
+                    f"Message/s to be printed should be string or list of strings"
+                    f"Some elements of the list are not strings"
+                )
+                raise RequestError(msg)
+        content = {
+            "dimensions_data": dimensions_data,
+            "message": message,
+            "validator": preference_validator,
+        }
+        super().__init__(
+            request_type="bound_preference",
+            # TODO: Has to be added as an option to desdeo.tools.request.py.BaseRequest
+            interaction_priority=interaction_priority,
+            content=content,
+            request_id=request_id,
+        )
+
+    @BaseRequest.response.setter
+    def response(self, value):
+        # validate the response
+        self.content["validator"](
+            dimensions_data=self.content["dimensions_data"], preferred_indeces=value, n_objectives=self._n_objectives
+        )
+        self._response = value
