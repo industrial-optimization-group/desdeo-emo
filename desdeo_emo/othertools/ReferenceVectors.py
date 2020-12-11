@@ -262,12 +262,13 @@ class ReferenceVectors:
         )
         self.normalize()
 
-    def interactive_adapt_1(self, z: np.ndarray, translation_param: float = 0.2) -> None:
+    def interactive_adapt_1(self, z: np.ndarray, n_solutions: int, translation_param: float = 0.2) -> None:
         """
         Adapt reference vectors using the information about prefererred solution(s) selected by the Decision maker.
 
         Args:
             z (np.ndarray): Preferred solution(s).
+            n_solutions (int): Number of solutions in total.
             translation_param (float): Parameter determining how close the reference vectors are to the central vector
             **v** defined by using the selected solution(s) z.
 
@@ -275,7 +276,7 @@ class ReferenceVectors:
 
         """
 
-        if len(z) == self.number_of_objectives:
+        if len(z) == n_solutions:
             # if dm specifies all solutions as preferred, reinitialize reference vectors
             self.values = self.initial_values
             self.values_planar = self.initial_values_planar
@@ -283,11 +284,11 @@ class ReferenceVectors:
         else:
             # calculate new reference vectors and normalize them
             self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
-            self.values_planar = self.initial_values_planar * translation_param + ((1 - translation_param) * z)
+            self.values_planar = translation_param * self.initial_values_planar + ((1 - translation_param) * z)
 
         self.normalize()
 
-    def interactive_adapt_2(self, z: np.ndarray, predefined_distance: float = 2) -> None:
+    def interactive_adapt_2(self, z: np.ndarray, n_solutions: int, predefined_distance: float = 2) -> None:
         """
         Adapt reference vectors by using the information about non-preferred solution(s) selected by the Decision maker.
         After the Decision maker has specified non-preferred solution(s), Euclidian distance between normalized solution
@@ -304,6 +305,7 @@ class ReferenceVectors:
 
         Args:
             z (np.ndarray): Non-preferred solution(s).
+            n_solutions (int): Number of solutions in total.
             predefined_distance (float): The reference vectors that are closer than this distance are either removed or
             re-positioned somewhere else.
             Default value: 2
