@@ -276,15 +276,28 @@ class ReferenceVectors:
 
         """
 
-        if len(z) == n_solutions:
+        if z.shape[0] == n_solutions:
             # if dm specifies all solutions as preferred, reinitialize reference vectors
             self.values = self.initial_values
             self.values_planar = self.initial_values_planar
 
         else:
-            # calculate new reference vectors and normalize them
-            self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
-            self.values_planar = translation_param * self.initial_values_planar + ((1 - translation_param) * z)
+            if z.shape[0] == 1:
+                # single preferred solution
+                # calculate new reference vectors
+                self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
+                self.values_planar = translation_param * self.initial_values_planar + ((1 - translation_param) * z)
+
+            else:
+                # multiple preferred solutions
+                # calculate new reference vectors for each preferred solution
+                values = [translation_param * self.initial_values + ((1 - translation_param) * z_i) for z_i in z]
+                values_planar = [translation_param * self.initial_values_planar + ((1 - translation_param) * z_i)
+                                 for z_i in z]
+
+                # combine arrays of reference vectors into a single array and update reference vectors
+                self.values = np.concatenate(values)
+                self.values_planar = np.concatenate(values_planar)
 
         self.normalize()
 
@@ -314,7 +327,7 @@ class ReferenceVectors:
 
         """
 
-        if len(z) == self.number_of_objectives:
+        if z.shape[0] == n_solutions:
             # if dm specifies all solutions as non-preferred ones, reinitialize reference vectors
             self.values = self.initial_values
             self.values_planar = self.initial_values_planar
@@ -337,7 +350,7 @@ class ReferenceVectors:
 
             # set those reference vectors that met previous condition as new reference vectors, drop others
             self.values = self.values[mask]
-            self.values_planar = self.values_planar[mask]  # TODO: should normalize or not? values are not changed, only some are dropped
+            self.values_planar = self.values_planar[mask]
 
     def iteractive_adapt_3(self, ref_point, translation_param=0.2):
         """Adapt reference vectors linearly towards a reference point. Then normalize.
