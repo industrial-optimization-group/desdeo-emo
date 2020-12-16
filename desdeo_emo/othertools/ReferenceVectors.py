@@ -343,7 +343,7 @@ class ReferenceVectors:
 
             # distances from non-preferred solution(s) to each reference vector
             distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
-                                  for value in self.values])
+                                  for value in self.values_planar])
 
             # find out reference vectors that are not closer than threshold value to any non-preferred solution
             mask = [all(d >= predefined_distance) for d in distances]
