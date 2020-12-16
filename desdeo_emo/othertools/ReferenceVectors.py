@@ -301,7 +301,7 @@ class ReferenceVectors:
 
         self.normalize()
 
-    def interactive_adapt_2(self, z: np.ndarray, n_solutions: int, predefined_distance: float = 2) -> None:
+    def interactive_adapt_2(self, z: np.ndarray, n_solutions: int, predefined_distance: float = 0.2) -> None:
         """
         Adapt reference vectors by using the information about non-preferred solution(s) selected by the Decision maker.
         After the Decision maker has specified non-preferred solution(s), Euclidian distance between normalized solution
@@ -316,12 +316,16 @@ class ReferenceVectors:
             In case the Decision maker specifies multiple non-preferred solutions, the reference vector(s) for which the
             distance to **any** of the non-preferred solutions is less than predefined distance are removed.
 
+        Note:
+            Future developer should implement a way for a user to say: "Remove some percentage of
+            objecive space/reference vectors" rather than giving a predefined distance value.
+
         Args:
             z (np.ndarray): Non-preferred solution(s).
             n_solutions (int): Number of solutions in total.
             predefined_distance (float): The reference vectors that are closer than this distance are either removed or
             re-positioned somewhere else.
-            Default value: 2
+            Default value: 0.2
 
         Returns:
 
