@@ -30,13 +30,13 @@ class RequestError(Exception):
     """
 
 
-def validate_specified_solutions(indeces: np.ndarray, n_objectives: int):
+def validate_specified_solutions(indeces: np.ndarray, n_solutions: int):
     """
     Validate the Decision maker's choice of preferred/non-preferred solutions.
 
     Args:
         indeces (np.ndarray): Index/indeces of preferred solutions specified by the Decision maker.
-        n_objectives (int): Number of objectives in problem.
+        n_solutions (int): Number of solutions in total.
 
     Returns:
 
@@ -45,12 +45,14 @@ def validate_specified_solutions(indeces: np.ndarray, n_objectives: int):
 
     """
 
+    if indeces.shape[0] < 1:
+        raise RequestError("Please specify at least one (non-)preferred solution.")
     if not isinstance(indeces, (np.ndarray, list)):
         raise RequestError("Please specify index/indeces of (non-)preferred solutions in a list, even if there is only "
                            "one.")
-    if not all(0 <= i <= (n_objectives - 1) for i in indeces):
+    if not all(0 <= i <= (n_solutions - 1) for i in indeces):
         msg = "Indeces of (non-)preferred solutions should be between 0 and {}. Current indeces are {}." \
-            .format(n_objectives - 1, indeces)
+            .format(n_solutions - 1, indeces)
         raise RequestError(msg)
 
 
@@ -91,23 +93,28 @@ def validate_bounds(dimensions_data: pd.DataFrame, bounds: np.ndarray, n_objecti
     # check that bounds are within ideal and nadir points for each objective
     for i, b in enumerate(bounds):
         if dimensions_data.loc['minimize'].values.tolist()[i] == 1:  # minimized objectives
-            if b[0] < dimensions_data.loc['ideal'].values.tolist()[i]:
-                msg = "Lower bound cannot be lower than ideal value for objective. Ideal vector: {}." \
-                    .format(dimensions_data.loc['ideal'].values.tolist())
-                raise RequestError(msg)
-            if b[1] > dimensions_data.loc['nadir'].values.tolist()[i]:
-                msg = "Upper bound cannot be higher than nadir value for objective. Nadir vector: {}." \
-                    .format(dimensions_data.loc['nadir'].values.tolist())
-                raise RequestError(msg)
+            if dimensions_data.loc['ideal'].values.tolist()[i] is not None:
+                if b[0] < dimensions_data.loc['ideal'].values.tolist()[i]:
+                    msg = "Lower bound cannot be lower than ideal value for objective. Ideal vector: {}." \
+                        .format(dimensions_data.loc['ideal'].values.tolist())
+                    raise RequestError(msg)
+            if dimensions_data.loc['nadir'].values.tolist()[i] is not None:
+                if b[1] > dimensions_data.loc['nadir'].values.tolist()[i]:
+                    msg = "Upper bound cannot be higher than nadir value for objective. Nadir vector: {}." \
+                        .format(dimensions_data.loc['nadir'].values.tolist())
+                    raise RequestError(msg)
+
         else:  # maximized objectives:
-            if b[0] < dimensions_data.loc['nadir'].values.tolist()[i]:
-                msg = "Lower bound cannot be lower than nadir value for objective. Nadir vector: {}." \
-                    .format(dimensions_data.loc['nadir'].values.tolist())
-                raise RequestError(msg)
-            if b[1] > dimensions_data.loc['ideal'].values.tolist()[i]:
-                msg = "Upper bound cannot be higher than ideal value for objective. Ideal vector: {}." \
-                    .format(dimensions_data.loc['ideal'].values.tolist())
-                raise RequestError(msg)
+            if dimensions_data.loc['ideal'].values.tolist()[i] is not None:
+                if b[1] > dimensions_data.loc['ideal'].values.tolist()[i]:
+                    msg = "Upper bound cannot be higher than ideal value for objective. Ideal vector: {}." \
+                        .format(dimensions_data.loc['ideal'].values.tolist())
+                    raise RequestError(msg)
+            if dimensions_data.loc['nadir'].values.tolist()[i] is not None:
+                if b[0] < dimensions_data.loc['nadir'].values.tolist()[i]:
+                    msg = "Lower bound cannot be lower than nadir value for objective. Nadir vector: {}." \
+                        .format(dimensions_data.loc['nadir'].values.tolist())
+                    raise RequestError(msg)
 
 
 class PreferredSolutionPreference(BaseRequest):
@@ -117,7 +124,7 @@ class PreferredSolutionPreference(BaseRequest):
 
     def __init__(
             self,
-            n_objectives: int,
+            n_solutions: int,
             message: str = None,
             interaction_priority: str = "required",
             preference_validator: Callable = None,
@@ -127,14 +134,14 @@ class PreferredSolutionPreference(BaseRequest):
         Initialize preference-class with information about problem.
 
         Args:
-            n_objectives (int): Number of objectives in problem.
+            n_solutions (int): Number of solutions in total.
             message (str): Message to be displayed to the Decision maker.
             interaction_priority (str): Level of priority.
             preference_validator (Callable): Function that validates the Decision maker's preferences.
             request_id (int): Identification number of request.
         """
 
-        self._n_objectives = n_objectives
+        self._n_solutions = n_solutions
 
         if message is None:
             message = (
@@ -174,7 +181,7 @@ class PreferredSolutionPreference(BaseRequest):
     def response(self, value):
         # validate the response
         self.content["validator"](
-            indeces=value, n_objectives=self._n_objectives
+            indeces=value, n_solutions=self._n_solutions
         )
         self._response = value
 
@@ -187,7 +194,7 @@ class NonPreferredSolutionPreference(BaseRequest):
 
     def __init__(
             self,
-            n_objectives: int,
+            n_solutions: int,
             message: str = None,
             interaction_priority: str = "required",
             preference_validator: Callable = None,
@@ -197,14 +204,14 @@ class NonPreferredSolutionPreference(BaseRequest):
         Initialize preference-class with information about problem.
 
         Args:
-            n_objectives (int): Number of objectives in problem.
+            n_solutions (int): Number of solutions in total.
             message (str): Message to be displayed to the Decision maker.
             interaction_priority (str): Level of priority.
             preference_validator (Callable): Function that validates the Decision maker's preferences.
             request_id (int): Identification number of request.
         """
 
-        self._n_objectives = n_objectives
+        self._n_solutions = n_solutions
 
         if message is None:
             message = (
@@ -244,7 +251,7 @@ class NonPreferredSolutionPreference(BaseRequest):
     def response(self, value):
         # validate the response
         self.content["validator"](
-            indeces=value, n_objectives=self._n_objectives
+            indeces=value, n_solutions=self._n_solutions
         )
         self._response = value
 
@@ -544,7 +551,7 @@ class BaseDecompositionEA(BaseEA):
             refpoint = refpoint - ideal
             norm = np.sqrt(np.sum(np.square(refpoint)))
             refpoint = refpoint / norm
-            self.reference_vectors.iteractive_adapt_1(refpoint)
+            self.reference_vectors.iteractive_adapt_3(refpoint)
             self.reference_vectors.add_edge_vectors()
         elif isinstance(preference, PreferredSolutionPreference):
             self.reference_vectors.interactive_adapt_1(z=self.population.objectives[preference.response],
@@ -555,7 +562,7 @@ class BaseDecompositionEA(BaseEA):
                                                        n_solutions=np.shape(self.population.objectives)[0])
             self.reference_vectors.add_edge_vectors()
         elif isinstance(preference, BoundPreference):
-            self.reference_vectors.interactive_adapt_4(preference)
+            self.reference_vectors.interactive_adapt_4(preference.response)
             self.reference_vectors.add_edge_vectors()
         self.reference_vectors.neighbouring_angles()
 
@@ -644,16 +651,15 @@ class BaseDecompositionEA(BaseEA):
 
         interaction_priority = "recommended"
         self._interaction_request_id = np.random.randint(0, 1e10)
-        n_objectives = len(self.population.objectives)
 
         # return multiple preference-requests, user decides with request will (s)he respond to by using an index.
         return PreferredSolutionPreference(
-            n_objectives=n_objectives,
+            n_solutions=self.population.objectives.shape[0],
             message=message,
             interaction_priority=interaction_priority,
             request_id=self._interaction_request_id,
         ), NonPreferredSolutionPreference(
-            n_objectives=n_objectives,
+            n_solutions=self.population.objectives.shape[0],
             message=None,
             interaction_priority=interaction_priority,
             request_id=self._interaction_request_id,
@@ -665,7 +671,7 @@ class BaseDecompositionEA(BaseEA):
             request_id=self._interaction_request_id,
         ), BoundPreference(
             dimensions_data=dimensions_data,
-            n_objectives=n_objectives,
+            n_objectives=self.population.problem.n_of_objectives,
             message=None,
             interaction_priority=interaction_priority,
             request_id=self._interaction_request_id,

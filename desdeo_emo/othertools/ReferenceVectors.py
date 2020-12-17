@@ -402,9 +402,8 @@ class ReferenceVectors:
         # generate samples using Latin hypercube sampling
         w = lhs(self.number_of_objectives, samples=self.number_of_vectors)
 
-        # scale between bounds and calculate norm
+        # scale between bounds
         w = w * (upper_limits - lower_limits) + lower_limits
-        # norm = np.linalg.norm(w, ord=1, axis=1).reshape(np.shape(w)[0], 1)  # TODO: normalize here or later in self.normalize()?
 
         # set new reference vectors and normalize them
         self.values = w
