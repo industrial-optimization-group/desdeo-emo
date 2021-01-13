@@ -2,9 +2,6 @@ from typing import Dict, Type, Union, Tuple, Callable
 
 import numpy as np
 import pandas as pd
-from desdeo_problem.Objective import _ScalarObjective
-from desdeo_problem.Variable import variable_builder
-from desdeo_problem.testproblems.TestProblems import test_problem_builder
 from desdeo_tools.interaction.request import BaseRequest
 
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
@@ -30,7 +27,7 @@ class RequestError(Exception):
     """
 
 
-def validate_specified_solutions(indeces: np.ndarray, n_solutions: int):
+def validate_specified_solutions(indeces: np.ndarray, n_solutions: int) -> None:
     """
     Validate the Decision maker's choice of preferred/non-preferred solutions.
 
