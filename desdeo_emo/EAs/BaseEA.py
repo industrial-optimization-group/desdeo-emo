@@ -17,8 +17,7 @@ from desdeo_tools.interaction import (
 
 
 class eaError(Exception):
-    """Raised when an error related to EA occurs
-    """
+    """Raised when an error related to EA occurs"""
 
 
 class BaseEA:
@@ -298,7 +297,7 @@ class BaseDecompositionEA(BaseEA):
             return
 
         interaction_priority = "recommended"
-        self._interaction_request_id = np.random.randint(0, 1e10)
+        self._interaction_request_id = np.random.randint(0, 1e9)
         return ReferencePointPreference(
             dimensions_data=dimensions_data,
             message=message,
