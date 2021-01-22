@@ -74,6 +74,7 @@ class MOEA_D(BaseDecompositionEA):
         initial_population: Population = None,
         lattice_resolution: int = None,
         SF_type: str = "TCH",
+        use_repair: bool = True,
         n_parents: int = 2,
         a_priori: bool = False,
         interact: bool = False,
@@ -99,6 +100,7 @@ class MOEA_D(BaseDecompositionEA):
         self.problem = problem
         self.n_neighbors = n_neighbors
         self.SF_type = SF_type
+        self.use_repair = use_repair
         self.n_parents = n_parents
         self.population.mutation = BP_mutation(problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds(), 0.5, 20)
         self.population.recombination = SBX_xover(1.0, 20)
@@ -131,7 +133,8 @@ class MOEA_D(BaseDecompositionEA):
             offspring = array(offspring[0,:])
             
             # Repair the solution if it is needed
-            offspring = self.population.repair(offspring)
+            if (self.use_repair):
+                offspring = self.population.repair(offspring)
 
             # Evaluate the offspring using the objective function
             results_off     =  self.problem.evaluate(offspring, self.use_surrogates)
