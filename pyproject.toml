@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "desdeo_emo"
-version = "1.1.0"
+version = "1.1.2"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]
 license = "MPL-2.0"
