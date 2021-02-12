@@ -3,7 +3,7 @@ from typing import List
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
-
+from desdeo_tools.scalarization.MOEADSF import MOEADSFBase, Tchebycheff, PBI, WeightedSum
 
 
 class MOEAD_select(SelectionBase):
@@ -13,15 +13,16 @@ class MOEAD_select(SelectionBase):
     ----------
     pop : Population
         The population of individuals
-    SF_type : str
+    SF_type : MOEADSFBase
         The scalarizing function employed to evaluate the solutions
 
     """
     def __init__(
-        self, pop: Population, SF_type: str
+        self, pop: Population, SF_type: MOEADSFBase
     ):
 	 # initialize
         self.SF_type = SF_type
+        
 
     def do(self, pop: Population, vectors: ReferenceVectors, ideal_point, current_neighborhood, offspring_fx) -> List[int]:
         """Select the individuals that are kept in the neighborhood.
@@ -48,8 +49,8 @@ class MOEAD_select(SelectionBase):
         num_neighbors               = len(current_neighborhood)
         current_population          = pop.objectives[current_neighborhood,:]
         current_reference_vectors   = vectors.values[current_neighborhood,:]
-        offspring_population        = np.array([offspring_fx]*num_neighbors)
-        ideal_point_matrix          = np.array([ideal_point]*num_neighbors)
+        offspring_population        = np.tile(offspring_fx, (num_neighbors,1))
+        ideal_point_matrix          = np.tile(ideal_point, (num_neighbors,1))
 
         values_SF           = self._evaluate_SF(current_population, current_reference_vectors, ideal_point_matrix)
         values_SF_offspring = self._evaluate_SF(offspring_population, current_reference_vectors, ideal_point_matrix)
@@ -61,40 +62,10 @@ class MOEAD_select(SelectionBase):
         return current_neighborhood[selection]
 
 
-    def tchebycheff(self, objective_values:np.ndarray, weights:np.ndarray, ideal_point:np.ndarray):
-        feval   = np.abs(objective_values - ideal_point) * weights
-        max_fun = np.max(feval)
-        return max_fun
-
-    def weighted_sum(self, objective_values, weights):
-        feval   = np.sum(objective_values * weights)
-        return feval
-
-    def pbi(self, objective_values, weights, ideal_point, theta = 5):
-        norm_weights    = np.linalg.norm(weights)
-        weights         = weights/norm_weights
-        fx_a            = objective_values - ideal_point
-        d1              = np.inner(fx_a, weights)
-
-        fx_b            = objective_values - (ideal_point + d1 * weights)
-        d2              = np.linalg.norm(fx_b)
-        
-        fvalue          = d1 + theta * d2
-        return fvalue
-
-
     def _evaluate_SF(self, neighborhood, weights, ideal_point):
-        if self.SF_type == "TCH":
-            SF_values = np.array(list(map(self.tchebycheff, neighborhood, weights, ideal_point)))
-            return SF_values
-        elif self.SF_type == "PBI":
-            SF_values = np.array(list(map(self.pbi, neighborhood, weights, ideal_point)))
-            return SF_values
-        elif self.SF_type == "WS":
-            SF_values = np.array(list(map(self.weighted_sum, neighborhood, weights)))
-            return SF_values
-        else:
-            return []
+        SF_values = np.array(list(map(self.SF_type, neighborhood, weights, ideal_point)))
+        return SF_values
+
 
 
 

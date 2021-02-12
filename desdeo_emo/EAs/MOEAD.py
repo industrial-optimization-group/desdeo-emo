@@ -18,9 +18,13 @@ from desdeo_emo.selection.MOEAD_select import MOEAD_select
 from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
     
+from desdeo_tools.scalarization.MOEADSF import Tchebycheff, PBI, WeightedSum
 
 class MOEA_D(BaseDecompositionEA):
     """Python implementation of MOEA/D
+
+    .. Q. Zhang and H. Li, "MOEA/D: A Multiobjective Evolutionary Algorithm Based on Decomposition," 
+    in IEEE Transactions on Evolutionary Computation, vol. 11, no. 6, pp. 712-731, Dec. 2007, doi: 10.1109/TEVC.2007.892759.
 
     Parameters
     ----------
@@ -40,9 +44,6 @@ class MOEA_D(BaseDecompositionEA):
     	The number of divisions along individual axes in the objective space to be
         used while creating the reference vector lattice by the simplex lattice
         design. By default None
-    SF_type: str, optional
-    	One of ["TCH", "PBI", "WS"]. To be used as scalarizing function. TCH is used as default 
-    	option.
     n_parents: int, optional
     	Number of individuals considered for the generation of offspring solutions. The default
     	option is 2.
@@ -68,12 +69,10 @@ class MOEA_D(BaseDecompositionEA):
     def __init__(  #parameters of the class
         self,
         problem: MOProblem,
-        #population_size: int = None,
         n_neighbors: int = 20,
         population_params: Dict = None,
         initial_population: Population = None,
         lattice_resolution: int = None,
-        SF_type: str = "TCH",
         use_repair: bool = True,
         n_parents: int = 2,
         a_priori: bool = False,
@@ -99,14 +98,18 @@ class MOEA_D(BaseDecompositionEA):
         self.population_size = self.population.pop_size
         self.problem = problem
         self.n_neighbors = n_neighbors
-        self.SF_type = SF_type
+        
         self.use_repair = use_repair
         self.n_parents = n_parents
         self.population.mutation = BP_mutation(problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds(), 0.5, 20)
         self.population.recombination = SBX_xover(1.0, 20)
 
+
+        #The scalarization function can be changed here
+        self.scalarization_function = Tchebycheff()
+
         selection_operator = MOEAD_select(
-            self.population, SF_type=SF_type
+            self.population, SF_type=self.scalarization_function
         )
         self.selection_operator = selection_operator
         # Compute the distance between each pair of reference vectors
@@ -147,10 +150,8 @@ class MOEA_D(BaseDecompositionEA):
             # Replace individuals with a worse SF value than the offspring
             selected = self._select(current_neighborhood, offspring_fx)
 
-
-            self.population.replace(selected, offspring, results_off)
             
-        #TODO: check this----------------
+            self.population.replace(selected, offspring, results_off)
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
 
