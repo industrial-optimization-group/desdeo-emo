@@ -287,7 +287,7 @@ class BaseDecompositionEA(BaseEA):
             f"the preferred region.\n"
             f"If a reference point is not provided, the previous state of the reference"
             f" vectors is used.\n"
-            f"If the reference point is the same as the ideal point, the ideal point, "
+            f"If the reference point is the same as the ideal point, "
             f"the reference vectors are spread uniformly in the objective space."
         )
 
