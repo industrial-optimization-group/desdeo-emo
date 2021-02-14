@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "desdeo_emo"
-version = "1.1.0"
+version = "1.1.1"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]
 license = "MPL-2.0"
@@ -19,8 +19,8 @@ scikit-learn = "^0.21.2"
 # xlrd = "^1.2"
 # numpydoc = "^0.9.1"
 plotly = "^4.1"
-desdeo-problem = "^0.15.0"
-desdeo-tools = "^0.2.6"
+desdeo-problem = "^1.0.0"
+desdeo-tools = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]

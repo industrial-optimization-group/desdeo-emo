@@ -628,7 +628,7 @@ class BaseDecompositionEA(BaseEA):
             f"the preferred region.\n"
             f"If a reference point is not provided, the previous state of the reference"
             f" vectors is used.\n"
-            f"If the reference point is the same as the ideal point, the ideal point, "
+            f"If the reference point is the same as the ideal point, "
             f"the reference vectors are spread uniformly in the objective space.\n\n"
             "4, please specify desired lower and upper bound for each objective, starting from \n"
             "the first objective and ending with the last one. Please specify the bounds as a numpy array containing \n"
