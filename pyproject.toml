@@ -8,19 +8,19 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7.0"
-optproblems = "^1.2"
 pygmo = "=2.12"
-scipy = "^1.2"
-diversipy = "^0.8.0"
 pyDOE = "^0.3.8"
-scikit-learn = "^0.21.2"
+plotly = "^4.1"
+desdeo-problem = "^1.1.0"
+desdeo-tools = "^1.2.0"
+# optproblems = "^1.2" # Present in desdeo-problem
+# scikit-learn = "^0.21.2" # Present in desdeo-problem
+# diversipy = "^0.8.0" # Present in desdeo-problem
+# scipy = "^1.2" # Present in desdeo-tools
 # gplearn = "^0.4.1"
 # graphviz = "^0.11.1"
 # xlrd = "^1.2"
 # numpydoc = "^0.9.1"
-plotly = "^4.1"
-desdeo-problem = "^1.0.0"
-desdeo-tools = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]
@@ -30,7 +30,7 @@ recommonmark = "^0.5.0"
 sphinx_rtd_theme = "^0.4.3"
 pylint = "^2.3"
 mypy = "^0.701.0"
-jupyter = "^1.0"
+#jupyter = "^1.0"
 sphinx = "^3.2.1"
 sphinx_autodoc_typehints = "^1.11.0"
 sphinx-automodapi = "^0.12"
@@ -38,6 +38,7 @@ rstcheck = "^3.3.1"
 nbsphinx = "^0.7.1"
 seaborn = "^0.9.0"
 tqdm = "^4.43.0"
+ipykernel = "^5.4.3"
 
 
 [build-system]
