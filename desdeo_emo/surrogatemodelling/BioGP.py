@@ -12,7 +12,7 @@ from desdeo_emo.EAs.TournamentEA import TournamentEA
 
 # from graphviz import Digraph, Source
 import pandas as pd
-from desdeo_emo.surrogatemodelling.Problem import surrogateProblem
+from desdeo_emo.surrogatemodels.Problem import surrogateProblem
 from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
 from desdeo_emo.recombination.biogp_xover import BioGP_xover
 from desdeo_emo.recombination.biogp_mutation import BioGP_mutation

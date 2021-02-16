@@ -1,7 +1,7 @@
 EvoNNforDESDEO
 ==============
 
-.. currentmodule:: desdeo_emo.surrogatemodelling
+.. currentmodule:: desdeo_emo.surrogatemodels
 
 .. autoclass:: EvoNNforDESDEO
    :show-inheritance:

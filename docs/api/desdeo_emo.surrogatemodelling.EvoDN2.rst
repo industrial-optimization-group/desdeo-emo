@@ -1,7 +1,7 @@
 EvoDN2
 ======
 
-.. currentmodule:: desdeo_emo.surrogatemodelling
+.. currentmodule:: desdeo_emo.surrogatemodels
 
 .. autoclass:: EvoDN2
    :show-inheritance:

@@ -1,37 +1,37 @@
-desdeo\_emo.surrogatemodelling package
+desdeo\_emo.surrogatemodels package
 ======================================
 
 Submodules
 ----------
 
-desdeo\_emo.surrogatemodelling.BioGP module
+desdeo\_emo.surrogatemodels.BioGP module
 -------------------------------------------
 
-.. automodule:: desdeo_emo.surrogatemodelling.BioGP
+.. automodule:: desdeo_emo.surrogatemodels.BioGP
    :members:
    :undoc-members:
    :show-inheritance:
 
-desdeo\_emo.surrogatemodelling.EvoDN2 module
+desdeo\_emo.surrogatemodels.EvoDN2 module
 --------------------------------------------
 
-.. automodule:: desdeo_emo.surrogatemodelling.EvoDN2
+.. automodule:: desdeo_emo.surrogatemodels.EvoDN2
    :members:
    :undoc-members:
    :show-inheritance:
 
-desdeo\_emo.surrogatemodelling.EvoNN module
+desdeo\_emo.surrogatemodels.EvoNN module
 -------------------------------------------
 
-.. automodule:: desdeo_emo.surrogatemodelling.EvoNN
+.. automodule:: desdeo_emo.surrogatemodels.EvoNN
    :members:
    :undoc-members:
    :show-inheritance:
 
-desdeo\_emo.surrogatemodelling.Problem module
+desdeo\_emo.surrogatemodels.Problem module
 ---------------------------------------------
 
-.. automodule:: desdeo_emo.surrogatemodelling.Problem
+.. automodule:: desdeo_emo.surrogatemodels.Problem
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ desdeo\_emo.surrogatemodelling.Problem module
 Module contents
 ---------------
 
-.. automodule:: desdeo_emo.surrogatemodelling
+.. automodule:: desdeo_emo.surrogatemodels
    :members:
    :undoc-members:
    :show-inheritance:

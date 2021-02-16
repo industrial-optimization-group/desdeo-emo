@@ -11,7 +11,7 @@ Welcome to desdeo-emo's documentation!
    :caption: Contents:
 
    README <README>
-   background/evo_algo
+   background/index
    api
    examples
 

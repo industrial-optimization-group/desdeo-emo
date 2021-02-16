@@ -5,5 +5,5 @@ Background concepts
    :maxdepth: 2
 
    Evo_algo
-   interactive_opt
+   decomEA
    surrogate_modelling

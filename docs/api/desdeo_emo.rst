@@ -12,7 +12,7 @@ Subpackages
    desdeo_emo.population
    desdeo_emo.recombination
    desdeo_emo.selection
-   desdeo_emo.surrogatemodelling
+   desdeo_emo.surrogatemodels
 
 Module contents
 ---------------
