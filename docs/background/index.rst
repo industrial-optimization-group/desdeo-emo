@@ -4,6 +4,6 @@ Background concepts
 .. toctree::
    :maxdepth: 2
 
-   Evo_algo
+   evo_algo
    decomEA
    surrogate_modelling
