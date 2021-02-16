@@ -528,16 +528,17 @@ class BioGP(BaseRegressor):
         if isinstance(y, float):
             y = np.asarray([y])
 
-        return y
+        return y, np.zeros_like(y)
 
     def select(self):
         if self.model_selection_criterion == "min_error":
             # Return the model with the lowest error
             selected = np.argmin(self.model_population.objectives[:, 0])
+            print(self.model_population.objectives)
         else:
             raise ModelError("Selection criterion not recognized. Use 'min_error'.")
         self.tree = self.model_population.individuals[selected][0]
-        y_pred = self.predict(X=self.X)
+        y_pred = self.predict(X=self.X)[0]
         self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
         self.performance["R^2"] = r2_score(self.y, y_pred)
 
