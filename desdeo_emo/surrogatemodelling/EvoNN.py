@@ -126,16 +126,23 @@ class EvoNN(BaseRegressor):
             loss = []
             complexity = []
             for actual_first_layer in first_layer:
-                y_predict = self.predict(X=X, first_layer=actual_first_layer)
+                y_predict = self.predict(
+                    X=X, first_layer=actual_first_layer, training=True
+                )
                 loss.append(self.loss_function(y, y_predict))
                 complexity.append(np.count_nonzero(actual_first_layer))
         elif np.ndim(first_layer) == 2:
-            y_predict = self.predict(X=X, first_layer=first_layer)
+            y_predict = self.predict(X=X, first_layer=first_layer, training=True)
             loss = self.loss_function(y, y_predict)
             complexity = np.count_nonzero(first_layer)
         return np.asarray((loss, complexity)).T
 
-    def predict(self, X: np.ndarray = None, first_layer: np.ndarray = None):
+    def predict(
+        self,
+        X: np.ndarray = None,
+        first_layer: np.ndarray = None,
+        training: bool = False,
+    ):
         if first_layer is None and self.model_trained is False:
             msg = "Model has not been trained yet"
             raise ModelError(msg)
@@ -154,7 +161,10 @@ class EvoNN(BaseRegressor):
             msg = "How did you get here?"
             raise ModelError(msg)
         y_pred = np.dot(activated_layer, last_layer[1:, :]) + last_layer[0]
-        return y_pred
+        if training:
+            return y_pred
+        else:
+            return y_pred[:, 0], np.zeros_like(y_pred[:, 0])
 
     def activate(self, x):
         if self.activation_function == "sigmoid":
@@ -171,7 +181,7 @@ class EvoNN(BaseRegressor):
             raise ModelError(msg)
 
     def calculate_linear(self, previous_layer_output):
-        """ Calculate the final layer using LLSQ or
+        """Calculate the final layer using LLSQ or
 
         Parameters
         ----------
@@ -246,16 +256,3 @@ class EvoNN(BaseRegressor):
         self.performance["RMSE"] = np.sqrt(mean_squared_error(self.y, y_pred))
         self.performance["R^2"] = r2_score(self.y, y_pred)
         self.performance["AICc"] = aicc_array[selected]
-
-
-# TODO: RENAME!
-class EvoNNforDESDEO(EvoNN):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def predict(self, X: np.ndarray, *args, **kwargs):
-        y = super().predict(X, *args, **kwargs)
-        if args or kwargs:
-            return y
-        else:
-            return y[:, 0], np.zeros_like(y[:, 0])

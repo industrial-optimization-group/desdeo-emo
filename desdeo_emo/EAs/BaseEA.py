@@ -20,8 +20,7 @@ from desdeo_tools.interaction import (
 
 
 class eaError(Exception):
-    """Raised when an error related to EA occurs
-    """
+    """Raised when an error related to EA occurs"""
 
 
 class BaseEA:
