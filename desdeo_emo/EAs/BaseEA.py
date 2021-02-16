@@ -360,7 +360,7 @@ class BaseDecompositionEA(BaseEA):
             return
 
         interaction_priority = "recommended"
-        self._interaction_request_id = np.random.randint(0, 1e10)
+        self._interaction_request_id = np.random.randint(0, 1e9)
 
         # return multiple preference-requests, user decides with request will (s)he respond to by using an index.
         return (
