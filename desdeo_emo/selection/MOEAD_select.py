@@ -3,7 +3,12 @@ from typing import List
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
-from desdeo_tools.scalarization.MOEADSF import MOEADSFBase, Tchebycheff, PBI, WeightedSum
+from desdeo_tools.scalarization.MOEADSF import (
+    MOEADSFBase,
+    Tchebycheff,
+    PBI,
+    WeightedSum,
+)
 
 
 class MOEAD_select(SelectionBase):
@@ -17,14 +22,19 @@ class MOEAD_select(SelectionBase):
         The scalarizing function employed to evaluate the solutions
 
     """
-    def __init__(
-        self, pop: Population, SF_type: MOEADSFBase
-    ):
-	 # initialize
-        self.SF_type = SF_type
-        
 
-    def do(self, pop: Population, vectors: ReferenceVectors, ideal_point, current_neighborhood, offspring_fx) -> List[int]:
+    def __init__(self, pop: Population, SF_type: MOEADSFBase):
+        # initialize
+        self.SF_type = SF_type
+
+    def do(
+        self,
+        pop: Population,
+        vectors: ReferenceVectors,
+        ideal_point,
+        current_neighborhood,
+        offspring_fx,
+    ) -> List[int]:
         """Select the individuals that are kept in the neighborhood.
 
         Parameters
@@ -46,33 +56,28 @@ class MOEAD_select(SelectionBase):
             List of indices of the selected individuals
         """
         # Compute the value of the SF for each neighbor
-        num_neighbors               = len(current_neighborhood)
-        current_population          = pop.objectives[current_neighborhood,:]
-        current_reference_vectors   = vectors.values[current_neighborhood,:]
-        offspring_population        = np.tile(offspring_fx, (num_neighbors,1))
-        ideal_point_matrix          = np.tile(ideal_point, (num_neighbors,1))
+        num_neighbors = len(current_neighborhood)
+        current_population = pop.objectives[current_neighborhood, :]
+        current_reference_vectors = vectors.values[current_neighborhood, :]
+        offspring_population = np.tile(offspring_fx, (num_neighbors, 1))
+        ideal_point_matrix = np.tile(ideal_point, (num_neighbors, 1))
 
-        values_SF           = self._evaluate_SF(current_population, current_reference_vectors, ideal_point_matrix)
-        values_SF_offspring = self._evaluate_SF(offspring_population, current_reference_vectors, ideal_point_matrix)
+        values_SF = self._evaluate_SF(
+            current_population, current_reference_vectors, ideal_point_matrix
+        )
+        values_SF_offspring = self._evaluate_SF(
+            offspring_population, current_reference_vectors, ideal_point_matrix
+        )
 
-        # Compare the offspring with the individuals in the neighborhood 
+        # Compare the offspring with the individuals in the neighborhood
         # and replace the ones which are outperformed by it.
         selection = np.where(values_SF_offspring < values_SF)[0]
 
         return current_neighborhood[selection]
 
-
     def _evaluate_SF(self, neighborhood, weights, ideal_point):
-        SF_values = np.array(list(map(self.SF_type, neighborhood, weights, ideal_point)))
+        SF_values = np.array(
+            list(map(self.SF_type, neighborhood, weights, ideal_point))
+        )
         return SF_values
-
-
-
-
-    
-
-    
-
-    
-    
 
