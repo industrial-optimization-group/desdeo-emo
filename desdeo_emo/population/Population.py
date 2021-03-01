@@ -245,3 +245,42 @@ class Population(BasePopulation):
         self.ideal_objective_vector = (
             self.ideal_fitness_val * self.problem._max_multiplier
         )
+    def replace(self, indices: List, individual:np.ndarray, evaluation:tuple):
+        """Replace the population members given by the list of indices by the given individual and its evaluation. 
+           Keep the rest of the population unchanged.
+
+        Parameters
+        ----------
+        indices : List
+            List of indices of the population members to be replaced.
+        individual: np.ndarray
+            Decision variables of the individual that will replace the positions given in the list.
+        evaluation: tuple
+            Result of the evaluation of the objective function, constraints, etc. obtained using the evaluate method.
+        """
+        self.individuals[indices, :] = individual
+        self.objectives[indices, :] = evaluation.objectives
+        self.fitness[indices, :] = evaluation.fitness
+        if self.constraint is not None:
+            self.constraint[indices, :] = evaluation.constraints
+        if self.uncertainity is not None:
+            self.uncertainity[indices, :] = evaluation.uncertainity
+
+    def repair(self, individual):
+        """Repair the variables of an individual which are not in the boundary defined by the problem
+        Parameters
+        ----------
+        individual : 
+            Decision variables of the individual.
+
+        Return
+        ----------
+        The new decision vector with the variables in the boundary defined by the problem
+        """
+        upper_bounds = self.problem.get_variable_upper_bounds()
+        lower_bounds = self.problem.get_variable_lower_bounds()
+        upper_bounds_check = np.where(individual > upper_bounds)
+        lower_bounds_check = np.where(individual < lower_bounds)
+        individual[upper_bounds_check] = upper_bounds[upper_bounds_check]
+        individual[lower_bounds_check] = lower_bounds[lower_bounds_check]
+        return individual
