@@ -1,6 +1,8 @@
 from random import choice, sample
 import numpy as np
-from pygmo import fast_non_dominated_sorting as nds
+
+# from pygmo import fast_non_dominated_sorting as nds
+from desdeo_tools.utilities import fast_non_dominated_sort as nds
 from desdeo_emo.EAs.BaseEA import BaseEA, eaError
 
 
@@ -169,7 +171,11 @@ class PPGA(BaseEA):
             List of indices of individuals to be selected.
         """
         # Calculating fronts and ranks
-        _, _, _, rank = nds(population.fitness)
+        # _, _, _, rank = nds(population.fitness)
+        fronts = nds(population.fitness)
+        index_ranks = np.argwhere(fronts)
+        rank = np.full(fronts.shape[1], np.inf, dtype=int)
+        rank[index_ranks[:, 1]] = index_ranks[:, 0]
         selection = np.nonzero(rank > max_rank)
         return selection[0]
 
@@ -316,7 +322,7 @@ class Lattice:
                 # -1 for lattice offset
                 mate = int(choice(mates)) - 1
                 mating_pop.append([prey, mate])
-        if mating_pop ==[]:
+        if mating_pop == []:
             raise eaError("What's ahppening?!")
         return mating_pop
 

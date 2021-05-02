@@ -1,18 +1,17 @@
 [tool.poetry]
 name = "desdeo_emo"
-version = "1.1.3"
+version = "1.2.1"
 description = "The python version reference vector guided evolutionary algorithm."
 authors = ["Bhupinder Saini"]
 license = "MPL-2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7.0"
-pygmo = "=2.12"
+python = ">=3.7.0,<3.10"
 pyDOE = "^0.3.8"
 plotly = "^4.1"
-desdeo-problem = "^1.1.1"
-desdeo-tools = "^1.3.0"
+desdeo-problem = "^1.2.0"
+desdeo-tools = "^1.4.1"
 # optproblems = "^1.2" # Present in desdeo-problem
 # scikit-learn = "^0.21.2" # Present in desdeo-problem
 # diversipy = "^0.8.0" # Present in desdeo-problem

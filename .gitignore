@@ -144,3 +144,5 @@ dmypy.json
 # Graphviz files
 *.gv
 *.gv.png
+
+experiments/

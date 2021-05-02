@@ -534,7 +534,7 @@ class BioGP(BaseRegressor):
         if self.model_selection_criterion == "min_error":
             # Return the model with the lowest error
             selected = np.argmin(self.model_population.objectives[:, 0])
-            print(self.model_population.objectives)
+            # print(self.model_population.objectives)
         else:
             raise ModelError("Selection criterion not recognized. Use 'min_error'.")
         self.tree = self.model_population.individuals[selected][0]
