@@ -214,8 +214,8 @@ a {
   display: none !important;
 }
 .wy-side-nav-search {
-  /* padding-top: var(--topnav-margin-size); */
-  margin: -20px 0px 0px 0px;
+  /*margin: -20px 0px 0px 0px;*/
+  padding-top: 0px;
 }
 .wy-nav-content {
   width: auto !important;
@@ -232,6 +232,7 @@ a {
 }
 .wy-side-scroll {
   background: #efefef;
+  padding-top: 0em;
 }
 .wy-nav-top {
   background: #ffffff;
@@ -254,7 +255,6 @@ a {
   background: #efefef;
 }
 .wy-side-nav-search {
-  padding-top: 50px;
   background: #efefef;
   font-family: inherit;
 }
