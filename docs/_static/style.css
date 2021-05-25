@@ -508,6 +508,10 @@ html.writer-html5 .rst-content table.docutils th {
   border: 1px solid #4e4b4b45;
 }
 
+.wy-table thead th, .rst-content table.docutils thead th, .rst-content table.field-list thead th {
+  font-weight: bold;
+  border: 1px solid #4e4b4b45;
+}
 
 .rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td, .wy-table-backed, .wy-table-odd td, .wy-table-striped tr:nth-child(2n-1) td {
   background-color: #f8f8f8;
