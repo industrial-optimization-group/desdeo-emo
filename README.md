@@ -3,6 +3,8 @@
 
 The evolutionary algorithms package within the `desdeo` framework.
 
+Code for the SoftwareX paper can be found in [this notebook](docs/notebooks/Using_EvoNN_for_optimization.ipynb).
+
 Currently supported:
 * Multi-objective optimization with visualization and interaction support.
 * Preference is accepted as a reference point.
@@ -18,15 +20,15 @@ To test the code, open the [binder link](https://mybinder.org/v2/gh/industrial-o
 
 Read the documentation [here](https://desdeo-emo.readthedocs.io/en/latest/)
 
-### Requirements:
+### Requirements
 * Python 3.7 (3.8 is NOT supported at the moment)
 * [Poetry dependency manager](https://github.com/sdispater/poetry): Only for developers
 
-### Installation process for normal users:
+### Installation process for normal users
 * Create a new virtual enviroment for the project
 * Run: `pip install desdeo_emo`
 
-### Installation process for developers:
+### Installation process for developers
 * Download and extract the code or `git clone`
 * Create a new virtual environment for the project
 * Run `poetry install` inside the virtual environment shell.

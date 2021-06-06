@@ -1,6 +1,7 @@
 from itertools import combinations, product
 
 import numpy as np
+from pyDOE import lhs
 from scipy.special import comb
 
 
@@ -261,7 +262,101 @@ class ReferenceVectors:
         )
         self.normalize()
 
-    def iteractive_adapt_1(self, ref_point, translation_param=0.2):
+    def interactive_adapt_1(self, z: np.ndarray, n_solutions: int, translation_param: float = 0.2) -> None:
+        """
+        Adapt reference vectors using the information about prefererred solution(s) selected by the Decision maker.
+
+        Args:
+            z (np.ndarray): Preferred solution(s).
+            n_solutions (int): Number of solutions in total.
+            translation_param (float): Parameter determining how close the reference vectors are to the central vector
+            **v** defined by using the selected solution(s) z.
+
+        Returns:
+
+        """
+
+        if z.shape[0] == n_solutions:
+            # if dm specifies all solutions as preferred, reinitialize reference vectors
+            self.values = self.initial_values
+            self.values_planar = self.initial_values_planar
+
+        else:
+            if z.shape[0] == 1:
+                # single preferred solution
+                # calculate new reference vectors
+                self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
+                self.values_planar = translation_param * self.initial_values_planar + ((1 - translation_param) * z)
+
+            else:
+                # multiple preferred solutions
+                # calculate new reference vectors for each preferred solution
+                values = [translation_param * self.initial_values + ((1 - translation_param) * z_i) for z_i in z]
+                values_planar = [translation_param * self.initial_values_planar + ((1 - translation_param) * z_i)
+                                 for z_i in z]
+
+                # combine arrays of reference vectors into a single array and update reference vectors
+                self.values = np.concatenate(values)
+                self.values_planar = np.concatenate(values_planar)
+
+        self.normalize()
+
+    def interactive_adapt_2(self, z: np.ndarray, n_solutions: int, predefined_distance: float = 0.2) -> None:
+        """
+        Adapt reference vectors by using the information about non-preferred solution(s) selected by the Decision maker.
+        After the Decision maker has specified non-preferred solution(s), Euclidian distance between normalized solution
+        vector(s) and each of the reference vectors are calculated. Those reference vectors that are **closer** than a
+        predefined distance are either **removed** or **re-positioned** somewhere else.
+
+        Note:
+            At the moment, only the **removal** of reference vectors is supported. Repositioning of the reference
+            vectors is **not** supported.
+
+        Note:
+            In case the Decision maker specifies multiple non-preferred solutions, the reference vector(s) for which the
+            distance to **any** of the non-preferred solutions is less than predefined distance are removed.
+
+        Note:
+            Future developer should implement a way for a user to say: "Remove some percentage of
+            objecive space/reference vectors" rather than giving a predefined distance value.
+
+        Args:
+            z (np.ndarray): Non-preferred solution(s).
+            n_solutions (int): Number of solutions in total.
+            predefined_distance (float): The reference vectors that are closer than this distance are either removed or
+            re-positioned somewhere else.
+            Default value: 0.2
+
+        Returns:
+
+        """
+
+        if z.shape[0] == n_solutions:
+            # if dm specifies all solutions as non-preferred ones, reinitialize reference vectors
+            self.values = self.initial_values
+            self.values_planar = self.initial_values_planar
+            self.normalize()
+
+        else:
+            # calculate L1 norm of non-preferred solution(s)
+            z = np.atleast_2d(z)
+            norm = np.linalg.norm(z, ord=1, axis=1).reshape(np.shape(z)[0], 1)
+
+            # non-preferred solutions normalized
+            v_c = np.divide(z, norm)
+
+            # distances from non-preferred solution(s) to each reference vector
+            distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
+                                  for value in self.values_planar])
+
+            # find out reference vectors that are not closer than threshold value to any non-preferred solution
+            mask = [all(d >= predefined_distance) for d in distances]
+
+            # set those reference vectors that met previous condition as new reference vectors, drop others
+            self.values = self.values[mask]
+            self.values_planar = self.values_planar[mask]
+
+    def iteractive_adapt_3(self, ref_point, translation_param=0.2):
         """Adapt reference vectors linearly towards a reference point. Then normalize.
 
         The details can be found in the following paper: Hakanen, Jussi &
@@ -284,6 +379,35 @@ class ReferenceVectors:
         self.values_planar = self.initial_values_planar * translation_param + (
             (1 - translation_param) * ref_point
         )
+        self.normalize()
+
+    def interactive_adapt_4(self, preferred_ranges: np.ndarray) -> None:
+        """
+        Adapt reference vectors by using the information about the Decision maker's preferred range for each of the
+        objective. Using these ranges, Latin hypercube sampling is applied to generate m number of samples between
+        within these ranges, where m is the number of reference vectors. Normalized vectors constructed of these samples
+        are then set as new reference vectors.
+
+        Args:
+            preferred_ranges (np.ndarray): Preferred lower and upper bound for each of the objective function values.
+
+        Returns:
+
+        """
+
+        # bounds
+        lower_limits = np.array([ranges[0] for ranges in preferred_ranges])
+        upper_limits = np.array([ranges[1] for ranges in preferred_ranges])
+
+        # generate samples using Latin hypercube sampling
+        w = lhs(self.number_of_objectives, samples=self.number_of_vectors)
+
+        # scale between bounds
+        w = w * (upper_limits - lower_limits) + lower_limits
+
+        # set new reference vectors and normalize them
+        self.values = w
+        self.values_planar = w
         self.normalize()
 
     def slow_interactive_adapt(self, ref_point):

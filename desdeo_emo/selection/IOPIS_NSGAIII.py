@@ -1,6 +1,7 @@
 from desdeo_emo.selection.NSGAIII_select import NSGAIII_select
 import numpy as np
-from pygmo import fast_non_dominated_sorting as nds
+#from pygmo import fast_non_dominated_sorting as nds
+from desdeo_tools.utilities import fast_non_dominated_sort
 from typing import List
 from desdeo_emo.population.Population import Population
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
@@ -48,7 +49,9 @@ class IOPIS_NSGAIII_select(NSGAIII_select):
             ]
         ).T
         # Calculating fronts and ranks
-        fronts, dl, dc, rank = nds(fitness)
+        # fronts, dl, dc, rank = nds(fitness)
+        fronts = fast_non_dominated_sort(fitness)
+        fronts = [np.where(fronts[i])[0] for i in range(len(fronts))]
         non_dominated = fronts[0]
         fmin = np.amin(fitness, axis=0)
         self.ideal = np.amin(np.vstack((self.ideal, fmin)), axis=0)

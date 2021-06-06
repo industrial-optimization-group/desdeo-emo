@@ -1,7 +1,7 @@
 # %%
-from desdeo_emo.surrogatemodelling.EvoNN import EvoNN
-from desdeo_emo.surrogatemodelling.BioGP import BioGP
-from desdeo_emo.surrogatemodelling.EvoDN2 import EvoDN2
+from desdeo_emo.surrogatemodels.EvoNN import EvoNN
+from desdeo_emo.surrogatemodels.BioGP import BioGP
+from desdeo_emo.surrogatemodels.EvoDN2 import EvoDN2
 import numpy as np
 import pandas as pd
 from desdeo_emo.EAs.RVEA import RVEA

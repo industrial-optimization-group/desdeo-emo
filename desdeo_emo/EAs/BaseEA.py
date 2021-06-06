@@ -10,6 +10,9 @@ from desdeo_problem.Problem import MOProblem
 from desdeo_tools.interaction import (
     SimplePlotRequest,
     ReferencePointPreference,
+    PreferredSolutionPreference,
+    NonPreferredSolutionPreference,
+    BoundPreference,
     validate_ref_point_data_type,
     validate_ref_point_dimensions,
     validate_ref_point_with_ideal,
@@ -17,8 +20,7 @@ from desdeo_tools.interaction import (
 
 
 class eaError(Exception):
-    """Raised when an error related to EA occurs
-    """
+    """Raised when an error related to EA occurs"""
 
 
 class BaseEA:
@@ -209,10 +211,22 @@ class BaseDecompositionEA(BaseEA):
         Use this phase to make changes to RVEA.params or other objects.
         Updates Reference Vectors (adaptation), conducts interaction with the user.
         """
-        if not isinstance(preference, (ReferencePointPreference, type(None))):
+        if not isinstance(
+            preference,
+            (
+                ReferencePointPreference,
+                PreferredSolutionPreference,
+                NonPreferredSolutionPreference,
+                BoundPreference,
+                type(None),
+            ),
+        ):
             msg = (
                 f"Wrong object sent as preference. Expected type = "
-                f"{type(ReferencePointPreference)} or None\n"
+                f"{type(ReferencePointPreference)}\n"
+                f"{type(PreferredSolutionPreference)}\n"
+                f"{type(NonPreferredSolutionPreference)}\n"
+                f"{type(BoundPreference)} or None\n"
                 f"Recieved type = {type(preference)}"
             )
             raise eaError(msg)
@@ -226,7 +240,7 @@ class BaseDecompositionEA(BaseEA):
                 raise eaError(msg)
         if preference is None and not self._ref_vectors_are_focused:
             self.reference_vectors.adapt(self.population.fitness)
-        if preference is not None:
+        if isinstance(preference, ReferencePointPreference):
             ideal = self.population.ideal_fitness_val
             refpoint = (
                 preference.response.values * self.population.problem._max_multiplier
@@ -234,7 +248,22 @@ class BaseDecompositionEA(BaseEA):
             refpoint = refpoint - ideal
             norm = np.sqrt(np.sum(np.square(refpoint)))
             refpoint = refpoint / norm
-            self.reference_vectors.iteractive_adapt_1(refpoint)
+            self.reference_vectors.iteractive_adapt_3(refpoint)
+            self.reference_vectors.add_edge_vectors()
+        elif isinstance(preference, PreferredSolutionPreference):
+            self.reference_vectors.interactive_adapt_1(
+                z=self.population.objectives[preference.response],
+                n_solutions=np.shape(self.population.objectives)[0],
+            )
+            self.reference_vectors.add_edge_vectors()
+        elif isinstance(preference, NonPreferredSolutionPreference):
+            self.reference_vectors.interactive_adapt_2(
+                z=self.population.objectives[preference.response],
+                n_solutions=np.shape(self.population.objectives)[0],
+            )
+            self.reference_vectors.add_edge_vectors()
+        elif isinstance(preference, BoundPreference):
+            self.reference_vectors.interactive_adapt_4(preference.response)
             self.reference_vectors.add_edge_vectors()
         self.reference_vectors.neighbouring_angles()
 
@@ -264,7 +293,18 @@ class BaseDecompositionEA(BaseEA):
             data=data, dimensions_data=dimensions_data, message="Objective Values"
         )
 
-    def request_preferences(self) -> Union[None, ReferencePointPreference]:
+    def request_preferences(
+        self
+    ) -> Union[
+        None,
+        Tuple[
+            PreferredSolutionPreference,
+            NonPreferredSolutionPreference,
+            ReferencePointPreference,
+            BoundPreference,
+        ],
+    ]:
+
         if self.a_priori is False and self.interact is False:
             return
         if (
@@ -281,14 +321,36 @@ class BaseDecompositionEA(BaseEA):
         dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
         dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
         message = (
-            f"Provide a reference point worse than or equal to the ideal point:\n"
+            "Please provide preferences. There is four ways to do this. You can either:\n\n"
+            "\t1: Select preferred solution(s)\n"
+            "\t2: Select non-preferred solution(s)\n"
+            "\t3: Specify a reference point worse than or equal to the ideal point\n"
+            "\t4: Specify desired ranges for objectives.\n\n"
+            "In case you choose \n\n"
+            "1, please specify index/indices of preferred solutions in a numpy array (indexing starts from 0).\n"
+            "For example: \n"
+            "\tnumpy.array([1]), for choosing the solutions with index 1.\n"
+            "\tnumpy.array([2, 4, 5, 16]), for choosing the solutions with indices 2, 4, 5, and 16.\n\n"
+            "2, please specify index/indices of non-preferred solutions in a numpy array (indexing starts from 0).\n"
+            "For example: \n"
+            "\tnumpy.array([3]), for choosing the solutions with index 3.\n"
+            "\tnumpy.array([1, 2]), for choosing the solutions with indices 1 and 2.\n\n"
+            "3, please provide a reference point worse than or equal to the ideal point:\n\n"
             f"{dimensions_data.loc['ideal']}\n"
             f"The reference point will be used to focus the reference vectors towards "
             f"the preferred region.\n"
             f"If a reference point is not provided, the previous state of the reference"
             f" vectors is used.\n"
-            f"If the reference point is the same as the ideal point, the ideal point, "
-            f"the reference vectors are spread uniformly in the objective space."
+            f"If the reference point is the same as the ideal point, "
+            f"the reference vectors are spread uniformly in the objective space.\n\n"
+            "4, please specify desired lower and upper bound for each objective, starting from \n"
+            "the first objective and ending with the last one. Please specify the bounds as a numpy array containing \n"
+            "lists, so that the first item of list is the lower bound and the second the upper bound, for each \n"
+            "objective. \n"
+            "\tFor example: numpy.array([[1, 2], [2, 5], [0, 3.5]]), for problem with three "
+            "objectives.\n"
+            f"Ideal vector: \n{dimensions_data.loc['ideal']}\n"
+            f"Nadir vector: \n{dimensions_data.loc['nadir']}."
         )
 
         def validator(dimensions_data: pd.DataFrame, reference_point: pd.DataFrame):
@@ -298,14 +360,38 @@ class BaseDecompositionEA(BaseEA):
             return
 
         interaction_priority = "recommended"
-        self._interaction_request_id = np.random.randint(0, 1e10)
-        return ReferencePointPreference(
-            dimensions_data=dimensions_data,
-            message=message,
-            interaction_priority=interaction_priority,
-            preference_validator=validator,
-            request_id=self._interaction_request_id,
+        self._interaction_request_id = np.random.randint(0, 1e9)
+
+        # return multiple preference-requests, user decides with request will (s)he respond to by using an index.
+        return (
+            PreferredSolutionPreference(
+                n_solutions=self.population.objectives.shape[0],
+                message=message,
+                interaction_priority=interaction_priority,
+                request_id=self._interaction_request_id,
+            ),
+            NonPreferredSolutionPreference(
+                n_solutions=self.population.objectives.shape[0],
+                message=None,
+                interaction_priority=interaction_priority,
+                request_id=self._interaction_request_id,
+            ),
+            ReferencePointPreference(
+                dimensions_data=dimensions_data,
+                message=None,
+                interaction_priority=interaction_priority,
+                preference_validator=validator,
+                request_id=self._interaction_request_id,
+            ),
+            BoundPreference(
+                dimensions_data=dimensions_data,
+                n_objectives=self.population.problem.n_of_objectives,
+                message=None,
+                interaction_priority=interaction_priority,
+                request_id=self._interaction_request_id,
+            ),
         )
 
     def requests(self) -> Tuple:
         return (self.request_plot(), self.request_preferences())
+

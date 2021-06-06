@@ -1,5 +1,5 @@
-Evolutionary algorithms
-=======================
+What are Evolutionary Algorithms?
+=================================
 
 Evolutionary algorithms (EAs) are optimization algorithms which emulate the process of
 evolution via natural selection to find optimal solutions to single- or multiobjective

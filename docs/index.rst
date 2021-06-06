@@ -103,6 +103,7 @@ Currently implemented methods
    :maxdepth: 2
    :caption: Contents
 
+   README <README>
    background
    api
    examples

@@ -5,7 +5,7 @@ API Documentation
 
 .. automodapi:: desdeo_emo.EAs
 
-.. automodapi:: desdeo_emo.surrogatemodelling
+.. automodapi:: desdeo_emo.surrogatemodels
 
 .. automodapi:: desdeo_emo.recombination
 

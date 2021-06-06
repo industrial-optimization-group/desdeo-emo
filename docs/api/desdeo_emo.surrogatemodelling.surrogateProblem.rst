@@ -1,7 +1,7 @@
 surrogateProblem
 ================
 
-.. currentmodule:: desdeo_emo.surrogatemodelling
+.. currentmodule:: desdeo_emo.surrogatemodels
 
 .. autoclass:: surrogateProblem
    :show-inheritance:

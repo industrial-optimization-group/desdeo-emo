@@ -1,5 +1,6 @@
 import numpy as np
-from pygmo import fast_non_dominated_sorting as nds
+#from pygmo import fast_non_dominated_sorting as nds
+from desdeo_tools.utilities import fast_non_dominated_sort
 from typing import List
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
@@ -49,7 +50,9 @@ class NSGAIII_select(SelectionBase):
         ref_dirs = vectors.values_planar
         fitness = self._calculate_fitness(pop)
         # Calculating fronts and ranks
-        fronts, dl, dc, rank = nds(fitness)
+        #fronts, dl, dc, rank = nds(fitness)
+        fronts = fast_non_dominated_sort(fitness)
+        fronts = [np.where(fronts[i])[0] for i in range(len(fronts))]
         non_dominated = fronts[0]
         fmin = np.amin(fitness, axis=0)
         self.ideal = np.amin(np.vstack((self.ideal, fmin)), axis=0)
@@ -78,7 +81,6 @@ class NSGAIII_select(SelectionBase):
                 fronts = fronts[: front_id + 1]
                 selection = np.concatenate(fronts)
                 break
-
         F = fitness[selection]
 
         last_front = fronts[-1]
