@@ -6,7 +6,7 @@ import pandas as pd
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem.Problem import MOProblem, classificationPISProblem
 from desdeo_tools.interaction import (
     SimplePlotRequest,
     ReferencePointPreference,
@@ -171,15 +171,17 @@ class BaseDecompositionEA(BaseEA):
             selection_operator=selection_operator,
             use_surrogates=use_surrogates,
         )
+        if isinstance(problem, classificationPISProblem):
+            num_obj = problem.num_dim_fitness
+        else:
+            num_obj = problem.n_of_objectives
         if lattice_resolution is None:
             lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
-            if problem.n_of_objectives < 11:
-                lattice_resolution = lattice_res_options[problem.n_of_objectives - 2]
+            if num_obj < 11:
+                lattice_resolution = lattice_res_options[num_obj - 2]
             else:
                 lattice_resolution = 3
-        self.reference_vectors = ReferenceVectors(
-            lattice_resolution, problem.n_of_objectives
-        )
+        self.reference_vectors = ReferenceVectors(lattice_resolution, num_obj)
         if initial_population is not None:
             #  Population should be compatible.
             self.population = initial_population  # TODO put checks here.
@@ -211,6 +213,14 @@ class BaseDecompositionEA(BaseEA):
         Use this phase to make changes to RVEA.params or other objects.
         Updates Reference Vectors (adaptation), conducts interaction with the user.
         """
+        if isinstance(preference, Dict) and isinstance(
+            self.population.problem, classificationPISProblem
+        ):
+            self.population.problem.update_preference(preference)
+            self.population.reevaluate_fitness()
+            self.reference_vectors.adapt(self.population.fitness)
+            return
+
         if not isinstance(
             preference,
             (
@@ -218,6 +228,7 @@ class BaseDecompositionEA(BaseEA):
                 PreferredSolutionPreference,
                 NonPreferredSolutionPreference,
                 BoundPreference,
+                Dict,
                 type(None),
             ),
         ):
@@ -226,10 +237,11 @@ class BaseDecompositionEA(BaseEA):
                 f"{type(ReferencePointPreference)}\n"
                 f"{type(PreferredSolutionPreference)}\n"
                 f"{type(NonPreferredSolutionPreference)}\n"
-                f"{type(BoundPreference)} or None\n"
+                f"{type(BoundPreference)}, Dict, or None\n"
                 f"Recieved type = {type(preference)}"
             )
             raise eaError(msg)
+
         if preference is not None:
             if preference.request_id != self._interaction_request_id:
                 msg = (
@@ -313,6 +325,8 @@ class BaseDecompositionEA(BaseEA):
             and self._iteration_counter > 0
         ):
             return
+        if isinstance(self.population.problem, classificationPISProblem):
+            return {"classifications": None, "current solution": None, "levels": None}
         dimensions_data = pd.DataFrame(
             index=["minimize", "ideal", "nadir"],
             columns=self.population.problem.get_objective_names(),
