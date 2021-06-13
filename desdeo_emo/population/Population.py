@@ -8,6 +8,8 @@ from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
 from desdeo_problem.Problem import MOProblem
 
+from desdeo_tools.utilities import non_dominated
+
 
 class BasePopulation(ABC):
     def __init__(self, problem: MOProblem, pop_size: int, pop_params: Dict = None):
@@ -165,12 +167,10 @@ class Population(BasePopulation):
             self.objectives = np.vstack((self.objectives, objectives))
             self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
-                self.constraint = np.vstack(
-                    (self.constraint, constraints)
-                )
+                self.constraint = np.vstack((self.constraint, constraints))
             if uncertainity is None:
                 self.uncertainity = None
-            else:    
+            else:
                 self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
@@ -251,8 +251,8 @@ class Population(BasePopulation):
         self.ideal_objective_vector = (
             self.ideal_fitness_val * self.problem._max_multiplier
         )"""
-    
-    def replace(self, indices: List, individual:np.ndarray, evaluation:tuple):
+
+    def replace(self, indices: List, individual: np.ndarray, evaluation: tuple):
         """Replace the population members given by the list of indices by the given individual and its evaluation. 
            Keep the rest of the population unchanged.
 
@@ -291,6 +291,12 @@ class Population(BasePopulation):
         individual[upper_bounds_check] = upper_bounds[upper_bounds_check]
         individual[lower_bounds_check] = lower_bounds[lower_bounds_check]
         return individual
-    
+
     def reevaluate_fitness(self):
         self.fitness = self.problem.reevaluate_fitness(self.objectives)
+
+    def non_dominated_fitness(self):
+        return non_dominated(self.fitness)
+
+    def non_dominated_objectives(self):
+        return non_dominated(self.objectives * self.problem._max_multiplier)
