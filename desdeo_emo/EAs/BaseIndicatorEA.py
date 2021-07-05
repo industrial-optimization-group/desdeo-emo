@@ -22,6 +22,8 @@ import plotly.graph_objects as go
 from pyDOE import lhs
 from pygmo import non_dominated_front_2d as nd2
 
+
+# tämän pitäisi olla nopea
 @njit 
 def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the additive epsilon-indicator between reference front and current approximating front.
@@ -63,7 +65,7 @@ def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> flo
 # this is probably slower than needed
 def binary_tournament_select(population:Population) -> list:
         parents = []
-        for i in range(int(population.pop_size / 2)):
+        for i in range(int(population.pop_size)):
             parents.append(
                 np.asarray(
                     tour_select(population.fitness[:, 0], 2),
@@ -124,14 +126,28 @@ class BaseIndicatorEA(BaseEA):
         # iterate until size of population less than alpha. Dunno how to implement this. maybe stopid while loop or smh?
         # call the _select fucntion, delete the worst individual
         while (self.population.pop_size <= self.population.individuals.shape[0]):
+
+            # maybe refactor the join_pop, to make simpler and possibly find speedgain
+
+            # choose individual with smallest fitness value
             selected = self._select()
+            worst_index = selected[0]
+
+            # update the fitness values
+            poplen = self.population.individuals.shape[0]
+            for i in range(poplen):
+                self.population.fitness[i] += np.exp(-epsilon_indicator([self.population.objectives[i]], [self.population.objectives[worst_index]]) / 0.05)
+
+            # remove the worst individula 
             self.population.delete(selected)
-            # update the fitness values of remaining individuals
-            self._fitness_assignment()
+
+            # update the fitness values of remaining individuals. Here we should use worst index.. also would probably make it faster.
+            #self._fitness_assignment()
         # check termination
         # currently just runs until func evaluations run out.
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. kovakoodataan tämä nytten, mietitään myöhemmin sitten muuten.
+        # this might not be correct either
         chosen = binary_tournament_select(self.population)        
 
         # variation, call the recombination operators
@@ -207,8 +223,8 @@ class IBEA(BaseIndicatorEA):
 if __name__=="__main__":
     # start with simpler example you can calculate by hand to confirm it works.
     # get the problem
-    problem_name = "ZDT1" # needs 30,100
-    #problem_name = "ZDT2" 
+    #problem_name = "ZDT1" # needs 30,100
+    problem_name = "ZDT2" 
     #problem_name = "DTLZ2" 
     #problem_name = "DTLZ7" 
 
