@@ -57,8 +57,8 @@ class MOEAD_select(SelectionBase):
         """
         # Compute the value of the SF for each neighbor
         num_neighbors = len(current_neighborhood)
-        current_population = pop.objectives[current_neighborhood, :]
-        current_reference_vectors = vectors.values[current_neighborhood, :]
+        current_population = pop.fitness[current_neighborhood, :]
+        current_reference_vectors = vectors.values_planar[current_neighborhood, :]
         offspring_population = np.tile(offspring_fx, (num_neighbors, 1))
         ideal_point_matrix = np.tile(ideal_point, (num_neighbors, 1))
 
