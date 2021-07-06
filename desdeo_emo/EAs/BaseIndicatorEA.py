@@ -65,7 +65,7 @@ def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> flo
 # this is probably slower than needed
 def binary_tournament_select(population:Population) -> list:
         parents = []
-        for i in range(int(population.pop_size)):
+        for i in range(int(population.pop_size)): # maybe half this or quarter?
             parents.append(
                 np.asarray(
                     tour_select(population.fitness[:, 0], 2),
@@ -121,11 +121,11 @@ class BaseIndicatorEA(BaseEA):
         
     # täälä operaattorit in the main loop of the algoritmh
     def _next_gen(self):
-        # call _fitness_assigment (using indicator)
+        # call _fitness_assigment (using indicator). replacement
         self._fitness_assignment()
         # iterate until size of population less than alpha. Dunno how to implement this. maybe stopid while loop or smh?
         # call the _select fucntion, delete the worst individual
-        while (self.population.pop_size <= self.population.individuals.shape[0]):
+        while (self.population.pop_size < self.population.individuals.shape[0]):
 
             # maybe refactor the join_pop, to make simpler and possibly find speedgain
 
@@ -142,7 +142,7 @@ class BaseIndicatorEA(BaseEA):
             self.population.delete(selected)
 
             # update the fitness values of remaining individuals. Here we should use worst index.. also would probably make it faster.
-            #self._fitness_assignment()
+           # self._fitness_assignment()
         # check termination
         # currently just runs until func evaluations run out.
 
@@ -157,6 +157,7 @@ class BaseIndicatorEA(BaseEA):
         self._current_gen_count += 1
         #print(self._current_gen_count)
         self._gen_count_in_curr_iteration += 1
+        #print(f"gen count curr ite {self._gen_count_in_curr_iteration}")
         self._function_evaluation_count += offspring.shape[0]
         print(self._function_evaluation_count)
 
@@ -172,11 +173,39 @@ class BaseIndicatorEA(BaseEA):
     def _fitness_assignment(self):
         population = self.population
         pop_size = population.individuals.shape[0]
+        #pop_width = population.fitness.shape[1]
+
+        print(f"pop fitness ka: {np.mean(population.fitness)}, pop fitness kh: {np.std(population.fitness)}")
+
+        fit_comp = np.zeros([pop_size, pop_size])
+        maxIndicatorVal = 0
+        # TODO: population.fitness[i] could be the issue, since it has objective number of values but we put the indicator value to all of them.
         for i in range(pop_size):
-            population.fitness[i] = 0,0 # dunno if needed
+            #population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
                     population.fitness[i] += -np.exp(-epsilon_indicator([population.objectives[i]], [population.objectives[j]]) / 0.05)
+
+# Ibea.c :stä. ei onnistu tämäkään
+#                fit_comp[i][j] = epsilon_indicator([population.objectives[i]], [population.objectives[j]])
+#                fitabs =  np.abs(fit_comp[i][j])
+#                if maxIndicatorVal < fitabs:
+#                        maxIndicatorVal = fitabs
+#                
+#        for i in range(pop_size):
+#            for j in range(pop_size):
+#                fit_comp[i][j] = np.exp((-fit_comp[i][j]/maxIndicatorVal)/0.05)
+#                #print(fit_comp[i][j])
+#
+#        for i in range(pop_size):
+#            summa = 0
+#            for j in range(pop_size):
+#                if i != j:
+#                    summa += fit_comp[i][j]
+#                    population.fitness[i] = summa
+#
+
+                    #print(population.fitness[i][k])
 
 
 
@@ -219,18 +248,23 @@ class IBEA(BaseIndicatorEA):
         #print("using IBEA")
 
     
-# population.fitness on 100,2 koska kaks objektivea, eli jokaisella kaksi eri arvoa.
-if __name__=="__main__":
-    # start with simpler example you can calculate by hand to confirm it works.
-    # get the problem
-    #problem_name = "ZDT1" # needs 30,100
-    problem_name = "ZDT2" 
-    #problem_name = "DTLZ2" 
-    #problem_name = "DTLZ7" 
+
+"""
+10 000 evals
+ZDT1 works
+ZDT2 almost works 
+ZDT3 works
+ZDT4 doesn't work
+ZDT6 doestn really work- kinda works with more evals
+"""
+def testZDTs():
+    problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
+    #problem_name = "ZDT3" # seems work ok.
+    #problem_name = "ZDT6" # this just starts going worse and worse 
+    # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)
-
-    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=25000)
+    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=10000)
     
     print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
@@ -245,5 +279,52 @@ if __name__=="__main__":
     plt.ylabel("F2")
     plt.legend()
     plt.show()
-    #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    #plt.tight_layout()
+
+
+# TODO: starting to feel this IBEA has some problems still.. shoudl be doing better with less evals
+# TODO: I broke it at some point. No idea whattt is wrong
+# works for these too
+"""
+15 000 evals
+DTLZ1 doesn't work
+DTLZ2 kinda works
+DTLZ6 doesnt work
+DTLZ7 kinda works. 
+"""
+def testDTLZs():
+    #problem_name = "DTLZ1" 
+    #problem = test_problem_builder(problem_name, n_of_variables=7, n_of_objectives=3)
+        
+    #problem_name = "DTLZ2" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
+    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
+
+    #problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
+    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
+
+    problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
+    problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
+
+    evolver = IBEA(problem, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=15000)
+    
+    print("starting front", evolver.population.objectives[0::10])
+    while evolver.continue_evolution():
+        evolver.iterate()
+
+    front_true = evolver.population.objectives
+    print(front_true[0::10])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.view_init(30,45)
+    ax.scatter(front_true[:,0],front_true[:,1],front_true[:,2])
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    plt.show()
+
+
+
+# population.fitness on 100,2 koska kaks objektivea, eli jokaisella kaksi eri arvoa.
+if __name__=="__main__":
+   testZDTs()
+   #testDTLZs()
