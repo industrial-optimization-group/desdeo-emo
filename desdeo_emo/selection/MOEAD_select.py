@@ -76,8 +76,18 @@ class MOEAD_select(SelectionBase):
         return current_neighborhood[selection]
 
     def _evaluate_SF(self, neighborhood, weights, ideal_point):
+        num_neighbors = len(neighborhood)
+        num_objectives = np.shape(weights)[1]
+        SF_values = []
+
+        # Replace the zeros in the weight vectors with a small value to avoid
+        # errors when computing the scalarization function
+        fixed_reference_vectors = weights
+        fixed_reference_vectors[fixed_reference_vectors == 0] = 0.0001
+
+        # Get the value of the selected scalarization function
         SF_values = np.array(
-            list(map(self.SF_type, neighborhood, weights, ideal_point))
+            list(map(self.SF_type, neighborhood, fixed_reference_vectors, ideal_point))
         )
         return SF_values
 

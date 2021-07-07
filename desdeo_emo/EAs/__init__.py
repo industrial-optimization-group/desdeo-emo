@@ -10,7 +10,7 @@ __all__ = [
     "TournamentEA",
     "IOPIS_NSGAIII",
     "IOPIS_RVEA",
-    "MOEAD",
+    "MOEA_D",
 ]
 
 from desdeo_emo.EAs.BaseEA import BaseEA, BaseDecompositionEA
@@ -19,4 +19,4 @@ from desdeo_emo.EAs.NSGAIII import NSGAIII
 from desdeo_emo.EAs.PPGA import PPGA
 from desdeo_emo.EAs.TournamentEA import TournamentEA
 from desdeo_emo.EAs.IOPIS import IOPIS_NSGAIII, IOPIS_RVEA
-from desdeo_emo.EAs.MOEAD import MOEAD
+from desdeo_emo.EAs.MOEAD import MOEA_D

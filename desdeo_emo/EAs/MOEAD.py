@@ -31,7 +31,7 @@ class MOEA_D(BaseDecompositionEA):
     scalarization_function: MOEADSF
     	The scalarization function to compare the solutions. Some implementations 
         can be found in desdeo-tools/scalarization/MOEADSF. By default it uses the
-        Tchebycheff function.
+        PBI function.
     n_neighbors: int, optional
     	Number of reference vectors considered in the neighborhoods creation. The default 
     	number is 20.
@@ -72,7 +72,7 @@ class MOEA_D(BaseDecompositionEA):
     def __init__(  # parameters of the class
         self,
         problem: MOProblem,
-        scalarization_function: MOEADSF = Tchebycheff(),
+        scalarization_function: MOEADSF = PBI(),
         n_neighbors: int = 20,
         population_params: Dict = None,
         initial_population: Population = None,
@@ -106,13 +106,6 @@ class MOEA_D(BaseDecompositionEA):
 
         self.use_repair = use_repair
         self.n_parents = n_parents
-        # self.population.mutation = BP_mutation(
-        #    problem.get_variable_lower_bounds(),
-        #    problem.get_variable_upper_bounds(),
-        #    0.5,
-        #    20,
-        # )
-        # self.population.recombination = SBX_xover(1.0, 20)
 
         selection_operator = MOEAD_select(
             self.population, SF_type=self.scalarization_function
@@ -139,10 +132,6 @@ class MOEA_D(BaseDecompositionEA):
                 : self.n_parents
             ]
 
-            # offspring = self.population.recombination.do(
-            #    self.population.individuals, selected_parents
-            # )
-            # offspring = self.population.mutation.do(offspring)
             # Apply genetic operators over two random individuals
             offspring = self.population.mate(selected_parents)
             offspring = offspring[0, :]
