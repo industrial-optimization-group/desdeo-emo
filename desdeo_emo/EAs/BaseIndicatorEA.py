@@ -186,27 +186,6 @@ class BaseIndicatorEA(BaseEA):
                 if j != i:
                     population.fitness[i] += -np.exp(-epsilon_indicator([population.objectives[i]], [population.objectives[j]]) / 0.05)
 
-# Ibea.c :stä. ei onnistu tämäkään
-#                fit_comp[i][j] = epsilon_indicator([population.objectives[i]], [population.objectives[j]])
-#                fitabs =  np.abs(fit_comp[i][j])
-#                if maxIndicatorVal < fitabs:
-#                        maxIndicatorVal = fitabs
-#                
-#        for i in range(pop_size):
-#            for j in range(pop_size):
-#                fit_comp[i][j] = np.exp((-fit_comp[i][j]/maxIndicatorVal)/0.05)
-#                #print(fit_comp[i][j])
-#
-#        for i in range(pop_size):
-#            summa = 0
-#            for j in range(pop_size):
-#                if i != j:
-#                    summa += fit_comp[i][j]
-#                    population.fitness[i] = summa
-#
-
-                    #print(population.fitness[i][k])
-
 
 
 # kappa is a problem, how to use it in BaseIndicatorEA
@@ -264,11 +243,16 @@ def testZDTs():
     # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)
-    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=10000)
+    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=15000)
     
     print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
         evolver.iterate()
+
+    #evolver.iterate()
+    #import cProfile
+    #import re
+    #cProfile.run('re.compile("evolver.iterate")')
 
     front_true = evolver.population.objectives
     print(front_true[0::10])
@@ -309,7 +293,7 @@ def testDTLZs():
     print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
         evolver.iterate()
-
+        
     front_true = evolver.population.objectives
     print(front_true[0::10])
 
@@ -327,4 +311,4 @@ def testDTLZs():
 # population.fitness on 100,2 koska kaks objektivea, eli jokaisella kaksi eri arvoa.
 if __name__=="__main__":
    testZDTs()
-   #testDTLZs()
+   testDTLZs()

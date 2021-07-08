@@ -21,17 +21,26 @@ class EnvironmentalSelection(SelectionBase):
         #print(pop.fitness[0])
         ##print(sum(pop.fitness[0]))
         # TODO: step 3.1 is not there. We need to find dominated x*
-        for i in range(pop_size):
-            temp = np.min(pop.fitness[i]) # sum might not be a good idea either, maybe min is better idea
-            if temp <= fit_min: # no mitä nyt tehdään kun on fitness taulukko tosiaan (100,2) eli tässä kaksi arvoa. Any might not do the right thing
-                fit_min = temp
-                worst_fit = i 
-        # 2. remove x* from the population
-        #print("worst fit", worst_fit)
-        # for returning data in correct form. Clumsy way, fix it
-        selection = np.asarray([], dtype=int)
-        for i in range(pop_size):
-            if (i == worst_fit):
-                selection = np.append(selection, i)
+        
+        fit_min = np.min(pop.fitness)
+        #print("fit_min", fit_min)
+        worst_fit = np.where(np.any(fit_min == pop.fitness, axis = 1))
+        #print("worst fit", worst_fit[0])
+        selection = worst_fit[0]
+        
+        # vanha
+#        for i in range(pop_size):
+#            temp = np.min(pop.fitness[i]) # sum might not be a good idea either, maybe min is better idea
+#            if temp <= fit_min: # no mitä nyt tehdään kun on fitness taulukko tosiaan (100,2) eli tässä kaksi arvoa. Any might not do the right thing
+#                fit_min = temp
+#                worst_fit = i 
+#        
+#        # 2. remove x* from the population
+#        #print("worst fit", worst_fit)
+#        # for returning data in correct form. Clumsy way, fix it
+#        selection = np.asarray([], dtype=int)
+#        for i in range(pop_size):
+#            if (i == worst_fit):
+#                selection = np.append(selection, i)
 
         return selection        
