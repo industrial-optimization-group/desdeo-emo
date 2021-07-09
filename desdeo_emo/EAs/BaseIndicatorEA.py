@@ -22,33 +22,37 @@ import plotly.graph_objects as go
 from pyDOE import lhs
 from pygmo import non_dominated_front_2d as nd2
 
+# fastest without using numba..
+#@njit 
+#def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
+#    """ Computes the additive epsilon-indicator between reference front and current approximating front.
+#    Args:
+#        reference_front (np.ndarray): The reference front that the current front is being compared to. 
+#        Should be set of arrays, where the rows are the solutions and the columns are the objective dimensions.
+#        front (np.ndarray): The front that is compared. Should be set of arrays.
+#    Returns: 
+#        float: The factor by which the approximating front is worse than the reference front with respect to all 
+#        objectives.
+#    """
+#    eps = 0.0
+#    ref_len = len(reference_front)
+#    front_len = len(front)
+#    # number of objectives
+#    num_obj = len(front[0])
+#
+#    for i in range(ref_len):
+#        for j in range(front_len):
+#            for k in range(num_obj):
+#                value = front[j][k] - reference_front[i][k]
+#                if value > eps:
+#                    eps = value
+#
+#    return eps
 
-# tämän pitäisi olla nopea
-@njit 
 def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
-    """ Computes the additive epsilon-indicator between reference front and current approximating front.
-    Args:
-        reference_front (np.ndarray): The reference front that the current front is being compared to. 
-        Should be set of arrays, where the rows are the solutions and the columns are the objective dimensions.
-        front (np.ndarray): The front that is compared. Should be set of arrays.
-    Returns: 
-        float: The factor by which the approximating front is worse than the reference front with respect to all 
-        objectives.
-    """
-    eps = 0.0
-    ref_len = len(reference_front)
-    front_len = len(front)
-    # number of objectives
-    num_obj = len(front[0])
+    return max([min(
+        [max([s2[k] - s1[k] for k in range(len(s2))]) for s2 in front]) for s1 in reference_front])
 
-    for i in range(ref_len):
-        for j in range(front_len):
-            for k in range(num_obj):
-                value = front[j][k] - reference_front[i][k]
-                if value > eps:
-                    eps = value
-
-    return eps
 
 def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the hypervolume-indicator between reference front and current approximating point.
@@ -68,10 +72,16 @@ def binary_tournament_select(population:Population) -> list:
         for i in range(int(population.pop_size)): # maybe half this or quarter?
             parents.append(
                 np.asarray(
-                    tour_select(population.fitness[:, 0], 2),
+                    tour_select(population.fitness[:, 0], 2), # don't know if this fixes the issue
                     tour_select(population.fitness[:, 0], 2),
             ))
         return parents
+
+
+# this is probably slower than needed
+#def binary_tournament_select(population:Population) -> list:
+#    return tour_select(population.fitness[:, 0], 2), # don't know if this fixes the issue
+                        
 
 
 
@@ -148,7 +158,8 @@ class BaseIndicatorEA(BaseEA):
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. kovakoodataan tämä nytten, mietitään myöhemmin sitten muuten.
         # this might not be correct either
-        chosen = binary_tournament_select(self.population)        
+        chosen = binary_tournament_select(self.population)
+        print(f" chosen pop ka {np.mean(chosen)} chosen pop kh {np.std(chosen)}")
 
         # variation, call the recombination operators
         offspring = self.population.mate(mating_individuals=chosen)
@@ -173,15 +184,14 @@ class BaseIndicatorEA(BaseEA):
     def _fitness_assignment(self):
         population = self.population
         pop_size = population.individuals.shape[0]
-        #pop_width = population.fitness.shape[1]
+        pop_width = population.fitness.shape[1]
 
         print(f"pop fitness ka: {np.mean(population.fitness)}, pop fitness kh: {np.std(population.fitness)}")
 
         fit_comp = np.zeros([pop_size, pop_size])
-        maxIndicatorVal = 0
         # TODO: population.fitness[i] could be the issue, since it has objective number of values but we put the indicator value to all of them.
         for i in range(pop_size):
-            #population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
+            population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
                     population.fitness[i] += -np.exp(-epsilon_indicator([population.objectives[i]], [population.objectives[j]]) / 0.05)
@@ -237,25 +247,23 @@ ZDT4 doesn't work
 ZDT6 doestn really work- kinda works with more evals
 """
 def testZDTs():
-    problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
+    #problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
     #problem_name = "ZDT3" # seems work ok.
-    #problem_name = "ZDT6" # this just starts going worse and worse 
+    problem_name = "ZDT6" # this just starts going worse and worse 
     # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)
-    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=15000)
+    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=25000)
     
-    print("starting front", evolver.population.objectives[0::10])
+    #print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
         evolver.iterate()
 
     #evolver.iterate()
-    #import cProfile
-    #import re
-    #cProfile.run('re.compile("evolver.iterate")')
+
 
     front_true = evolver.population.objectives
-    print(front_true[0::10])
+    #print(front_true[0::10])
 
     true = plt.scatter(x=front_true[:,0], y=front_true[:,1], label="True Front")
     plt.title(f"Fronts obtained with various algorithms on the problem")
@@ -272,6 +280,7 @@ def testZDTs():
 15 000 evals
 DTLZ1 doesn't work
 DTLZ2 kinda works
+DTLZ5 works
 DTLZ6 doesnt work
 DTLZ7 kinda works. 
 """
@@ -282,11 +291,11 @@ def testDTLZs():
     #problem_name = "DTLZ2" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
     #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
 
-    #problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
-    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
+    problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
+    problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
 
-    problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
-    problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
+    #problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
+    #problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
 
     evolver = IBEA(problem, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=15000)
     
@@ -310,5 +319,6 @@ def testDTLZs():
 
 # population.fitness on 100,2 koska kaks objektivea, eli jokaisella kaksi eri arvoa.
 if __name__=="__main__":
-   testZDTs()
+
+   #testZDTs()
    testDTLZs()
