@@ -22,13 +22,18 @@ class EnvironmentalSelection(SelectionBase):
         ##print(sum(pop.fitness[0]))
         # TODO: step 3.1 is not there. We need to find dominated x*
         
+        # this seems really bit faster but I am not completely sure its better/works correctly.
+        # oikea huoli siitä ettei toimi oikein, jää tällä huoonoja ratkaisuja roikkumaan
+        # TOOD: make sure it works in all cases
+   #  calls   tot time           cum time
+#    24667    0.059    0.000    0.344    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/selection/EnvironmentalSelection.py:14(do)
 #        fit_min = np.min(pop.fitness)
         #print("fit_min", fit_min)
 #        worst_fit = np.where(np.any(fit_min == pop.fitness, axis = 1))
         #print("worst fit", worst_fit[0])
 #        selection = worst_fit[0]
         
-       # vanha
+#       # vanha
         for i in range(pop_size):
             #print("f vektor",pop.fitness[i][0])
             temp = pop.fitness[i][0] # sum might not be a good idea either, maybe min is better idea

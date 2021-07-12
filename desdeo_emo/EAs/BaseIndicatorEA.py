@@ -18,13 +18,34 @@ import hvwfg as hv
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.tournament_select import tour_select
 
-import plotly.graph_objects as go
-from pyDOE import lhs
-from pygmo import non_dominated_front_2d as nd2
+
+
+
+
+
+# tämä uudempi versio
+# 13627515   10.910    0.000   10.910    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:28(epsilon_indicator)
+#@njit() 
+def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
+    """
+    This now assumes reference_front and front are same dimensions
+    """
+    eps = 0.0
+    for i in range(reference_front.size):
+        value = front[i] - reference_front[i]
+        if value > eps:
+            eps = value
+    return eps
+
+# TODO: more testing required
+# TODO: testaa onkop jotain rikki, kun tuntuu että jää pari huonoa ratkaisua kellumaan.. Ehkä vika uudessa envi sel?
+# lyhyt on nopeampi, mutta tekeekö ihan oikein asiat?
+# dtlz1 näytti lyhyen ratkaisu myös paremmaltakin ? :o
 
 # fastest without using numba..
-#@njit 
-def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
+#  calls     tot time           cum time
+# 13636377   17.907    0.000   19.280    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:26(epsilon_indicator)
+def epsilon_indicator_long(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the additive epsilon-indicator between reference front and current approximating front.
     Args:
         reference_front (np.ndarray): The reference front that the current front is being compared to. 
@@ -48,6 +69,7 @@ def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
                     eps = value
 
     return eps
+
 
 
 def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
@@ -136,7 +158,8 @@ class BaseIndicatorEA(BaseEA):
             # update the fitness values
             poplen = self.population.individuals.shape[0]
             for i in range(poplen):
-                self.population.fitness[i] += np.exp(-epsilon_indicator([self.population.objectives[i]], [self.population.objectives[worst_index]]) / 0.05)
+                self.population.fitness[i] += np.exp(-epsilon_indicator(self.population.objectives[i], self.population.objectives[worst_index]) / 0.05)
+                #self.population.fitness[i] += np.exp(-epsilon_indicator_long([self.population.objectives[i]],[self.population.objectives[worst_index]]) / 0.05)
 
             # remove the worst individula 
             self.population.delete(selected)
@@ -171,8 +194,6 @@ class BaseIndicatorEA(BaseEA):
 
     #implements fitness computing. 
     # TODO: trouble of calling different indicators with the design since indicators are just functions. Let's cross that bridge when we come to it.
-    # no idea if this works correctly
-    # TODO: what about calculating the fitness other objective? does it work? It looks to only calculate for the .fitness[0]
     def _fitness_assignment(self):
         population = self.population
         pop_size = population.individuals.shape[0]
@@ -187,136 +208,6 @@ class BaseIndicatorEA(BaseEA):
             population.fitness[i] = 0 # zero only first index, we are only using that in the calculations 
             for j in range(pop_size):
                 if j != i:
-                    population.fitness[i] += -np.exp(-epsilon_indicator([population.objectives[i]], [population.objectives[j]]) / 0.05)
+                    population.fitness[i] += -np.exp(-epsilon_indicator(population.objectives[i], population.objectives[j]) / 0.05)
+                    #population.fitness[i] += -np.exp(-epsilon_indicator_long([population.objectives[i]],[population.objectives[j]]) / 0.05)
 
-
-
-# kappa is a problem, how to use it in BaseIndicatorEA
-class IBEA(BaseIndicatorEA):
-    def __init__(self,
-        problem: MOProblem,
-        population_size: int = None, # size required
-        population_params: Dict = None,
-        initial_population: Population = None,
-        a_priori: bool = False,
-        interact: bool = False,
-        n_iterations: int = 10,
-        n_gen_per_iter: int = 100,
-        total_function_evaluations: int = 0,
-        use_surrogates: bool = False,
-        # what ibea needs
-        kappa: float = 0.05, # fitness scaling ratio
-        indicator: int = 0,
-                 ):
-        super().__init__(
-            problem=problem,
-            population_size=population_size,
-            population_params=population_params,
-            a_priori=a_priori,
-            interact=interact,
-            n_iterations=n_iterations,
-            initial_population=initial_population,
-            n_gen_per_iter=n_gen_per_iter,
-            total_function_evaluations=total_function_evaluations,
-            use_surrogates=use_surrogates,
-            indicator = indicator,
-        )
-        
-        self.kappa = kappa
-        self.indicator = indicator
-        selection_operator = EnvironmentalSelection(self.population)
-        self.selection_operator = selection_operator
-
-        #print("using IBEA")
-
-    
-
-"""
-25 000 evals
-ZDT1 works
-ZDT2 works 
-ZDT3 works
-ZDT4 works
-ZDT6 works
-"""
-def testZDTs():
-    problem_name = "ZDT6" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
-    #problem_name = "ZDT3" # seems work ok.
-    #problem_name = "ZDT6" # this just starts going worse and worse 
-    # doesn't work properly with ZDT4... atleast saves too many bad solutions..
-
-    problem = test_problem_builder(problem_name)
-    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=25000)
-    
-    #print("starting front", evolver.population.objectives[0::10])
-    while evolver.continue_evolution():
-        evolver.iterate()
-
-    # evolver.iterate() # for some reason this stops at 10100 iters and won't listen our termination, hence bad results
-
-
-    front_true = evolver.population.objectives
-    #print(front_true[0::10])
-
-    true = plt.scatter(x=front_true[:,0], y=front_true[:,1], label="True Front")
-    plt.title(f"Fronts obtained with various algorithms on the problem")
-    plt.xlabel("F1")
-    plt.ylabel("F2")
-    plt.legend()
-    plt.show()
-
-
-# TODO: starting to feel this IBEA has some problems still.. shoudl be doing better with less evals
-# TODO: I broke it at some point. No idea whattt is wrong
-# works for these too
-"""
-25 000 evals
-DTLZ1 works with my eps_indi
-DTLZ2 works, i guess could have more points in the middle and less on the sides
-DTLZ3 doesnt really work. Can IBEA even solve this problem? 
-DTLZ4 works, i guess could have more points in the middle and less on the sides
-DTLZ5 works
-DTLZ6 works
-DTLZ7 works, could have more points in the middle, maybe with more population members?
-"""
-def testDTLZs():
-    #problem_name = "DTLZ1" 
-    #problem = test_problem_builder(problem_name, n_of_variables=7, n_of_objectives=3)
-        
-    #problem_name = "DTLZ2" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
-    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
-
-    problem_name = "DTLZ4" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
-    problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
-    
-    #problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
-    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
-
-    #problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
-    #problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
-
-    evolver = IBEA(problem, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=25000)
-    
-    #print("starting front", evolver.population.objectives[0::10])
-    while evolver.continue_evolution():
-        evolver.iterate()
-        
-    front_true = evolver.population.objectives
-    #print(front_true[0::10])
-
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ax.view_init(30,45)
-    ax.scatter(front_true[:,0],front_true[:,1],front_true[:,2])
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    plt.show()
-
-
-
-# population.fitness on 100,2 koska kaks objektivea, eli jokaisella kaksi eri arvoa.
-if __name__=="__main__":
-
-   #testZDTs()
-   testDTLZs()
