@@ -18,7 +18,7 @@ import hvwfg as hv
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.tournament_select import tour_select
 
-# TODO: remember to sort im
+# TODO: remember to sort import
 
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA
 
@@ -95,7 +95,7 @@ def testZDTs():
     plt.xlabel("F1")
     plt.ylabel("F2")
     plt.legend()
-    #plt.show()
+    plt.show()
 
 
 """
@@ -140,7 +140,7 @@ def testDTLZs():
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
-    plt.show()
+    #plt.show()
 
 
 
@@ -148,8 +148,8 @@ def testDTLZs():
 # domination comparison for fitness/objective vectors
 if __name__=="__main__":
 
-   #testZDTs()
-   testDTLZs()
+   testZDTs()
+   #testDTLZs()
 
    import cProfile
    #cProfile.run('testDTLZs()', "output.dat")

@@ -25,13 +25,13 @@ from desdeo_emo.selection.tournament_select import tour_select
 
 # tämä uudempi versio
 # 13627515   10.910    0.000   10.910    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:28(epsilon_indicator)
-#@njit() 
+@njit() 
 def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
     """
     This now assumes reference_front and front are same dimensions
     """
     eps = 0.0
-    for i in range(reference_front.size):
+    for i in np.arange(reference_front.size):
         value = front[i] - reference_front[i]
         if value > eps:
             eps = value
@@ -45,32 +45,30 @@ def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
 # fastest without using numba..
 #  calls     tot time           cum time
 # 13636377   17.907    0.000   19.280    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:26(epsilon_indicator)
-def epsilon_indicator_long(reference_front: np.ndarray, front: np.ndarray) -> float:
+@njit()
+def epsilon_indicator_ndims(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the additive epsilon-indicator between reference front and current approximating front.
     Args:
         reference_front (np.ndarray): The reference front that the current front is being compared to. 
         Should be set of arrays, where the rows are the solutions and the columns are the objective dimensions.
-        front (np.ndarray): The front that is compared. Should be set of arrays.
+        front (np.ndarray): The front that is compared. Should be one-dimensional array.
     Returns: 
         float: The factor by which the approximating front is worse than the reference front with respect to all 
         objectives.
     """
-    eps = 0.0
-    ref_len = len(reference_front)
-    front_len = len(front)
-    # number of objectives
-    num_obj = len(front[0])
 
-    for i in range(ref_len):
-        for j in range(front_len):
-            for k in range(num_obj):
-                value = front[j][k] - reference_front[i][k]
-                if value > eps:
-                    eps = value
+    eps = 0.0
+    ref_len = reference_front.shape[0] 
+    front_len = front.shape[0] 
+    value = 0
+
+    for i in np.arange(ref_len):
+        for j in np.arange(front_len):
+            value = front[j] - reference_front[i][j]
+            if value > eps:
+                eps = value
 
     return eps
-
-
 
 def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the hypervolume-indicator between reference front and current approximating point.
@@ -158,8 +156,8 @@ class BaseIndicatorEA(BaseEA):
             # update the fitness values
             poplen = self.population.individuals.shape[0]
             for i in range(poplen):
-                self.population.fitness[i] += np.exp(-epsilon_indicator(self.population.objectives[i], self.population.objectives[worst_index]) / 0.05)
-                #self.population.fitness[i] += np.exp(-epsilon_indicator_long([self.population.objectives[i]],[self.population.objectives[worst_index]]) / 0.05)
+                 self.population.fitness[i] += np.exp(-epsilon_indicator(self.population.objectives[i], self.population.objectives[worst_index]) / 0.05)
+                #self.population.fitness += np.exp(-epsilon_indicator_ndims(self.population.objectives,self.population.objectives[worst_index]) / 0.05)
 
             # remove the worst individula 
             self.population.delete(selected)
@@ -201,13 +199,13 @@ class BaseIndicatorEA(BaseEA):
 
         #print(f"pop fitness ka: {np.mean(population.fitness)}, pop fitness kh: {np.std(population.fitness)}")
 
-        fit_comp = np.zeros([pop_size, pop_size])
         # TODO: population.fitness[i] could be the issue, since it has objective number of values but we put the indicator value to all of them.
         for i in range(pop_size):
-            #population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
-            population.fitness[i] = 0 # zero only first index, we are only using that in the calculations 
+            population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
+            #population.fitness[i] = 0 # zero only first index, we are only using that in the calculations 
             for j in range(pop_size):
                 if j != i:
                     population.fitness[i] += -np.exp(-epsilon_indicator(population.objectives[i], population.objectives[j]) / 0.05)
-                    #population.fitness[i] += -np.exp(-epsilon_indicator_long([population.objectives[i]],[population.objectives[j]]) / 0.05)
+                    #population.fitness += -np.exp(-epsilon_indicator_ndims(population.objectives,population.objectives[j]) / 0.05)
+
 
