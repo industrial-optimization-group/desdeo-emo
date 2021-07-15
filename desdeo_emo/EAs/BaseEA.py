@@ -417,7 +417,7 @@ class BaseDecompositionEA(BaseEA):
         )
 
     def requests(self) -> Tuple:
-        return (self.request_plot(), self.request_preferences())
+        return (self.request_preferences(), self.request_plot())
 
     def end(self):
         """Conducts non-dominated sorting at the end of the evolution process
