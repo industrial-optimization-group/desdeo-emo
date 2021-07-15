@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from desdeo_tools.scalarization.MOEADSF import (
     MOEADSFBase,
     Tchebycheff,

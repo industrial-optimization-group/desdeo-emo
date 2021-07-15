@@ -1,4 +1,4 @@
-from desdeo_problem.Problem import ProblemBase, EvaluationResults
+from desdeo_problem.problem import ProblemBase, EvaluationResults
 
 
 class surrogateProblem(ProblemBase):

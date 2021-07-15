@@ -7,7 +7,7 @@ from numpy.random import permutation
 from scipy.spatial import distance_matrix
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA
 from desdeo_emo.population.Population import Population
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 from desdeo_emo.selection import tournament_select
 from desdeo_emo.selection.MOEAD_select import MOEAD_select

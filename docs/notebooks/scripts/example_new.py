@@ -2,7 +2,7 @@ from desdeo_problem.testproblems.TestProblems import test_problem_builder
 from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.EAs.NSGAIII import NSGAIII
 from desdeo_emo.EAs import MOEA_D
-from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.utilities.plotlyanimate import animate_init_, animate_next_
 
 
 dtlz3 = test_problem_builder("DTLZ2", n_of_variables=12, n_of_objectives=3)

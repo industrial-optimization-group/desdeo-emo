@@ -16,7 +16,7 @@ from desdeo_emo.surrogatemodels.Problem import surrogateProblem
 from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
 from desdeo_emo.recombination.biogp_xover import BioGP_xover
 from desdeo_emo.recombination.biogp_mutation import BioGP_mutation
-from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.utilities.plotlyanimate import animate_init_, animate_next_
 
 
 def negative_r2_score(y_true, y_pred):

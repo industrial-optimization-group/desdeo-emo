@@ -2,7 +2,7 @@ from itertools import product
 
 import numpy as np
 
-from pyrvea.OtherTools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 
 class newRV(ReferenceVectors):

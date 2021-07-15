@@ -5,7 +5,7 @@ from desdeo_problem.Objective import _ScalarObjective
 from desdeo_problem.Variable import variable_builder
 from desdeo_problem.Problem import MOProblem
 from desdeo_emo.EAs.RVEA import RVEA
-from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.utilities.plotlyanimate import animate_init_, animate_next_
 
 from desdeo_problem.Constraint import ScalarConstraint
 

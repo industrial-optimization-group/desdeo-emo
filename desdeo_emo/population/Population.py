@@ -6,7 +6,7 @@ import numpy as np
 from desdeo_emo.population.CreateIndividuals import create_new_individuals
 from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 from desdeo_tools.utilities import non_dominated
 

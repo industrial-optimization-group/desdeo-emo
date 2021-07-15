@@ -26,7 +26,7 @@ from pyrvea.Recombination import (
 )
 
 
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 
 class Population:

@@ -11,4 +11,4 @@ API Documentation
 
 .. automodapi:: desdeo_emo.selection
 
-.. automodapi:: desdeo_emo.othertools
+.. automodapi:: desdeo_emo.utilities
