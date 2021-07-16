@@ -4,9 +4,9 @@ import pandas as pd
 
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
-from desdeo_problem.Problem import DataProblem
+from desdeo_problem import DataProblem
 
 import matplotlib.pyplot as plt
 from desdeo_problem.Problem import DataProblem, MOProblem
@@ -18,7 +18,7 @@ import hvwfg as hv
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.tournament_select import tour_select
 
-
+from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
 
 
 
@@ -61,14 +61,17 @@ def epsilon_indicator_ndims(reference_front: np.ndarray, front: np.ndarray) -> f
     ref_len = reference_front.shape[0] 
     front_len = front.shape[0] 
     value = 0
+    # didn't work
+   # results = np.zeros(reference_front.shape)
 
     for i in np.arange(ref_len):
         for j in np.arange(front_len):
             value = front[j] - reference_front[i][j]
             if value > eps:
                 eps = value
+                #results[i][j] = eps
 
-    return eps
+    return eps 
 
 def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
     """ Computes the hypervolume-indicator between reference front and current approximating point.
@@ -85,23 +88,20 @@ def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> flo
 # this is probably slower than needed
 def binary_tournament_select(population:Population) -> list:
         parents = []
-        for i in range(int(population.pop_size)): # maybe half this or quarter?
+        for i in range(int(population.pop_size)): 
             parents.append(
                 np.asarray(
-                    tour_select(population.fitness[:, 0], 2), # don't know if this fixes the issue
+                    tour_select(population.fitness[:, 0], 2), 
                     tour_select(population.fitness[:, 0], 2),
             ))
         return parents
 
 
 
-# this is a bigger problem to get Base class to work. but this is a some sort of a start
 class BaseIndicatorEA(BaseEA):
     """
 
     """
-    # let's start commenting and removing what we do now know if we need
-    # assuming desdeos BP-mutation is correct to use here.
     def __init__(
         self,
         problem: MOProblem,
@@ -143,10 +143,8 @@ class BaseIndicatorEA(BaseEA):
     def _next_gen(self):
         # call _fitness_assigment (using indicator). replacement
         self._fitness_assignment()
-        # iterate until size of population less than alpha. Dunno how to implement this. maybe stopid while loop or smh?
-        # call the _select fucntion, delete the worst individual
+        # iterate until size of population less than alpha.
         while (self.population.pop_size < self.population.individuals.shape[0]):
-
             # maybe refactor the join_pop, to make simpler and possibly find speedgain
 
             # choose individual with smallest fitness value
@@ -157,13 +155,12 @@ class BaseIndicatorEA(BaseEA):
             poplen = self.population.individuals.shape[0]
             for i in range(poplen):
                  self.population.fitness[i] += np.exp(-epsilon_indicator(self.population.objectives[i], self.population.objectives[worst_index]) / 0.05)
+                #self.population.fitness += np.exp(-hypervolume_indicator(self.population.objectives, self.population.objectives[worst_index]) / 0.05) # this should work too if the problem is solved
                 #self.population.fitness += np.exp(-epsilon_indicator_ndims(self.population.objectives,self.population.objectives[worst_index]) / 0.05)
 
             # remove the worst individula 
             self.population.delete(selected)
 
-            # update the fitness values of remaining individuals. Here we should use worst index.. also would probably make it faster.
-           # self._fitness_assignment()
         # check termination
         if (self._function_evaluation_count >= self.total_function_evaluations):
             # just to stop the iteration. TODO: do it better
@@ -199,10 +196,8 @@ class BaseIndicatorEA(BaseEA):
 
         #print(f"pop fitness ka: {np.mean(population.fitness)}, pop fitness kh: {np.std(population.fitness)}")
 
-        # TODO: population.fitness[i] could be the issue, since it has objective number of values but we put the indicator value to all of them.
         for i in range(pop_size):
             population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
-            #population.fitness[i] = 0 # zero only first index, we are only using that in the calculations 
             for j in range(pop_size):
                 if j != i:
                     population.fitness[i] += -np.exp(-epsilon_indicator(population.objectives[i], population.objectives[j]) / 0.05)

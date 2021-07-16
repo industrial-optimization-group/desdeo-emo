@@ -4,12 +4,9 @@ import pandas as pd
 
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem.Problem import MOProblem
-
-from desdeo_problem.Problem import DataProblem
 
 import matplotlib.pyplot as plt
-from desdeo_problem.Problem import DataProblem, MOProblem
+from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 from desdeo_emo.EAs import BaseEA
@@ -140,7 +137,7 @@ def testDTLZs():
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
-    #plt.show()
+    plt.show()
 
 
 
@@ -148,8 +145,8 @@ def testDTLZs():
 # domination comparison for fitness/objective vectors
 if __name__=="__main__":
 
-   testZDTs()
-   #testDTLZs()
+   #testZDTs()
+   testDTLZs()
 
    import cProfile
    #cProfile.run('testDTLZs()', "output.dat")
