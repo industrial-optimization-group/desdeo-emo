@@ -127,7 +127,9 @@ def testDTLZs():
     while evolver.continue_evolution():
         evolver.iterate()
         
-    front_true = evolver.population.objectives
+    individuals, front_true = evolver.end()
+    #print(result)
+    #front_true = result[1]
     #print(front_true[0::10])
 
     fig = plt.figure()

@@ -6,7 +6,7 @@ import pandas as pd
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 from desdeo_tools.interaction import (
     SimplePlotRequest,
     ReferencePointPreference,
@@ -50,6 +50,17 @@ class BaseEA:
         self._gen_count_in_curr_iteration: int = 0
         self._current_gen_count: int = 0
         self._function_evaluation_count: int = 0
+
+
+    def start(self):
+        """Mimics the structure of the mcdm methods. Returns the request objects from self.retuests().
+        """
+        return self.requests()
+
+    def end(self):
+        """To be run at the end of the evolution process.
+        """
+        pass
 
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
@@ -393,5 +404,17 @@ class BaseDecompositionEA(BaseEA):
         )
 
     def requests(self) -> Tuple:
-        return (self.request_plot(), self.request_preferences())
+        return (self.request_preferences(), self.request_plot())
 
+
+    def end(self):
+        """Conducts non-dominated sorting at the end of the evolution process
+        Returns:
+            tuple: The first element is a 2-D array of the decision vectors of the non-dominated solutions.
+                The second element is a 2-D array of the corresponding objective values.
+        """
+        non_dom = self.population.non_dominated_objectives()
+        return (
+            self.population.individuals[non_dom, :],
+            self.population.objectives[non_dom, :],
+        )

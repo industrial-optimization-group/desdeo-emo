@@ -4,12 +4,9 @@ import pandas as pd
 
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem import MOProblem
-
-from desdeo_problem import DataProblem
 
 import matplotlib.pyplot as plt
-from desdeo_problem.Problem import DataProblem, MOProblem
+from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 from desdeo_emo.EAs import BaseEA
@@ -17,75 +14,20 @@ from numba import njit
 import hvwfg as hv
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.tournament_select import tour_select
-
+from desdeo_tools.interaction import (
+    SimplePlotRequest,
+    ReferencePointPreference,
+    PreferredSolutionPreference,
+    NonPreferredSolutionPreference,
+    BoundPreference,
+    validate_ref_point_data_type,
+    validate_ref_point_dimensions,
+    validate_ref_point_with_ideal,
+)
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
 
 
-
-
-# tämä uudempi versio
-# 13627515   10.910    0.000   10.910    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:28(epsilon_indicator)
-@njit() 
-def epsilon_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
-    """
-    This now assumes reference_front and front are same dimensions
-    """
-    eps = 0.0
-    for i in np.arange(reference_front.size):
-        value = front[i] - reference_front[i]
-        if value > eps:
-            eps = value
-    return eps
-
-# TODO: more testing required
-# TODO: testaa onkop jotain rikki, kun tuntuu että jää pari huonoa ratkaisua kellumaan.. Ehkä vika uudessa envi sel?
-# lyhyt on nopeampi, mutta tekeekö ihan oikein asiat?
-# dtlz1 näytti lyhyen ratkaisu myös paremmaltakin ? :o
-
-# fastest without using numba..
-#  calls     tot time           cum time
-# 13636377   17.907    0.000   19.280    0.000 /home/jp/devaus/tyot/DESDEO/desdeo-emo/desdeo_emo/EAs/BaseIndicatorEA.py:26(epsilon_indicator)
-@njit()
-def epsilon_indicator_ndims(reference_front: np.ndarray, front: np.ndarray) -> float:
-    """ Computes the additive epsilon-indicator between reference front and current approximating front.
-    Args:
-        reference_front (np.ndarray): The reference front that the current front is being compared to. 
-        Should be set of arrays, where the rows are the solutions and the columns are the objective dimensions.
-        front (np.ndarray): The front that is compared. Should be one-dimensional array.
-    Returns: 
-        float: The factor by which the approximating front is worse than the reference front with respect to all 
-        objectives.
-    """
-
-    eps = 0.0
-    ref_len = reference_front.shape[0] 
-    front_len = front.shape[0] 
-    value = 0
-    # didn't work
-   # results = np.zeros(reference_front.shape)
-
-    for i in np.arange(ref_len):
-        for j in np.arange(front_len):
-            value = front[j] - reference_front[i][j]
-            if value > eps:
-                eps = value
-                #results[i][j] = eps
-
-    return eps 
-
-def hypervolume_indicator(reference_front: np.ndarray, front: np.ndarray) -> float:
-    """ Computes the hypervolume-indicator between reference front and current approximating point.
-    Args:
-        reference_front (np.ndarray): The reference front that the current front is being compared to. 
-        Should be set of arrays, where the rows are the solutions and the columns are the objective dimensions.
-        front (np.ndarray): The front that is compared. Should be 2D array.
-    Returns: 
-        float: Measures the volume of the objective space dominated by an approximation set.
-    """
-    return hv.wfg(reference_front, front.reshape(-1))
-
-
-# this is probably slower than needed
+# where to put this?
 def binary_tournament_select(population:Population) -> list:
         parents = []
         for i in range(int(population.pop_size)): 
@@ -139,6 +81,23 @@ class BaseIndicatorEA(BaseEA):
         
         #print("Using BaseIndicatorEA init")
         
+    def start(self):
+        pass
+
+
+    def end(self):
+        """Conducts non-dominated sorting at the end of the evolution process
+        Returns:
+            tuple: The first element is a 2-D array of the decision vectors of the non-dominated solutions.
+                The second element is a 2-D array of the corresponding objective values.
+        """
+        non_dom = self.population.non_dominated_objectives()
+        return (
+            self.population.individuals[non_dom, :],
+            self.population.objectives[non_dom, :],
+        )
+
+
     # täälä operaattorit in the main loop of the algoritmh
     def _next_gen(self):
         # call _fitness_assigment (using indicator). replacement
@@ -164,8 +123,9 @@ class BaseIndicatorEA(BaseEA):
         # check termination
         if (self._function_evaluation_count >= self.total_function_evaluations):
             # just to stop the iteration. TODO: do it better
-            self.total_function_evaluations = 1
-            return
+            self.end()
+            #self.total_function_evaluations = 1
+            #return
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. kovakoodataan tämä nytten, mietitään myöhemmin sitten muuten.
         chosen = binary_tournament_select(self.population)
@@ -203,4 +163,32 @@ class BaseIndicatorEA(BaseEA):
                     population.fitness[i] += -np.exp(-epsilon_indicator(population.objectives[i], population.objectives[j]) / 0.05)
                     #population.fitness += -np.exp(-epsilon_indicator_ndims(population.objectives,population.objectives[j]) / 0.05)
 
+    def request_preferences(self) -> Union[
+        None,
+        Tuple[
+            PreferredSolutionPreference,
+            NonPreferredSolutionPreference,
+            ReferencePointPreference,
+            BoundPreference,
+        ],
+    ]:
+        # check that if ibea no preferences
+        if (True): return None
 
+    def request_plot(self) -> SimplePlotRequest:
+        dimensions_data = pd.DataFrame(
+            index=["minimize", "ideal", "nadir"],
+            columns=self.population.problem.get_objective_names(),
+        )
+        dimensions_data.loc["minimize"] = self.population.problem._max_multiplier
+        dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
+        dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
+        data = pd.DataFrame(
+            self.population.objectives, columns=self.population.problem.objective_names
+        )
+        return SimplePlotRequest(
+            data=data, dimensions_data=dimensions_data, message="Objective Values"
+        )
+
+    def requests(self) -> Tuple:
+        return (self.request_preferences(), self.request_plot())
