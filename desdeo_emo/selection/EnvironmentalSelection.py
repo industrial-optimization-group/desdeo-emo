@@ -10,13 +10,11 @@ class EnvironmentalSelection(SelectionBase):
                 
 
     def do(self, pop: Population) -> List[int]:
-        # 1. choose a point x* in P with the smallest fitness value
         fit_min = np.Inf 
         worst_fit = None
-       
         pop_size = pop.individuals.shape[0]
-        # TODO: step 3.1 is not there. We need to find dominated x*
         
+        # 1. choose a point x* in P with the smallest fitness value
         for i in range(pop_size):
             temp = pop.fitness[i][0] 
             if temp <= fit_min: 

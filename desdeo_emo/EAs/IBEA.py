@@ -1,4 +1,4 @@
-from typing import Dict, Type, Union, Tuple
+from typing import Dict, Type, Union, Tuple, Callable
 import numpy as np
 import pandas as pd
 
@@ -19,6 +19,7 @@ from desdeo_emo.selection.tournament_select import tour_select
 
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA
 
+from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
 
 # kappa is a problem, how to use it in BaseIndicatorEA
 class IBEA(BaseIndicatorEA):
@@ -35,7 +36,8 @@ class IBEA(BaseIndicatorEA):
         use_surrogates: bool = False,
         # what ibea needs
         kappa: float = 0.05, # fitness scaling ratio
-        indicator: int = 0,
+        indicator: Callable = epsilon_indicator, # default indicator is epsilon_indicator
+        reference_point = None, # ibea doesn't use this. Is there for PBEA
                  ):
         super().__init__(
             problem=problem,
@@ -48,17 +50,18 @@ class IBEA(BaseIndicatorEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
             use_surrogates=use_surrogates,
-            indicator = indicator,
+            indicator=indicator,
         )
         
-        self.kappa = kappa
         self.indicator = indicator
+        self.kappa = kappa
         selection_operator = EnvironmentalSelection(self.population)
         self.selection_operator = selection_operator
 
         print("using IBEA")
 
     
+
 
 """
 25 000 evals
@@ -69,22 +72,22 @@ ZDT4 works
 ZDT6 works
 """
 def testZDTs():
-    problem_name = "ZDT6" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
+    problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
     #problem_name = "ZDT3" # seems work ok.
     #problem_name = "ZDT6" # this just starts going worse and worse 
     # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)
-    evolver = IBEA(problem, n_iterations=10,n_gen_per_iter=100, total_function_evaluations=25000)
+    evolver = IBEA(problem,indicator=epsilon_indicator, population_size=50, n_iterations=10,n_gen_per_iter=100, 
+                   total_function_evaluations=25000)
     
     #print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
         evolver.iterate()
 
     # evolver.iterate() # for some reason this stops at 10100 iters and won't listen our termination, hence bad results
-
-
-    front_true = evolver.population.objectives
+    #front_true = evolver.population.objectives
+    individuals, front_true = evolver.end()
     #print(front_true[0::10])
 
     true = plt.scatter(x=front_true[:,0], y=front_true[:,1], label="True Front")
@@ -121,7 +124,7 @@ def testDTLZs():
     #problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
     #problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
 
-    evolver = IBEA(problem, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=25000)
+    evolver = IBEA(problem, population_size=50, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=25000)
     
     #print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
@@ -147,8 +150,8 @@ def testDTLZs():
 # domination comparison for fitness/objective vectors
 if __name__=="__main__":
 
-   #testZDTs()
-   testDTLZs()
+   testZDTs()
+   #testDTLZs()
 
    import cProfile
    #cProfile.run('testDTLZs()', "output.dat")

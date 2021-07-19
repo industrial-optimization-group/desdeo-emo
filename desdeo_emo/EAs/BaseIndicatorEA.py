@@ -1,4 +1,4 @@
-from typing import Dict, Type, Union, Tuple
+from typing import Dict, Type, Union, Tuple, Callable
 import numpy as np
 import pandas as pd
 
@@ -25,6 +25,8 @@ from desdeo_tools.interaction import (
     validate_ref_point_with_ideal,
 )
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
+
+from desdeo_emo.EAs.BaseEA import eaError
 
 
 # where to put this?
@@ -57,7 +59,8 @@ class BaseIndicatorEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
-        indicator: int = 0, # 0 for additive eps and 1 for hypervolume-indicator
+        indicator: Callable = None, 
+        reference_point = None, # only for PBEA
     ):
         super().__init__(
             a_priori=a_priori,
@@ -69,21 +72,27 @@ class BaseIndicatorEA(BaseEA):
             use_surrogates=use_surrogates,
         )
 
+        self.indicator = indicator
+
         if initial_population is not None:
             self.population = initial_population
         elif initial_population is None:
             if population_size is None:
-                population_size = 100 # keksi parempi
+                population_size = 100 
             self.population = Population(
                 problem, population_size, population_params, use_surrogates
             )
             self._function_evaluation_count += population_size
         
+        #if reference_point is None:
+
         #print("Using BaseIndicatorEA init")
         
     def start(self):
         pass
 
+    def return_pop(self):
+        return self.population
 
     def end(self):
         """Conducts non-dominated sorting at the end of the evolution process
@@ -102,10 +111,8 @@ class BaseIndicatorEA(BaseEA):
     def _next_gen(self):
         # call _fitness_assigment (using indicator). replacement
         self._fitness_assignment()
-        # iterate until size of population less than alpha.
+        # iterate until size of new and old population less than old population.
         while (self.population.pop_size < self.population.individuals.shape[0]):
-            # maybe refactor the join_pop, to make simpler and possibly find speedgain
-
             # choose individual with smallest fitness value
             selected = self._select()
             worst_index = selected[0]
@@ -113,34 +120,26 @@ class BaseIndicatorEA(BaseEA):
             # update the fitness values
             poplen = self.population.individuals.shape[0]
             for i in range(poplen):
-                 self.population.fitness[i] += np.exp(-epsilon_indicator(self.population.objectives[i], self.population.objectives[worst_index]) / 0.05)
-                #self.population.fitness += np.exp(-hypervolume_indicator(self.population.objectives, self.population.objectives[worst_index]) / 0.05) # this should work too if the problem is solved
-                #self.population.fitness += np.exp(-epsilon_indicator_ndims(self.population.objectives,self.population.objectives[worst_index]) / 0.05)
+                 self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
 
             # remove the worst individula 
             self.population.delete(selected)
 
         # check termination
         if (self._function_evaluation_count >= self.total_function_evaluations):
-            # just to stop the iteration. TODO: do it better
+            # just to stop the iteration. 
             self.end()
-            #self.total_function_evaluations = 1
-            #return
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. kovakoodataan tämä nytten, mietitään myöhemmin sitten muuten.
         chosen = binary_tournament_select(self.population)
-        #print(f" chosen pop ka {np.mean(chosen)} chosen pop kh {np.std(chosen)}")
 
         # variation, call the recombination operators
         offspring = self.population.mate(mating_individuals=chosen)
         self.population.add(offspring)
 
         self._current_gen_count += 1
-        #print(self._current_gen_count)
         self._gen_count_in_curr_iteration += 1
-        #print(f"gen count curr ite {self._gen_count_in_curr_iteration}")
         self._function_evaluation_count += offspring.shape[0]
-        #print(self._function_evaluation_count)
 
 
     # need to implement the enviromental selection. Only calls it from selection module
@@ -154,22 +153,91 @@ class BaseIndicatorEA(BaseEA):
         pop_size = population.individuals.shape[0]
         pop_width = population.fitness.shape[1]
 
-        #print(f"pop fitness ka: {np.mean(population.fitness)}, pop fitness kh: {np.std(population.fitness)}")
-
         for i in range(pop_size):
             population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
-                    population.fitness[i] += -np.exp(-epsilon_indicator(population.objectives[i], population.objectives[j]) / 0.05)
-                    #population.fitness += -np.exp(-epsilon_indicator_ndims(population.objectives,population.objectives[j]) / 0.05)
+                    #print(self.indicator)
+                    population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j]) / self.kappa)
+                    
+
+
+
+    def manage_preferences(self, preference=None):
+        """Run the interruption phase of EA.
+
+        Use this phase to make changes to RVEA.params or other objects.
+        Updates Reference Vectors (adaptation), conducts interaction with the user.
+        """
+        # start only with reference point reference as in article
+
+        #if (self.__name__ == IBEA): return
+        # check if ibea don't go
+        if (True): return
+
+        if not isinstance(
+            preference,
+            (
+                ReferencePointPreference,
+                #PreferredSolutionPreference,
+                #NonPreferredSolutionPreference,
+                #BoundPreference,
+                type(None),
+            ),
+        ):
+            msg = (
+                f"Wrong object sent as preference. Expected type = "
+                f"{type(ReferencePointPreference)}\n"
+                #f"{type(PreferredSolutionPreference)}\n"
+                #f"{type(NonPreferredSolutionPreference)}\n"
+                #f"{type(BoundPreference)} or None\n"
+                f"Recieved type = {type(preference)}"
+            )
+            raise eaError(msg)
+        if preference is not None:
+            if preference.request_id != self._interaction_request_id:
+                msg = (
+                    f"Wrong preference object sent. Expected id = "
+                    f"{self._interaction_request_id}.\n"
+                    f"Recieved id = {preference.request_id}"
+                )
+                raise eaError(msg)
+        if preference is None and not self._ref_vectors_are_focused:
+            self.reference_vectors.adapt(self.population.fitness)
+        if isinstance(preference, ReferencePointPreference):
+            ideal = self.population.ideal_fitness_val
+            refpoint = (
+                preference.response.values * self.population.problem._max_multiplier
+            )
+            refpoint = refpoint - ideal
+            norm = np.sqrt(np.sum(np.square(refpoint))) # refpoint is normalized here
+            refpoint = refpoint / norm
+            self.reference_vectors.iteractive_adapt_3(refpoint)
+            self.reference_vectors.add_edge_vectors()
+#        elif isinstance(preference, PreferredSolutionPreference):
+#            self.reference_vectors.interactive_adapt_1(
+#                z=self.population.objectives[preference.response],
+#                n_solutions=np.shape(self.population.objectives)[0],
+#            )
+#            self.reference_vectors.add_edge_vectors()
+#        elif isinstance(preference, NonPreferredSolutionPreference):
+#            self.reference_vectors.interactive_adapt_2(
+#                z=self.population.objectives[preference.response],
+#                n_solutions=np.shape(self.population.objectives)[0],
+#            )
+#            self.reference_vectors.add_edge_vectors()
+#        elif isinstance(preference, BoundPreference):
+#            self.reference_vectors.interactive_adapt_4(preference.response)
+#            self.reference_vectors.add_edge_vectors()
+        self.reference_vectors.neighbouring_angles()
 
     def request_preferences(self) -> Union[
         None,
         Tuple[
             PreferredSolutionPreference,
-            NonPreferredSolutionPreference,
-            ReferencePointPreference,
-            BoundPreference,
+            #NonPreferredSolutionPreference,
+            #ReferencePointPreference,
+            #BoundPreference,
         ],
     ]:
         # check that if ibea no preferences
