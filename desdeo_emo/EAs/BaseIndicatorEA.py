@@ -40,6 +40,7 @@ def binary_tournament_select(population:Population) -> list:
             ))
         return parents
 
+np.seterr(all='warn')
 
 
 class BaseIndicatorEA(BaseEA):
@@ -60,7 +61,7 @@ class BaseIndicatorEA(BaseEA):
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
         indicator: Callable = None, 
-        reference_point = None, # only for PBEA
+        reference_point: np.ndarray = None, # only for PBEA
     ):
         super().__init__(
             a_priori=a_priori,
@@ -73,6 +74,7 @@ class BaseIndicatorEA(BaseEA):
         )
 
         self.indicator = indicator
+        self.reference_point = reference_point
 
         if initial_population is not None:
             self.population = initial_population
@@ -120,7 +122,11 @@ class BaseIndicatorEA(BaseEA):
             # update the fitness values
             poplen = self.population.individuals.shape[0]
             for i in range(poplen):
-                 self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
+                if self.reference_point is not None: 
+                    # over and underflow sometimes, when first run calling this with ibea
+                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index], self.reference_point, self.delta) / self.kappa)
+                else:
+                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
 
             # remove the worst individula 
             self.population.delete(selected)
@@ -157,8 +163,11 @@ class BaseIndicatorEA(BaseEA):
             population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
-                    #print(self.indicator)
-                    population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j]) / self.kappa)
+                    if self.reference_point is not None:
+                        # sometimes over or underflows, same as the other
+                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j], self.reference_point, self.delta) / self.kappa)
+                    else:
+                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j]) / self.kappa)
                     
 
 
@@ -167,30 +176,21 @@ class BaseIndicatorEA(BaseEA):
         """Run the interruption phase of EA.
 
         Use this phase to make changes to RVEA.params or other objects.
-        Updates Reference Vectors (adaptation), conducts interaction with the user.
         """
         # start only with reference point reference as in article
-
-        #if (self.__name__ == IBEA): return
         # check if ibea don't go
-        if (True): return
+        if (self.interact is False): return
 
         if not isinstance(
             preference,
             (
                 ReferencePointPreference,
-                #PreferredSolutionPreference,
-                #NonPreferredSolutionPreference,
-                #BoundPreference,
                 type(None),
             ),
         ):
             msg = (
                 f"Wrong object sent as preference. Expected type = "
                 f"{type(ReferencePointPreference)}\n"
-                #f"{type(PreferredSolutionPreference)}\n"
-                #f"{type(NonPreferredSolutionPreference)}\n"
-                #f"{type(BoundPreference)} or None\n"
                 f"Recieved type = {type(preference)}"
             )
             raise eaError(msg)
@@ -202,46 +202,49 @@ class BaseIndicatorEA(BaseEA):
                     f"Recieved id = {preference.request_id}"
                 )
                 raise eaError(msg)
-        if preference is None and not self._ref_vectors_are_focused:
-            self.reference_vectors.adapt(self.population.fitness)
+
         if isinstance(preference, ReferencePointPreference):
-            ideal = self.population.ideal_fitness_val
-            refpoint = (
-                preference.response.values * self.population.problem._max_multiplier
-            )
-            refpoint = refpoint - ideal
-            norm = np.sqrt(np.sum(np.square(refpoint))) # refpoint is normalized here
-            refpoint = refpoint / norm
-            self.reference_vectors.iteractive_adapt_3(refpoint)
-            self.reference_vectors.add_edge_vectors()
-#        elif isinstance(preference, PreferredSolutionPreference):
-#            self.reference_vectors.interactive_adapt_1(
-#                z=self.population.objectives[preference.response],
-#                n_solutions=np.shape(self.population.objectives)[0],
-#            )
-#            self.reference_vectors.add_edge_vectors()
-#        elif isinstance(preference, NonPreferredSolutionPreference):
-#            self.reference_vectors.interactive_adapt_2(
-#                z=self.population.objectives[preference.response],
-#                n_solutions=np.shape(self.population.objectives)[0],
-#            )
-#            self.reference_vectors.add_edge_vectors()
-#        elif isinstance(preference, BoundPreference):
-#            self.reference_vectors.interactive_adapt_4(preference.response)
-#            self.reference_vectors.add_edge_vectors()
-        self.reference_vectors.neighbouring_angles()
+            self.reference_point = preference.response.values
+            print(self.reference_point)
+            #ideal = self.population.ideal_fitness_val
+            #refpoint = (
+            #    preference.response.values * self.population.problem._max_multiplier
+            #)
+            #refpoint = refpoint - ideal
+            #norm = np.sqrt(np.sum(np.square(refpoint))) # refpoint is normalized here
+            #refpoint = refpoint / norm
+
 
     def request_preferences(self) -> Union[
         None,
         Tuple[
             PreferredSolutionPreference,
-            #NonPreferredSolutionPreference,
-            #ReferencePointPreference,
-            #BoundPreference,
         ],
     ]:
         # check that if ibea no preferences
-        if (True): return None
+        if (self.interact is False): return None
+
+        dimensions_data = pd.DataFrame(
+            index=["minimize", "ideal", "nadir"],
+            columns=self.population.problem.get_objective_names(),
+        )
+        dimensions_data.loc["minimize"] = self.population.problem._max_multiplier
+        dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
+        dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
+        message = ("Provide preference point. TODO add more info")
+                    
+        interaction_priority = "recommended"
+        self._interaction_request_id = np.random.randint(0, 1e9)
+
+        return (
+            PreferredSolutionPreference(
+                n_solutions=self.population.objectives.shape[0],
+                message=message,
+                interaction_priority=interaction_priority,
+                request_id=self._interaction_request_id,
+            )
+        )
+
 
     def request_plot(self) -> SimplePlotRequest:
         dimensions_data = pd.DataFrame(

@@ -35,7 +35,7 @@ class IBEA(BaseIndicatorEA):
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
         # what ibea needs
-        kappa: float = 0.05, # fitness scaling ratio
+        kappa: np.float64 = 0.05, # fitness scaling ratio
         indicator: Callable = epsilon_indicator, # default indicator is epsilon_indicator
         reference_point = None, # ibea doesn't use this. Is there for PBEA
                  ):
