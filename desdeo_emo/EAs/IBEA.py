@@ -72,9 +72,9 @@ ZDT4 works
 ZDT6 works
 """
 def testZDTs():
-    problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
+    #problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
     #problem_name = "ZDT3" # seems work ok.
-    #problem_name = "ZDT6" # this just starts going worse and worse 
+    problem_name = "ZDT6" # this just starts going worse and worse 
     # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)

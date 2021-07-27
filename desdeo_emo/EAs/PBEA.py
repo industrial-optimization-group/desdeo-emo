@@ -87,47 +87,135 @@ class PBEA(BaseIndicatorEA):
 
         print("using PBEA")
 
-    # run ibea in start ?
-    def start(self):
-        pass
-        print(self.population.fitness)
-        
-
-
 
 def inter_zdt():
-    problem_name = "ZDT3" # seems work ok.
-    #problem_name = "ZDT6" # this just starts going worse and worse 
+    #problem_name = "ZDT3" # seems work ok.
+    problem_name = "ZDT6" # this just starts going worse and worse 
 
     problem = test_problem_builder(problem_name)
     # step 0. Let's start with rough approx
-    ib = IBEA(problem, population_size=35, n_iterations=3, n_gen_per_iter=100,total_function_evaluations=1000)
+    ib = IBEA(problem, population_size=50, n_iterations=10, n_gen_per_iter=100,total_function_evaluations=6000)
     while ib.continue_evolution():
         ib.iterate()
     individuals, objective_values = ib.end()
+    #print(objective_values)
 
     # need to get the population
     print(ib.return_pop())
     ini_pop = ib.return_pop()
 
+    ideal2 = ini_pop.ideal_objective_vector
     # step 1: reference point. TODO: actually ask from DM
-    #ref_point = np.array([0.9,-0.2], dtype=np.float64) # we want the solutions at middle 
     delta = 0.1
     # step 2: local approximation
-    evolver = PBEA(problem, interact=True, population_size=35, initial_population=ini_pop, 
-                   n_iterations=5, n_gen_per_iter=100, total_function_evaluations=1000, 
+    evolver = PBEA(problem, interact=True, population_size=50, initial_population=ini_pop, 
+                   n_iterations=10, n_gen_per_iter=100, total_function_evaluations=5000, 
                    indicator=preference_indicator, delta=delta)
     
-    #while evolver.continue_evolution():
-        #evolver.iterate()
+    print(evolver.delta)
     pref, plot = evolver.requests()
     #print(pref, plot)
     print(pref.content['message'])
     # desdeo's logic doesnt make yet sense so this won't work
-    pref.response = np.array([0.9,-0.2], dtype=np.float64) # we want the solutions at middle 
+    responses = np.asarray([[0.6,0.95], [0.35,0.9],]) # we want the solutions at middle 
 
+    pref.response = pd.DataFrame([responses[0]], columns=pref.content['dimensions_data'].columns)
     pref, plot = evolver.iterate(pref)
 
+    #print(objective_values2)
+    evolver.delta = 0.01
+
+    pref, plot = evolver.requests()
+    #print(pref, plot)
+    print(pref.content['message'])
+    #ideal2 = ini_pop.ideal_objective_vector
+    pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
+    pref, plot = evolver.iterate(pref)
+
+    print(evolver.delta)
+    individuals3, objective_values3 = evolver.end()    
+    #print(objective_values3)
+    #ini_pop = evolver.return_pop()
+
+    # should select small set of solutions to show to DM. For now we show all.
+    plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
+    plt.scatter(x=objective_values3[:,0], y=objective_values3[:,1], label="PBEA Front iter 2")
+    plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
+    plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
+    plt.title(f"Fronts")
+    plt.xlabel("F1")
+    plt.ylabel("F2")
+    plt.legend()
+    plt.show()
+
+
+# with double evolvers
+def inter_zdt2():
+    #problem_name = "ZDT3" # seems work ok.
+    problem_name = "ZDT6" # this just starts going worse and worse 
+
+    problem = test_problem_builder(problem_name)
+    # step 0. Let's start with rough approx
+    ib = IBEA(problem, population_size=50, n_iterations=10, n_gen_per_iter=100,total_function_evaluations=6000)
+    while ib.continue_evolution():
+        ib.iterate()
+    individuals, objective_values = ib.end()
+    #print(objective_values)
+
+    # need to get the population
+    print(ib.return_pop())
+    ini_pop = ib.return_pop()
+
+    ideal2 = ini_pop.ideal_objective_vector
+    # step 1: reference point. TODO: actually ask from DM
+    delta = 0.1
+    # step 2: local approximation
+    evolver = PBEA(problem, interact=True, population_size=50, initial_population=ini_pop, 
+                   n_iterations=10, n_gen_per_iter=100, total_function_evaluations=3000, 
+                   indicator=preference_indicator, delta=delta)
+    
+    print(evolver.delta)
+    pref, plot = evolver.requests()
+    #print(pref, plot)
+    print(pref.content['message'])
+    # desdeo's logic doesnt make yet sense so this won't work
+    responses = np.asarray([[0.6,0.95], [0.35,0.95],]) # we want the solutions at middle 
+
+    pref.response = pd.DataFrame([responses[0]], columns=pref.content['dimensions_data'].columns)
+    pref, plot = evolver.iterate(pref)
+
+    individuals2, objective_values2 = evolver.end()    
+    ini_pop = evolver.return_pop()
+    #print(objective_values2)
+    delta = 0.02
+    # step 2: local approximation
+    evolver = PBEA(problem, interact=True, population_size=50, initial_population=ini_pop, 
+                   n_iterations=10, n_gen_per_iter=100, total_function_evaluations=3000, 
+                   indicator=preference_indicator, delta=delta)
+
+    pref, plot = evolver.requests()
+    #print(pref, plot)
+    print(pref.content['message'])
+    #ideal2 = ini_pop.ideal_objective_vector
+    pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
+    pref, plot = evolver.iterate(pref)
+
+    print(evolver.delta)
+    individuals3, objective_values3 = evolver.end()    
+    #print(objective_values3)
+    #ini_pop = evolver.return_pop()
+
+    # should select small set of solutions to show to DM. For now we show all.
+    plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
+    plt.scatter(x=objective_values2[:,0], y=objective_values2[:,1], label="PBEA Front iter 1")
+    plt.scatter(x=objective_values3[:,0], y=objective_values3[:,1], label="PBEA Front iter 2")
+    plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
+    plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
+    plt.title(f"Fronts")
+    plt.xlabel("F1")
+    plt.ylabel("F2")
+    plt.legend()
+    plt.show()
 
 """
 8 000 evals
@@ -286,8 +374,8 @@ def testDTLZs():
 # domination comparison for fitness/objective vectors
 if __name__=="__main__":
 
-    #inter_zdt()
-    testZDTs()
+    inter_zdt()
+    #testZDTs() # works
     #testDTLZs()
 
    #import cProfile

@@ -23,6 +23,7 @@ from desdeo_tools.interaction import (
     validate_ref_point_data_type,
     validate_ref_point_dimensions,
     validate_ref_point_with_ideal,
+    validate_ref_point_with_ideal_and_nadir,
 )
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
 
@@ -40,7 +41,8 @@ def binary_tournament_select(population:Population) -> list:
             ))
         return parents
 
-np.seterr(all='warn')
+# test with warnings enabled aswell
+#np.seterr(all='warn')
 
 
 class BaseIndicatorEA(BaseEA):
@@ -117,7 +119,7 @@ class BaseIndicatorEA(BaseEA):
         while (self.population.pop_size < self.population.individuals.shape[0]):
             # choose individual with smallest fitness value
             selected = self._select()
-            worst_index = selected[0]
+            worst_index = selected
 
             # update the fitness values
             poplen = self.population.individuals.shape[0]
@@ -128,7 +130,7 @@ class BaseIndicatorEA(BaseEA):
                 else:
                     self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
 
-            # remove the worst individula 
+            # remove the worst individual 
             self.population.delete(selected)
 
         # check termination
@@ -181,45 +183,33 @@ class BaseIndicatorEA(BaseEA):
         # check if ibea don't go
         if (self.interact is False): return
 
-        if not isinstance(
-            preference,
-            (
-                ReferencePointPreference,
-                type(None),
-            ),
-        ):
+        if preference is None:
+            msg = "Giving preferences is mandatory"
+            raise eaError(msg)
+
+        if not isinstance(preference, ReferencePointPreference):
             msg = (
                 f"Wrong object sent as preference. Expected type = "
                 f"{type(ReferencePointPreference)}\n"
                 f"Recieved type = {type(preference)}"
             )
             raise eaError(msg)
-        if preference is not None:
-            if preference.request_id != self._interaction_request_id:
-                msg = (
-                    f"Wrong preference object sent. Expected id = "
-                    f"{self._interaction_request_id}.\n"
-                    f"Recieved id = {preference.request_id}"
-                )
-                raise eaError(msg)
 
-        if isinstance(preference, ReferencePointPreference):
-            self.reference_point = preference.response.values
-            print(self.reference_point)
-            #ideal = self.population.ideal_fitness_val
-            #refpoint = (
-            #    preference.response.values * self.population.problem._max_multiplier
-            #)
-            #refpoint = refpoint - ideal
-            #norm = np.sqrt(np.sum(np.square(refpoint))) # refpoint is normalized here
-            #refpoint = refpoint / norm
+        if preference.request_id != self._interaction_request_id:
+            msg = (
+                f"Wrong preference object sent. Expected id = "
+                f"{self._interaction_request_id}.\n"
+                f"Recieved id = {preference.request_id}"
+            )
+            raise eaError(msg)
+
+        self.reference_point = preference.response.values * self.population.problem._max_multiplier
+        print(self.reference_point)
+
 
 
     def request_preferences(self) -> Union[
-        None,
-        Tuple[
-            PreferredSolutionPreference,
-        ],
+        None, ReferencePointPreference,
     ]:
         # check that if ibea no preferences
         if (self.interact is False): return None
@@ -233,14 +223,15 @@ class BaseIndicatorEA(BaseEA):
         dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
         message = ("Provide preference point. TODO add more info")
                     
-        interaction_priority = "recommended"
+        interaction_priority = "required"
         self._interaction_request_id = np.random.randint(0, 1e9)
 
         return (
-            PreferredSolutionPreference(
-                n_solutions=self.population.objectives.shape[0],
+            ReferencePointPreference(
+                dimensions_data=dimensions_data,
                 message=message,
                 interaction_priority=interaction_priority,
+                preference_validator=validate_ref_point_with_ideal_and_nadir,
                 request_id=self._interaction_request_id,
             )
         )
