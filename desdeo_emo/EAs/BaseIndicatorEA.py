@@ -25,8 +25,8 @@ from desdeo_tools.interaction import (
     validate_ref_point_with_ideal,
     validate_ref_point_with_ideal_and_nadir,
 )
+# need to add preference_indicator
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
-
 from desdeo_emo.EAs.BaseEA import eaError
 
 
@@ -46,9 +46,44 @@ def binary_tournament_select(population:Population) -> list:
 
 
 class BaseIndicatorEA(BaseEA):
+    """The Base class for indicator based EAs.
+
+    This class contains most of the code to set up the parameters and operators.
+    It also contains the logic of a indicator EA.
+
+    Parameters
+    ----------
+    problem : MOProblem
+        The problem class object specifying the details of the problem.
+    selection_operator : Type[SelectionBase], optional
+        The selection operator to be used by the EA, by default None.
+    population_size : int, optional
+        The desired population size, by default None, which sets up a default value
+        of population size depending upon the dimensionaly of the problem.
+    population_params : Dict, optional
+        The parameters for the population class, by default None. See
+        desdeo_emo.population.Population for more details.
+    initial_population : Population, optional
+        An initial population class, by default None. Use this if you want to set up
+        a specific starting population, such as when the output of one EA is to be
+        used as the input of another.
+    a_priori : bool, optional
+        A bool variable defining whether a priori preference is to be used or not.
+        By default False
+    interact : bool, optional
+        A bool variable defining whether interactive preference is to be used or
+        not. By default False
+    n_iterations : int, optional
+        The total number of iterations to be run, by default 10. This is not a hard
+        limit and is only used for an internal counter.
+    n_gen_per_iter : int, optional
+        The total number of generations in an iteration to be run, by default 100.
+        This is not a hard limit and is only used for an internal counter.
+    total_function_evaluations :int, optional
+        Set an upper limit to the total number of function evaluations. When set to
+        zero, this argument is ignored and other termination criteria are used.
     """
 
-    """
     def __init__(
         self,
         problem: MOProblem,
@@ -88,12 +123,11 @@ class BaseIndicatorEA(BaseEA):
             )
             self._function_evaluation_count += population_size
         
-        #if reference_point is None:
 
         #print("Using BaseIndicatorEA init")
         
     def start(self):
-        pass
+        return self.requests() 
 
     def return_pop(self):
         return self.population
@@ -111,13 +145,12 @@ class BaseIndicatorEA(BaseEA):
         )
 
 
-    # täälä operaattorit in the main loop of the algoritmh
     def _next_gen(self):
-        # call _fitness_assigment (using indicator). replacement
+        # call _fitness_assigment 
         self._fitness_assignment()
         # iterate until size of new and old population less than old population.
         while (self.population.pop_size < self.population.individuals.shape[0]):
-            # choose individual with smallest fitness value
+            # choose individual with smallest fitness value, enviromentalSelection
             selected = self._select()
             worst_index = selected
 
@@ -133,12 +166,7 @@ class BaseIndicatorEA(BaseEA):
             # remove the worst individual 
             self.population.delete(selected)
 
-        # check termination
-        if (self._function_evaluation_count >= self.total_function_evaluations):
-            # just to stop the iteration. 
-            self.end()
-
-        # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. kovakoodataan tämä nytten, mietitään myöhemmin sitten muuten.
+        # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
         chosen = binary_tournament_select(self.population)
 
         # variation, call the recombination operators
@@ -155,7 +183,6 @@ class BaseIndicatorEA(BaseEA):
         return self.selection_operator.do(self.population)
 
     #implements fitness computing. 
-    # TODO: trouble of calling different indicators with the design since indicators are just functions. Let's cross that bridge when we come to it.
     def _fitness_assignment(self):
         population = self.population
         pop_size = population.individuals.shape[0]
@@ -180,8 +207,14 @@ class BaseIndicatorEA(BaseEA):
         Use this phase to make changes to RVEA.params or other objects.
         """
         # start only with reference point reference as in article
-        # check if ibea don't go
-        if (self.interact is False): return
+        # check if ibea don't go, also set n iters.TODO: better solution
+        # now the iterations make sense.
+        #n_iters = 0
+        #print("n_it", n_iters)
+        if (self.interact is False): 
+            #n_iters = self.n_iterations
+            #print("n_it", n_iters)
+            return
 
         if preference is None:
             msg = "Giving preferences is mandatory"
@@ -195,22 +228,28 @@ class BaseIndicatorEA(BaseEA):
             )
             raise eaError(msg)
 
-        if preference.request_id != self._interaction_request_id:
-            msg = (
-                f"Wrong preference object sent. Expected id = "
-                f"{self._interaction_request_id}.\n"
-                f"Recieved id = {preference.request_id}"
-            )
-            raise eaError(msg)
+        if preference is not None:
+            if preference.request_id != self._interaction_request_id:
+                msg = (
+                    f"Wrong preference object sent. Expected id = "
+                    f"{self._interaction_request_id}.\n"
+                    f"Recieved id = {preference.request_id}"
+                )
+                raise eaError(msg)
 
-        self.reference_point = preference.response.values * self.population.problem._max_multiplier
-        print(self.reference_point)
+        if preference is not None:
+            self.reference_point = preference.response.values * self.population.problem._max_multiplier
+            #self._iteration_counter = 1 # solution on how to keep iterating
+            # TODO: bug with calling this 2nd time here hence doubling the n gen per iters every time managing pref
+            #self.n_iterations += self.n_iterations # this is second time this is called so thats why they are doubling
+            self.n_iterations += self.n_iterations # now only adding the original iterations per dms preference run
+            self.total_function_evaluations += self.total_function_evaluations
+            print("Reference point", self.reference_point)
+            print(self.n_iterations)
 
 
 
-    def request_preferences(self) -> Union[
-        None, ReferencePointPreference,
-    ]:
+    def request_preferences(self) -> ReferencePointPreference:
         # check that if ibea no preferences
         if (self.interact is False): return None
 
@@ -222,18 +261,23 @@ class BaseIndicatorEA(BaseEA):
         dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
         dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
         message = ("Provide preference point. TODO add more info")
-                    
+
+        def validator(dimensions_data: pd.DataFrame, reference_point: pd.DataFrame):
+            validate_ref_point_dimensions(dimensions_data, reference_point)
+            validate_ref_point_data_type(reference_point)
+            validate_ref_point_with_ideal(dimensions_data, reference_point)
+            return
+                   
         interaction_priority = "required"
         self._interaction_request_id = np.random.randint(0, 1e9)
 
-        return (
-            ReferencePointPreference(
+        return ReferencePointPreference(
                 dimensions_data=dimensions_data,
                 message=message,
                 interaction_priority=interaction_priority,
                 preference_validator=validate_ref_point_with_ideal_and_nadir,
                 request_id=self._interaction_request_id,
-            )
+            
         )
 
 
