@@ -29,8 +29,9 @@ from desdeo_tools.interaction import (
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
 from desdeo_emo.EAs.BaseEA import eaError
 
+from desdeo_tools.scalarization import SimpleASF
 
-# where to put this?
+# where to put this? selection...
 def binary_tournament_select(population:Population) -> list:
         parents = []
         for i in range(int(population.pop_size)): 
@@ -43,6 +44,17 @@ def binary_tournament_select(population:Population) -> list:
 
 # test with warnings enabled aswell
 #np.seterr(all='warn')
+
+#def closest_to_ASF(obj, asf, reference_point):
+#    mini = (100, 1, 1) 
+#    for i, k in enumerate(obj):
+#        temp = asf(k, reference_point=reference_point)
+#        #print(temp)
+#        if temp < mini[0]:
+#            mini = temp, i, k
+
+#    print("asf value, index of the min objective value and the objective value",mini)
+#    return mini
 
 
 class BaseIndicatorEA(BaseEA):
@@ -129,6 +141,7 @@ class BaseIndicatorEA(BaseEA):
     def start(self):
         return self.requests() 
 
+    # TODO: remove, this is unnecessary..
     def return_pop(self):
         return self.population
 
@@ -165,6 +178,7 @@ class BaseIndicatorEA(BaseEA):
 
             # remove the worst individual 
             self.population.delete(selected)
+                 
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
         chosen = binary_tournament_select(self.population)
@@ -176,6 +190,15 @@ class BaseIndicatorEA(BaseEA):
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
         self._function_evaluation_count += offspring.shape[0]
+
+        # this is how !
+        #if self.continue_iteration() == False:
+        #    if self.reference_point is not None:
+        #        asf = SimpleASF(self.population.objectives)
+        #        m  = closest_to_ASF(self.population.objectives, asf, self.reference_point)
+                #print(m)
+                
+
 
 
     # need to implement the enviromental selection. Only calls it from selection module
@@ -207,13 +230,7 @@ class BaseIndicatorEA(BaseEA):
         Use this phase to make changes to RVEA.params or other objects.
         """
         # start only with reference point reference as in article
-        # check if ibea don't go, also set n iters.TODO: better solution
-        # now the iterations make sense.
-        #n_iters = 0
-        #print("n_it", n_iters)
         if (self.interact is False): 
-            #n_iters = self.n_iterations
-            #print("n_it", n_iters)
             return
 
         if preference is None:
@@ -239,13 +256,12 @@ class BaseIndicatorEA(BaseEA):
 
         if preference is not None:
             self.reference_point = preference.response.values * self.population.problem._max_multiplier
-            #self._iteration_counter = 1 # solution on how to keep iterating
             # TODO: bug with calling this 2nd time here hence doubling the n gen per iters every time managing pref
             #self.n_iterations += self.n_iterations # this is second time this is called so thats why they are doubling
             self.n_iterations += self.n_iterations # now only adding the original iterations per dms preference run
             self.total_function_evaluations += self.total_function_evaluations
-            print("Reference point", self.reference_point)
-            print(self.n_iterations)
+            #print("Reference point", self.reference_point)
+            #print(self.n_iterations)
 
 
 

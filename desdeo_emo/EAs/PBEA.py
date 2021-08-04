@@ -48,17 +48,21 @@ def preference_indicator(reference_front: np.ndarray, front: np.ndarray, ref_poi
     return epsilon_indicator(reference_front, front)/norm
 
 
-# TODO: make better
-def closest_to_ASF(obj, asf, reference_point):
-    mini = (100, 1, 1) 
-    for i, k in enumerate(obj):
-        temp = asf(k, reference_point=reference_point)
-        #print(temp)
-        if temp < mini[0]:
-            mini = temp, i, k
+# temp will be shown to the DM, hence needed !
+# index might be useful depending on what I do..
+# the actual objective vector might be useful with showing the dm..
 
-    print("asf value, index of the min objective value and the objective value",mini)
-    return mini
+# index could be used instead of latter two
+
+# TODO: make better. Bit better..
+def distance_to_reference_point(obj, asf, reference_point):
+    d = (np.Inf, 1)
+    for i, k in enumerate(obj):
+        i_d = asf(k, reference_point=reference_point)
+        if i_d < d[0]:
+            d = i_d, i
+
+    return d
 
 #  need to figure out how to return part of the pop / the best solution by the asf for the DM to give new preference. 
 # As now, the evolver.end() returns the non dominated which is good for last iteration but it ends the iteration also..
@@ -207,8 +211,9 @@ def inter_zdt():
     pref, plot = evolver.iterate(pref) # iterate
     # achievement function
     asf = SimpleASF(evolver.population.objectives)
-    min_tup = closest_to_ASF(evolver.population.objectives, asf, responses[0]) # show best solution
+    d, ind  = distance_to_reference_point(evolver.population.objectives, asf, responses[0]) # show best solution
     individuals1, objective_values1 = evolver.end()    
+    plot_obj1 = evolver.return_pop().objectives
     print(evolver._current_gen_count)
 
     pref, plot = evolver.requests()
@@ -216,8 +221,9 @@ def inter_zdt():
     pref, plot = evolver.iterate(pref)
     # achievement function
     asf = SimpleASF(evolver.population.objectives)
-    min_tup2 = closest_to_ASF(evolver.population.objectives, asf, responses[1]) # show best solution
+    d2, ind2 = distance_to_reference_point(evolver.population.objectives, asf, responses[1]) # show best solution
     individuals2, objective_values2 = evolver.end()    
+    plot_obj2 = evolver.return_pop().objectives
     print(evolver._current_gen_count)
 
     evolver.delta = 0.03 # change delta
@@ -226,7 +232,8 @@ def inter_zdt():
     pref, plot = evolver.iterate(pref)
     # achievement function
     asf = SimpleASF(evolver.population.objectives)
-    min_tup3 = closest_to_ASF(evolver.population.objectives, asf, responses[2]) # show best solution
+    d3, ind3 = distance_to_reference_point(evolver.population.objectives, asf, responses[2]) # show best solution
+    plot_obj3 = evolver.return_pop().objectives
 
     print(evolver.delta)
     print(evolver.n_iterations)
@@ -243,9 +250,9 @@ def inter_zdt():
     plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
     plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
     plt.scatter(x=responses[2][0], y=responses[2][1], label="Ref point 3")
-    plt.scatter(x=min_tup[2][0], y=min_tup[2][1], label="Best solution iteration 1")
-    plt.scatter(x=min_tup2[2][0], y=min_tup2[2][1], label="Best solution iteration 2")
-    plt.scatter(x=min_tup3[2][0], y=min_tup3[2][1], label="Best solution iteration 3")
+    plt.scatter(x=plot_obj1[ind][0], y=plot_obj1[ind][1], label="Best solution iteration 1")
+    plt.scatter(x=plot_obj2[ind2][0], y=plot_obj2[ind2][1], label="Best solution iteration 2")
+    plt.scatter(x=plot_obj3[ind3][0], y=plot_obj3[ind3][1], label="Best solution iteration 3")
     plt.title(f"Fronts")
     plt.xlabel("F1")
     plt.ylabel("F2")
