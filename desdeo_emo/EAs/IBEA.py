@@ -5,7 +5,6 @@ import pandas as pd
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
-from desdeo_emo.selection.tournament_select import tour_select
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA 
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator
 
@@ -71,7 +70,6 @@ class IBEA(BaseIndicatorEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
-        # what ibea needs
         kappa: float = 0.05, # fitness scaling ratio
         indicator: Callable = epsilon_indicator, # default indicator is epsilon_indicator
         ):
@@ -88,13 +86,10 @@ class IBEA(BaseIndicatorEA):
             use_surrogates=use_surrogates,
             indicator=indicator,
         )
-        
         self.indicator = indicator
         self.kappa = kappa
         selection_operator = EnvironmentalSelection(self.population)
         self.selection_operator = selection_operator
-
-        print("using IBEA")
 
     
 
@@ -182,8 +177,6 @@ def testDTLZs():
 
 
 
-# TODO: 
-# domination comparison for fitness/objective vectors
 if __name__=="__main__":
 
    testZDTs()

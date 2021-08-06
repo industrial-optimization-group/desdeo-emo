@@ -5,13 +5,12 @@ import pandas as pd
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
-from desdeo_emo.selection.tournament_select import tour_select
 from desdeo_tools.scalarization import SimpleASF
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA
 
-# need to add preference_indicator
+# need to add preference_indicator and distance_to_reference_point
 #from desdeo_tools.utilities.quality_indicator import preference_indicator 
-
+#from desdeo_tools.utilities.distance_to_reference_point import distance_to_reference_point
 
 # imports for testing TODO: remove
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator 
@@ -52,10 +51,21 @@ def preference_indicator(reference_front: np.ndarray, front: np.ndarray, ref_poi
 # index might be useful depending on what I do..
 # the actual objective vector might be useful with showing the dm..
 
-# index could be used instead of latter two
 
-# TODO: make better. Bit better..
-def distance_to_reference_point(obj, asf, reference_point):
+# TODO : to desdeo tools
+
+def distance_to_reference_point(obj: np.ndarray, reference_point: np.ndarray) -> Tuple:
+    """ 
+        Computes the closest solution to a reference point using achievement scalarizing function.
+    Args:
+
+        obj (np.ndarray): Array of the solutions. Should be 2d-array.
+        reference_point (np.ndarray): The reference point array. Should be one dimensional array.
+
+    Returns: 
+        Tuple: Returns a tuple containing the closest solution to a reference point and the index of it in obj. 
+    """
+    asf = SimpleASF(obj)
     d = (np.Inf, 1)
     for i, k in enumerate(obj):
         i_d = asf(k, reference_point=reference_point)
@@ -151,14 +161,8 @@ class PBEA(BaseIndicatorEA):
         self.delta = delta
         self.indicator = indicator # needs preference indicator
         self.reference_point = reference_point
-        #print(self.reference_point)
         selection_operator = EnvironmentalSelection(self.population)
         self.selection_operator = selection_operator
-
-        print("using PBEA")
-
-
-        # PBEA needs to do the step 3. Aka show some of the solutions
 
 
 def inter_zdt():
@@ -182,8 +186,7 @@ def inter_zdt():
     print("ideal from IBEA approximation: ", ib.population.problem.ideal)
 
     # need to get the population
-    print(ib.return_pop())
-    ini_pop = ib.return_pop()
+    ini_pop = ib.population
 
     # step 1: reference point. TODO: actually ask from DM
     delta = 0.1
@@ -210,20 +213,18 @@ def inter_zdt():
     pref.response = pd.DataFrame([responses[0]], columns=pref.content['dimensions_data'].columns) # give preference
     pref, plot = evolver.iterate(pref) # iterate
     # achievement function
-    asf = SimpleASF(evolver.population.objectives)
-    d, ind  = distance_to_reference_point(evolver.population.objectives, asf, responses[0]) # show best solution
+    d, ind  = distance_to_reference_point(evolver.population.objectives, responses[0]) # show best solution
     individuals1, objective_values1 = evolver.end()    
-    plot_obj1 = evolver.return_pop().objectives
+    plot_obj1 = evolver.population.objectives
     print(evolver._current_gen_count)
 
     pref, plot = evolver.requests()
     pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
     pref, plot = evolver.iterate(pref)
     # achievement function
-    asf = SimpleASF(evolver.population.objectives)
-    d2, ind2 = distance_to_reference_point(evolver.population.objectives, asf, responses[1]) # show best solution
-    individuals2, objective_values2 = evolver.end()    
-    plot_obj2 = evolver.return_pop().objectives
+    d2, ind2 = distance_to_reference_point(evolver.population.objectives,responses[1]) # show best solution
+    individuals2, objective_values2 = evolver.end()
+    plot_obj2 = evolver.population.objectives
     print(evolver._current_gen_count)
 
     evolver.delta = 0.03 # change delta
@@ -231,9 +232,8 @@ def inter_zdt():
     pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
     pref, plot = evolver.iterate(pref)
     # achievement function
-    asf = SimpleASF(evolver.population.objectives)
-    d3, ind3 = distance_to_reference_point(evolver.population.objectives, asf, responses[2]) # show best solution
-    plot_obj3 = evolver.return_pop().objectives
+    d3, ind3 = distance_to_reference_point(evolver.population.objectives, responses[2]) # show best solution
+    plot_obj3 = evolver.population.objectives
 
     print(evolver.delta)
     print(evolver.n_iterations)

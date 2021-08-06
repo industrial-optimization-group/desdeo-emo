@@ -13,7 +13,9 @@ from desdeo_emo.EAs import BaseEA
 from numba import njit 
 import hvwfg as hv
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
-from desdeo_emo.selection.tournament_select import tour_select
+#from desdeo_emo.selection.tournament_select import tour_select 
+#from desdeo_emo.selection.tournament_select import tour_select, tournament_selection
+from desdeo_emo.selection.TournamentSelection import TournamentSelection
 from desdeo_tools.interaction import (
     SimplePlotRequest,
     ReferencePointPreference,
@@ -31,30 +33,9 @@ from desdeo_emo.EAs.BaseEA import eaError
 
 from desdeo_tools.scalarization import SimpleASF
 
-# where to put this? selection...
-def binary_tournament_select(population:Population) -> list:
-        parents = []
-        for i in range(int(population.pop_size)): 
-            parents.append(
-                np.asarray(
-                    tour_select(population.fitness[:, 0], 2), 
-                    tour_select(population.fitness[:, 0], 2),
-            ))
-        return parents
 
 # test with warnings enabled aswell
 #np.seterr(all='warn')
-
-#def closest_to_ASF(obj, asf, reference_point):
-#    mini = (100, 1, 1) 
-#    for i, k in enumerate(obj):
-#        temp = asf(k, reference_point=reference_point)
-#        #print(temp)
-#        if temp < mini[0]:
-#            mini = temp, i, k
-
-#    print("asf value, index of the min objective value and the objective value",mini)
-#    return mini
 
 
 class BaseIndicatorEA(BaseEA):
@@ -135,15 +116,10 @@ class BaseIndicatorEA(BaseEA):
             )
             self._function_evaluation_count += population_size
         
-
-        #print("Using BaseIndicatorEA init")
         
     def start(self):
         return self.requests() 
 
-    # TODO: remove, this is unnecessary..
-    def return_pop(self):
-        return self.population
 
     def end(self):
         """Conducts non-dominated sorting at the end of the evolution process
@@ -163,7 +139,7 @@ class BaseIndicatorEA(BaseEA):
         self._fitness_assignment()
         # iterate until size of new and old population less than old population.
         while (self.population.pop_size < self.population.individuals.shape[0]):
-            # choose individual with smallest fitness value, enviromentalSelection
+            # choose individual with smallest fitness value with environmentalSelection
             selected = self._select()
             worst_index = selected
 
@@ -179,9 +155,10 @@ class BaseIndicatorEA(BaseEA):
             # remove the worst individual 
             self.population.delete(selected)
                  
-
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
-        chosen = binary_tournament_select(self.population)
+        #chosen = binary_tournament_select(self.population)
+        
+        chosen = TournamentSelection(self.population, 2).do()
 
         # variation, call the recombination operators
         offspring = self.population.mate(mating_individuals=chosen)
@@ -191,17 +168,10 @@ class BaseIndicatorEA(BaseEA):
         self._gen_count_in_curr_iteration += 1
         self._function_evaluation_count += offspring.shape[0]
 
-        # this is how !
-        #if self.continue_iteration() == False:
-        #    if self.reference_point is not None:
-        #        asf = SimpleASF(self.population.objectives)
-        #        m  = closest_to_ASF(self.population.objectives, asf, self.reference_point)
-                #print(m)
-                
 
 
 
-    # need to implement the enviromental selection. Only calls it from selection module
+    # calls environmentalSelection
     def _select(self) -> list:
         return self.selection_operator.do(self.population)
 
