@@ -5,16 +5,12 @@ import pandas as pd
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 
-import matplotlib.pyplot as plt
 from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 from desdeo_emo.EAs import BaseEA
-from numba import njit 
-import hvwfg as hv
+from desdeo_emo.EAs.BaseEA import eaError
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
-#from desdeo_emo.selection.tournament_select import tour_select 
-#from desdeo_emo.selection.tournament_select import tour_select, tournament_selection
 from desdeo_emo.selection.TournamentSelection import TournamentSelection
 from desdeo_tools.interaction import (
     SimplePlotRequest,
@@ -27,15 +23,37 @@ from desdeo_tools.interaction import (
     validate_ref_point_with_ideal,
     validate_ref_point_with_ideal_and_nadir,
 )
-# need to add preference_indicator
-from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims
-from desdeo_emo.EAs.BaseEA import eaError
+
+# only for testing
+import matplotlib.pyplot as plt
 
 from desdeo_tools.scalarization import SimpleASF
-
-
+from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims 
 # test with warnings enabled aswell
 #np.seterr(all='warn')
+#import warnings
+#warnings.filterwarnings('error')
+
+def pref_ind(reference_front: np.ndarray, front: np.ndarray, minasf, ref_point: np.ndarray, delta: float) -> float:
+
+    #ref_front_asf = SimpleASF(np.ones_like(reference_front))
+    front_asf = SimpleASF(np.ones_like(front))
+    norm = front_asf(front, reference_point=ref_point) + delta - minasf
+    if norm < delta:
+        print(norm)
+
+    #print(eps.shape[0])
+    #print(reference_front.shape[0])
+    #input()
+    #for i in range(reference_front.shape[0]):
+        #eps[i] = np.exp((-epsilon_indicator(reference_front[i], front)/norm) / 0.05)
+    # (( <-- was missing ))
+
+
+    #eps = np.ones_like(reference_front)
+    eps = np.exp((-epsilon_indicator_ndims(reference_front, front)/norm) / 0.05)
+
+    return eps     
 
 
 class BaseIndicatorEA(BaseEA):
@@ -104,6 +122,7 @@ class BaseIndicatorEA(BaseEA):
         )
 
         self.indicator = indicator
+        self.min_asf_value = None 
         self.reference_point = reference_point
 
         if initial_population is not None:
@@ -134,30 +153,35 @@ class BaseIndicatorEA(BaseEA):
         )
 
 
+
+
+
+    # pbea cpp still has the max indicator value
     def _next_gen(self):
         # call _fitness_assigment 
         self._fitness_assignment()
-        # iterate until size of new and old population less than old population.
+
         while (self.population.pop_size < self.population.individuals.shape[0]):
             # choose individual with smallest fitness value with environmentalSelection
             selected = self._select()
             worst_index = selected
 
             # update the fitness values
-            poplen = self.population.individuals.shape[0]
-            for i in range(poplen):
-                if self.reference_point is not None: 
-                    # over and underflow sometimes, when first run calling this with ibea
-                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index], self.reference_point, self.delta) / self.kappa)
-                else:
-                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
+            if self.reference_point is not None: 
+                self.population.fitness += -pref_ind(self.population.objectives, self.population.objectives[worst_index], self.min_asf_value, 
+                                                                         self.reference_point, self.delta)
+            #else:
+            #    poplen = self.population.individuals.shape[0]
+            #    for i in range(poplen):
+            #        self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
+                    
+            # should work too
+            self.population.fitness += np.exp(-epsilon_indicator_ndims(self.population.objectives, self.population.objectives[worst_index]) / self.kappa)
 
             # remove the worst individual 
             self.population.delete(selected)
                  
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
-        #chosen = binary_tournament_select(self.population)
-        
         chosen = TournamentSelection(self.population, 2).do()
 
         # variation, call the recombination operators
@@ -167,8 +191,6 @@ class BaseIndicatorEA(BaseEA):
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
         self._function_evaluation_count += offspring.shape[0]
-
-
 
 
     # calls environmentalSelection
@@ -181,18 +203,25 @@ class BaseIndicatorEA(BaseEA):
         pop_size = population.individuals.shape[0]
         pop_width = population.fitness.shape[1]
 
+        if self.reference_point is not None:
+            # compute the min asf values
+            asf = SimpleASF(np.ones_like(self.population.objectives))
+            asf_values = asf(self.population.objectives, reference_point=self.reference_point)
+            self.min_asf_value = np.min(asf_values)
+
         for i in range(pop_size):
             population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
                     if self.reference_point is not None:
-                        # sometimes over or underflows, same as the other
-                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j], self.reference_point, self.delta) / self.kappa)
+                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], 
+                                                                         population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
                     else:
                         population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j]) / self.kappa)
-                    
 
 
+    #
+    #
 
     def manage_preferences(self, preference=None):
         """Run the interruption phase of EA.
