@@ -18,7 +18,7 @@ from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 # this probably could be turned to a numpy broadcasting calculation
-def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf, ref_point: np.ndarray, delta: float) -> float:
+def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf: float, ref_point: np.ndarray, delta: float) -> float:
     """ Computes the preference-based quality indicator.
 
     Args:
@@ -35,19 +35,8 @@ def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf
         float: The factor by which the approximating front is worse than the reference front with respect to all
         objectives taking into account the reference point given and spesifity.
     """
-    # Rememeber np ones like ?
-    #ref_front_asf = SimpleASF(np.ones_like(reference_front))
     front_asf = SimpleASF(np.ones_like(front))
-    # this minasf just needs to be updated correctly .. 
     norm = front_asf(front, reference_point=ref_point) + delta - minasf
-    # just to test this doesnt happen. Happens with dtlz2. though it probably shouldnt
-    ##if norm < delta:
-        #print(norm)
-        #norm = delta # dunno if better this way
-        #input()
-
-    #print("minasdf", minasf)
-    #print("norm", norm)
     return epsilon_indicator(reference_front, front)/norm
 
 
@@ -141,13 +130,15 @@ def inter_dtlz():
 
     # test variables
     pop_s = 100
-    iters = 3
-    evals = 5000
+    iters = 10
+    evals = 2000
     kappa = 0.05
 
     problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
     # step 0. Let's start with rough approx
-    ib = IBEA(problem, population_size=pop_s, n_iterations=iters, n_gen_per_iter=100,total_function_evaluations=evals)
+    ib = IBEA(problem, population_size=pop_s, 
+              n_iterations=iters, n_gen_per_iter=100,total_function_evaluations=5000,
+              indicator=epsilon_indicator)
     while ib.continue_evolution():
         ib.iterate()
     # get the non dominated population
@@ -166,7 +157,8 @@ def inter_dtlz():
     print(evolver.delta)
 
     # hardcoded responses just to test
-    dtlz4_response = np.asarray([[0.8, 0.6, 0.6],[0.35,0.7,0.55],[0.2,0.6,0.2]])
+    dtlz4_response = np.asarray([[0.8, 0.6, 0.6],[0.35,0.7,0.55],[0.1,0.1,0.9]])
+    #dtlz4_response = np.asarray([[1.0, 0.64, 0.64, 0.6, 0.76]])
     # eli jos uusi refpoint huonompi kuin vanha, niin todnäk hajoaa..
     # koskee vain DTLZ, ei pysty toistamaan zdt
 
@@ -192,11 +184,11 @@ def inter_dtlz():
     pref, plot = evolver.iterate(pref)
     # achievement function
     # test like this
-    #objectives = evolver.population.objectives
+    objectives = evolver.population.objectives
     t, objectives = evolver.end()
     d2, ind2 = distance_to_reference_point(objectives,responses[1]) # show best solution
     individuals2, objective_values2 = evolver.end()
-    #obj2 = evolver.population.objectives
+    obj2 = evolver.population.objectives
     id2, obj2 = evolver.end()
     print("2nd run",evolver._current_gen_count)
 
@@ -207,18 +199,22 @@ def inter_dtlz():
     # max_indicator !! ? if needed
 
     #evolver.delta = 0.02 # change delta
-    #pref, plot = evolver.requests()
-    #pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
-    #pref, plot = evolver.iterate(pref)
+    pref, plot = evolver.requests()
+    pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
+    pref, plot = evolver.iterate(pref)
     ## achievement function
-    #d3, ind3 = distance_to_reference_point(evolver.population.objectives, responses[2]) # show best solution
-    #plot_obj3 = evolver.population.objectives
-    #id3, obj3 = evolver.end()
+    id3, obj3 = evolver.end()
+    d3, ind3 = distance_to_reference_point(obj3, responses[2]) # show best solution
 
     print(evolver.delta)
     print(evolver.n_iterations)
     print(evolver._current_gen_count)
     print(evolver._function_evaluation_count)
+
+
+    print("Objectives",evolver.population.objectives)
+    print(np.mean(obj1), np.std(obj1))
+    # voisi koittaa pyöristää jokaisen obj arvon, ottaa mediaanin kahtoa onko suhteessa järkevä pref pointtia kohti. piitäisi olla.
 
     #individuals3, obj_val = evolver.end()    
             
@@ -233,9 +229,9 @@ def inter_dtlz():
     ax.scatter(objective_values2[:,0], objective_values2[:,1], objective_values2[:,2], label="PBEA Front iter 2")
     ax.scatter(responses[1][0], responses[1][1], responses[1][2], label="Ref point 2")
     ax.scatter(obj2[ind2][0], obj2[ind2][1], obj2[ind2][2], label="Best solution iteration 2")
-    #ax.scatter(objective_values3[:,0], objective_values3[:,1], objective_values3[:,2], label="PBEA Front iter 1")
-    #ax.scatter(responses[2][0], responses[2][1], responses[2][2], label="Ref point 3")
-    #ax.scatter(obj3[ind3][0], obj3[ind3][1], obj3[ind3][2], label="Best solution iteration 3")
+    ax.scatter(obj3[:,0], obj3[:,1], obj3[:,2], label="PBEA Front iter 1")
+    ax.scatter(responses[2][0], responses[2][1], responses[2][2], label="Ref point 3")
+    ax.scatter(obj3[ind3][0], obj3[ind3][1], obj3[ind3][2], label="Best solution iteration 3")
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
@@ -243,8 +239,8 @@ def inter_dtlz():
     plt.show()
 
 def inter_zdt():
-    #problem_name = "ZDT3" # seems work ok.
-    problem_name = "ZDT1" # this just starts going worse and worse 
+    problem_name = "ZDT6" # seems work ok.
+    #problem_name = "ZDT1" # this just starts going worse and worse 
 
     # test variables
     pop_s = 32
@@ -255,7 +251,8 @@ def inter_zdt():
 
     problem = test_problem_builder(problem_name)
     # step 0. Let's start with rough approx
-    ib = IBEA(problem, population_size=pop_s, n_iterations=iters, n_gen_per_iter=100,total_function_evaluations=2000, 
+    ib = IBEA(problem, population_size=pop_s, n_iterations=iters, 
+              n_gen_per_iter=100,total_function_evaluations=5000, 
               indicator=epsilon_indicator)
     while ib.continue_evolution():
         ib.iterate()
@@ -278,13 +275,13 @@ def inter_zdt():
 
     # hardcoded responses just to test
     # desdeo's logic doesnt make yet sense so this won't work
-    zdt1_response = np.asarray([[0.55,0.5], [0.40,0.45], [0.30, 0.40]]) 
+    #zdt1_response = np.asarray([[0.55,0.5], [0.40,0.45], [0.30, 0.40]]) 
     #zdt1_test = np.asarray([[0.6,0.8], [0.55,0.6], [0.50, 0.50]]) 
-    #zdt6_response = np.asarray([[0.65,1.0], [0.5,0.9], [0.3, 0.85]]) 
+    zdt6_response = np.asarray([[0.45,1.4], [0.35,0.9], [0.3, 0.85]]) 
 
     # responses to use
-    #responses = zdt6_response 
-    responses = zdt1_response 
+    responses = zdt6_response 
+    #responses = zdt1_response 
     #responses = zdt1_test
 
     pref, plot = evolver.requests() # ask preference
@@ -321,7 +318,10 @@ def inter_zdt():
 
     individuals3, objective_values3 = evolver.end()    
             
-    print(evolver.population.fitness)
+    print("Fitnesses",evolver.population.fitness)
+    print("Objectives",evolver.population.objectives)
+
+    print(np.mean(objective_values3), np.std(objective_values3))
     
     # should select small set of solutions to show to DM. For now we show all.
     plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
@@ -343,8 +343,8 @@ def inter_zdt():
 
 if __name__=="__main__":
 
-    inter_zdt()
-    #inter_dtlz()
+    #inter_zdt()
+    inter_dtlz()
         
     #import cProfile
     #cProfile.run('inter_zdt()', "output.dat")

@@ -34,27 +34,6 @@ from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_
 #import warnings
 #warnings.filterwarnings('error')
 
-def pref_ind(reference_front: np.ndarray, front: np.ndarray, minasf, ref_point: np.ndarray, delta: float) -> float:
-
-    #ref_front_asf = SimpleASF(np.ones_like(reference_front))
-    front_asf = SimpleASF(np.ones_like(front))
-    norm = front_asf(front, reference_point=ref_point) + delta - minasf
-    if norm < delta:
-        print(norm)
-
-    #print(eps.shape[0])
-    #print(reference_front.shape[0])
-    #input()
-    #for i in range(reference_front.shape[0]):
-        #eps[i] = np.exp((-epsilon_indicator(reference_front[i], front)/norm) / 0.05)
-    # (( <-- was missing ))
-
-
-    #eps = np.ones_like(reference_front)
-    eps = np.exp((-epsilon_indicator_ndims(reference_front, front)/norm) / 0.05)
-
-    return eps     
-
 
 class BaseIndicatorEA(BaseEA):
     """The Base class for indicator based EAs.
@@ -153,9 +132,6 @@ class BaseIndicatorEA(BaseEA):
         )
 
 
-
-
-
     # pbea cpp still has the max indicator value
     def _next_gen(self):
         # call _fitness_assigment 
@@ -166,18 +142,14 @@ class BaseIndicatorEA(BaseEA):
             selected = self._select()
             worst_index = selected
 
-            # update the fitness values
-            if self.reference_point is not None: 
-                self.population.fitness += -pref_ind(self.population.objectives, self.population.objectives[worst_index], self.min_asf_value, 
-                                                                         self.reference_point, self.delta)
-            #else:
-            #    poplen = self.population.individuals.shape[0]
-            #    for i in range(poplen):
-            #        self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
-                    
-            # should work too
-            self.population.fitness += np.exp(-epsilon_indicator_ndims(self.population.objectives, self.population.objectives[worst_index]) / self.kappa)
-
+            poplen = self.population.individuals.shape[0]
+            for i in range(poplen):
+                if worst_index != i:
+                    if self.reference_point is not None: 
+                        self.population.fitness[i] -= -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
+                    else:
+                        self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
+            
             # remove the worst individual 
             self.population.delete(selected)
                  
@@ -199,29 +171,26 @@ class BaseIndicatorEA(BaseEA):
 
     #implements fitness computing. 
     def _fitness_assignment(self):
-        population = self.population
-        pop_size = population.individuals.shape[0]
-        pop_width = population.fitness.shape[1]
+        pop_size = self.population.individuals.shape[0]
 
         if self.reference_point is not None:
-            # compute the min asf values
+            # compute the min asf value
             asf = SimpleASF(np.ones_like(self.population.objectives))
             asf_values = asf(self.population.objectives, reference_point=self.reference_point)
             self.min_asf_value = np.min(asf_values)
 
         for i in range(pop_size):
-            population.fitness[i] = [0]*pop_width # 0 all the fitness values. 
+            self.population.fitness[i] = 0 # 0 all the fitness values. 
             for j in range(pop_size):
                 if j != i:
                     if self.reference_point is not None:
-                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], 
-                                                                         population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
+                        self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], 
+                                                                         self.population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
                     else:
-                        population.fitness[i] += -np.exp(-self.indicator(population.objectives[i], population.objectives[j]) / self.kappa)
+                        self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j]) / self.kappa)
 
 
-    #
-    #
+
 
     def manage_preferences(self, preference=None):
         """Run the interruption phase of EA.

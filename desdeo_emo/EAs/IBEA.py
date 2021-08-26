@@ -104,8 +104,8 @@ ZDT6 works
 """
 def testZDTs():
     #problem_name = "ZDT1" # needs 30,100. ZDT1 seems to converge even with about 2000 total_function_evaluations
-    #problem_name = "ZDT3" # seems work ok.
-    problem_name = "ZDT6" # this just starts going worse and worse 
+    problem_name = "ZDT2" # seems work ok.
+    #problem_name = "ZDT6" # this just starts going worse and worse 
     # doesn't work properly with ZDT4... atleast saves too many bad solutions..
 
     problem = test_problem_builder(problem_name)
@@ -143,19 +143,19 @@ def testDTLZs():
     #problem_name = "DTLZ1" 
     #problem = test_problem_builder(problem_name, n_of_variables=7, n_of_objectives=3)
         
-    #problem_name = "DTLZ2" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
-    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
+    problem_name = "DTLZ2" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
+    problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
 
     #problem_name = "DTLZ4" # seems to work okay?, even with low total_function_evaluations. po sols are not that even in places tho.
     #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
     
-    problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
-    problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
+    #problem_name = "DTLZ6" # does not do that good.. mean and std get low but then they start oscillating
+    #problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
 
     #problem_name = "DTLZ7" # this looks pretty good, same as dtlz6 for the mean and std 
     #problem = test_problem_builder(problem_name, n_of_variables=22, n_of_objectives=3)
 
-    evolver = IBEA(problem, population_size=50, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=25000)
+    evolver = IBEA(problem, population_size=50, n_iterations=10, n_gen_per_iter=100, total_function_evaluations=7500)
     
     #print("starting front", evolver.population.objectives[0::10])
     while evolver.continue_evolution():
@@ -179,8 +179,8 @@ def testDTLZs():
 
 if __name__=="__main__":
 
-   testZDTs()
-   #testDTLZs()
+   #testZDTs()
+   testDTLZs()
 
    import cProfile
    #cProfile.run('testDTLZs()', "output.dat")
