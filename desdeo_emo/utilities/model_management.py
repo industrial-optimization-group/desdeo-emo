@@ -11,7 +11,10 @@ from sklearn.gaussian_process.kernels import DotProduct,\
 
 
 #TODO: add @njit function here
-def remove_duplicate(X, archive_x):
+def remove_duplicate(
+    X: np.ndarray,
+    archive_x: np.ndarray
+    ):
     """identifiesthe duplicate rows for decision variables
     Args:
     X (np.ndarray): the current decision variables.
@@ -44,10 +47,10 @@ def remove_duplicate(X, archive_x):
 
 
 def ikrvea_mm(
-    reference_point,
-    individuals,
-    objectives,
-    uncertainity,
+    reference_point: np.ndarray,
+    individuals: np.ndarray,
+    objectives: np.ndarray,
+    uncertainity: np.ndarray,
     problem,
     u: int) -> float:
     """ Selects the solutions that need to be reevaluated with the original functions.
