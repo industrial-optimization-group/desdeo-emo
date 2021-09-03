@@ -43,7 +43,13 @@ def remove_duplicate(X, archive_x):
         return indicies
 
 
-def ikrvea_mm(reference_point, evolver , problem, u: int) -> float:
+def ikrvea_mm(
+    reference_point,
+    individuals,
+    objectives,
+    uncertainity,
+    problem,
+    u: int) -> float:
     """ Selects the solutions that need to be reevaluated with the original functions.
     This model management is based on the following papaer: 
 
@@ -60,21 +66,19 @@ def ikrvea_mm(reference_point, evolver , problem, u: int) -> float:
     Returns:
         float: the new problem object that has an updated archive.
     """
+
     archive = problem.archive.to_numpy()
-    surrogate_obj = copy.deepcopy( evolver.population.objectives)
-    decision_variables = copy.deepcopy(evolver.population.individuals)
-    unc = copy.deepcopy(evolver.population.uncertainity)
-    #pd.concat([b,b], ignore_index= True)
+    decision_variables = copy.deepcopy(individuals)
     nd = remove_duplicate(decision_variables, problem.archive.drop(
             problem.objective_names, axis=1)) #removing duplicate solutions
     if nd is not None:
-        non_duplicate_dv = evolver.population.individuals[nd]
-        non_duplicate_obj = evolver.population.objectives[nd]
-        non_duplicate_unc = evolver.population.uncertainity[nd]
+        non_duplicate_dv = individuals[nd]
+        non_duplicate_obj = objectives[nd]
+        non_duplicate_unc = uncertainity[nd]
     else:
-        non_duplicate_dv = evolver.population.individuals
-        non_duplicate_obj = evolver.population.objectives
-        non_duplicate_unc = evolver.population.uncertainity
+        non_duplicate_dv = individuals
+        non_duplicate_obj = objectives
+        non_duplicate_unc = uncertainity
 
     # Selecting solutions with lowest ASF values
     asf_solutions = SimpleASF([1]*problem.n_of_objectives).__call__(non_duplicate_obj, reference_point)
