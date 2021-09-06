@@ -12,13 +12,13 @@ from desdeo_tools.utilities.distance_to_reference_point import distance_to_refer
 
 # imports for testing TODO: remove
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims 
+#from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims, preference_indicator 
 from desdeo_emo.EAs.IBEA import IBEA
 import matplotlib.pyplot as plt
 from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
-# this probably could be turned to a numpy broadcasting calculation
-def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf: float, ref_point: np.ndarray, delta: float) -> float:
+def preference_indicator(reference_front: np.ndarray, front: np.ndarray, min_asf_value: float, ref_point: np.ndarray, delta: float) -> float:
     """ Computes the preference-based quality indicator.
 
     Args:
@@ -27,6 +27,7 @@ def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf
         front (np.ndarray): The front that is compared. Should be one-dimensional array with the same shape as
         reference_front.
         ref_point (np.ndarray): The reference point should be same shape as front.
+        min_asf_value (float): Minimum value of achievement scalarization of the reference_front. Used in normalization.
         delta (float): The spesifity delta allows to set the amplification of the indicator to be closer or farther 
         from the reference point. Smaller delta means that all solutions are in smaller range around the reference
         point.
@@ -36,7 +37,7 @@ def preference_indicator2(reference_front: np.ndarray, front: np.ndarray, minasf
         objectives taking into account the reference point given and spesifity.
     """
     front_asf = SimpleASF(np.ones_like(front))
-    norm = front_asf(front, reference_point=ref_point) + delta - minasf
+    norm = front_asf(front, reference_point=ref_point) + delta - min_asf_value
     return epsilon_indicator(reference_front, front)/norm
 
 
@@ -97,7 +98,7 @@ class PBEA(BaseIndicatorEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
-        kappa: float = 0.5,
+        kappa: float = 0.05,
         indicator: Callable = preference_indicator,
         reference_point = None,
         delta: float = 0.1, 
@@ -115,14 +116,36 @@ class PBEA(BaseIndicatorEA):
             use_surrogates=use_surrogates,
             indicator=indicator,
             reference_point=reference_point,
+            kappa=kappa,
         )
         
         self.kappa = kappa
         self.delta = delta
         self.indicator = indicator
         self.reference_point = reference_point
-        selection_operator = EnvironmentalSelection(self.population)
+        selection_operator = EnvironmentalSelection(self)
         self.selection_operator = selection_operator
+
+
+
+    def _fitness_assignment(self):
+        pop_size = self.population.individuals.shape[0]
+        # compute the min asf value
+        asf = SimpleASF(np.ones_like(self.population.objectives))
+        asf_values = asf(self.population.objectives, reference_point=self.reference_point)
+        self.min_asf_value = np.min(asf_values)
+
+        for i in range(pop_size):
+            self.population.fitness[i] = 0 # 0 all the fitness values. 
+            for j in range(pop_size):
+                if j != i:
+                    self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
+
+
+
+
+
+
 
 def inter_dtlz():
     #problem_name = "DTLZ2" # seems work ok.
@@ -131,7 +154,7 @@ def inter_dtlz():
     # test variables
     pop_s = 100
     iters = 10
-    evals = 2000
+    evals = 5000
     kappa = 0.05
 
     problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
@@ -152,12 +175,12 @@ def inter_dtlz():
     # step 2: local approximation
     evolver = PBEA(problem, interact=True, population_size=pop_s, initial_population=ini_pop, 
                    n_iterations=iters, n_gen_per_iter=100, total_function_evaluations=evals, 
-                   indicator=preference_indicator2, kappa=kappa, delta=delta)
+                   indicator=preference_indicator, kappa=kappa, delta=delta)
     
-    print(evolver.delta)
+    #print(evolver.delta)
 
     # hardcoded responses just to test
-    dtlz4_response = np.asarray([[0.8, 0.6, 0.6],[0.35,0.7,0.55],[0.1,0.1,0.9]])
+    dtlz4_response = np.asarray([[0.5, 0.5, 0.5],[0.35,0.7,0.55],[0.1,0.1,0.9]])
     #dtlz4_response = np.asarray([[1.0, 0.64, 0.64, 0.6, 0.76]])
     # eli jos uusi refpoint huonompi kuin vanha, niin todnäk hajoaa..
     # koskee vain DTLZ, ei pysty toistamaan zdt
@@ -171,72 +194,74 @@ def inter_dtlz():
     # achievement function
     # test like this
     #objectives = evolver.population.objectives
-    t, objectives = evolver.end()
-    d, ind  = distance_to_reference_point(objectives, responses[0]) # show best solution
-    individuals1, objective_values1 = evolver.end()    
-    #obj1 = evolver.population.objectives
+    #t, objectives = evolver.end()
     id1, obj1 = evolver.end() # turha, sama kuin ylempi..
-    print("first iter",evolver._current_gen_count)
+    d, ind  = distance_to_reference_point(obj1, responses[0]) # show best solution
+    #individuals1, objective_values1 = evolver.end()    
+    #obj1 = evolver.population.objectives
+    #id1, obj1 = evolver.end() # turha, sama kuin ylempi..
+    #print("first iter",evolver._current_gen_count)
 
-    evolver.delta = 0.01
-    pref, plot = evolver.requests()
-    pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
-    pref, plot = evolver.iterate(pref)
+    #evolver.delta = 0.01
+    #pref, plot = evolver.requests()
+    #pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
+    #pref, plot = evolver.iterate(pref)
     # achievement function
     # test like this
-    objectives = evolver.population.objectives
-    t, objectives = evolver.end()
-    d2, ind2 = distance_to_reference_point(objectives,responses[1]) # show best solution
-    individuals2, objective_values2 = evolver.end()
-    obj2 = evolver.population.objectives
-    id2, obj2 = evolver.end()
-    print("2nd run",evolver._current_gen_count)
+    #objectives = evolver.population.objectives
+    #t, objectives = evolver.end()
+    #d2, ind2 = distance_to_reference_point(objectives,responses[1]) # show best solution
+    #individuals2, objective_values2 = evolver.end()
+    #obj2 = evolver.population.objectives
+    #id2, obj2 = evolver.end()
+    #print("2nd run",evolver._current_gen_count)
 
-    print(evolver.population.objectives)
+    #print(evolver.population.objectives)
 
     #TODO: possible solution
     # normalize ASF ? Make sure its correct
     # max_indicator !! ? if needed
 
     #evolver.delta = 0.02 # change delta
-    pref, plot = evolver.requests()
-    pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
-    pref, plot = evolver.iterate(pref)
+    #pref, plot = evolver.requests()
+    #pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
+    #pref, plot = evolver.iterate(pref)
     ## achievement function
-    id3, obj3 = evolver.end()
-    d3, ind3 = distance_to_reference_point(obj3, responses[2]) # show best solution
+    #id3, obj3 = evolver.end()
+    #d3, ind3 = distance_to_reference_point(obj3, responses[2]) # show best solution
 
-    print(evolver.delta)
-    print(evolver.n_iterations)
-    print(evolver._current_gen_count)
-    print(evolver._function_evaluation_count)
+    #print(evolver.delta)
+    #print(evolver.n_iterations)
+    #print(evolver._current_gen_count)
+    #print(evolver._function_evaluation_count)
 
 
-    print("Objectives",evolver.population.objectives)
-    print(np.mean(obj1), np.std(obj1))
+    #print("Objectives",evolver.population.objectives)
+    print(f"Keskiarvo: {np.mean(obj1)}, Keskihajonta: {np.std(obj1)}, Mediaani: {np.median(obj1)}")
+
     # voisi koittaa pyöristää jokaisen obj arvon, ottaa mediaanin kahtoa onko suhteessa järkevä pref pointtia kohti. piitäisi olla.
 
     #individuals3, obj_val = evolver.end()    
             
     # should select small set of solutions to show to DM. For now we show all.
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ax.view_init(45,45)
-    ax.scatter(objective_values[:,0],objective_values[:,1],objective_values[:,2], label="IBEA Front")
-    ax.scatter(objective_values1[:,0], objective_values1[:,1], objective_values1[:,2], label="PBEA Front iter 1")
-    ax.scatter(responses[0][0], responses[0][1], responses[0][2], label="Ref point 1")
-    ax.scatter(obj1[ind][0], obj1[ind][1], obj1[ind][2], label="Best solution iteration 1")
-    ax.scatter(objective_values2[:,0], objective_values2[:,1], objective_values2[:,2], label="PBEA Front iter 2")
-    ax.scatter(responses[1][0], responses[1][1], responses[1][2], label="Ref point 2")
-    ax.scatter(obj2[ind2][0], obj2[ind2][1], obj2[ind2][2], label="Best solution iteration 2")
-    ax.scatter(obj3[:,0], obj3[:,1], obj3[:,2], label="PBEA Front iter 1")
-    ax.scatter(responses[2][0], responses[2][1], responses[2][2], label="Ref point 3")
-    ax.scatter(obj3[ind3][0], obj3[ind3][1], obj3[ind3][2], label="Best solution iteration 3")
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    ax.legend()
-    plt.show()
+    #fig = plt.figure()
+    #ax = fig.add_subplot(projection='3d')
+    #ax.view_init(45,45)
+    #ax.scatter(objective_values[:,0],objective_values[:,1],objective_values[:,2], label="IBEA Front")
+    #ax.scatter(objective_values1[:,0], objective_values1[:,1], objective_values1[:,2], label="PBEA Front iter 1")
+    #ax.scatter(responses[0][0], responses[0][1], responses[0][2], label="Ref point 1")
+    #ax.scatter(obj1[ind][0], obj1[ind][1], obj1[ind][2], label="Best solution iteration 1")
+    #ax.scatter(objective_values2[:,0], objective_values2[:,1], objective_values2[:,2], label="PBEA Front iter 2")
+    #ax.scatter(responses[1][0], responses[1][1], responses[1][2], label="Ref point 2")
+    #ax.scatter(obj2[ind2][0], obj2[ind2][1], obj2[ind2][2], label="Best solution iteration 2")
+    #ax.scatter(obj3[:,0], obj3[:,1], obj3[:,2], label="PBEA Front iter 1")
+    #ax.scatter(responses[2][0], responses[2][1], responses[2][2], label="Ref point 3")
+    #ax.scatter(obj3[ind3][0], obj3[ind3][1], obj3[ind3][2], label="Best solution iteration 3")
+    #ax.set_xlabel('X Label')
+    #ax.set_ylabel('Y Label')
+    #ax.set_zlabel('Z Label')
+    #ax.legend()
+    #plt.show()
 
 def inter_zdt():
     problem_name = "ZDT6" # seems work ok.
@@ -264,20 +289,20 @@ def inter_zdt():
     ini_pop = ib.population
 
     # step 1: reference point. TODO: actually ask from DM
-    delta = 0.2
+    delta = 0.1
 
     # step 2: local approximation
     evolver = PBEA(problem, interact=True, population_size=pop_s, initial_population=ini_pop, 
                    n_iterations=iters, n_gen_per_iter=100, total_function_evaluations=evals, 
-                   indicator=preference_indicator2, kappa=kappa, delta=delta)
+                   indicator=preference_indicator, kappa=kappa, delta=delta)
     
-    print(evolver.delta)
+    #print(evolver.delta)
 
     # hardcoded responses just to test
     # desdeo's logic doesnt make yet sense so this won't work
-    #zdt1_response = np.asarray([[0.55,0.5], [0.40,0.45], [0.30, 0.40]]) 
+    #zdt1_response = np.asarray([[0.5,0.5], [0.40,0.45], [0.30, 0.40]]) 
     #zdt1_test = np.asarray([[0.6,0.8], [0.55,0.6], [0.50, 0.50]]) 
-    zdt6_response = np.asarray([[0.45,1.4], [0.35,0.9], [0.3, 0.85]]) 
+    zdt6_response = np.asarray([[0.5,0.9], [0.35,0.9], [0.3, 0.85]]) 
 
     # responses to use
     responses = zdt6_response 
@@ -288,57 +313,58 @@ def inter_zdt():
     pref.response = pd.DataFrame([responses[0]], columns=pref.content['dimensions_data'].columns) # give preference
     pref, plot = evolver.iterate(pref) # iterate
     # achievement function. Dis loggiikka selvitä
-    d, ind  = distance_to_reference_point(evolver.population.objectives, responses[0]) # show best solution
-    individuals1, objective_values1 = evolver.end()    
+    individuals1, obj1 = evolver.end()    
+    d, ind  = distance_to_reference_point(obj1, responses[0]) # show best solution
     plot_obj1 = evolver.population.objectives
-    print(evolver._current_gen_count)
+   # print(evolver._current_gen_count)
 
-    evolver.delta = 0.1 # change delta
-    pref, plot = evolver.requests()
-    pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
-    pref, plot = evolver.iterate(pref)
-    # achievement function
-    d2, ind2 = distance_to_reference_point(evolver.population.objectives,responses[1]) # show best solution
-    individuals2, objective_values2 = evolver.end()
-    plot_obj2 = evolver.population.objectives
-    print(evolver._current_gen_count)
+   # evolver.delta = 0.1 # change delta
+   # pref, plot = evolver.requests()
+   # pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
+   # pref, plot = evolver.iterate(pref)
+   # # achievement function
+   # d2, ind2 = distance_to_reference_point(evolver.population.objectives,responses[1]) # show best solution
+   # individuals2, objective_values2 = evolver.end()
+   # plot_obj2 = evolver.population.objectives
+   # print(evolver._current_gen_count)
 
-    evolver.delta = 0.01 # change delta
-    pref, plot = evolver.requests()
-    pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
-    pref, plot = evolver.iterate(pref)
-    # achievement function
-    d3, ind3 = distance_to_reference_point(evolver.population.objectives, responses[2]) # show best solution
-    plot_obj3 = evolver.population.objectives
+   # evolver.delta = 0.01 # change delta
+   # pref, plot = evolver.requests()
+   # pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
+   # pref, plot = evolver.iterate(pref)
+   # # achievement function
+   # d3, ind3 = distance_to_reference_point(evolver.population.objectives, responses[2]) # show best solution
+   # plot_obj3 = evolver.population.objectives
 
-    print(evolver.delta)
-    print(evolver.n_iterations)
-    print(evolver._current_gen_count)
-    print(evolver._function_evaluation_count)
+   # print(evolver.delta)
+   # print(evolver.n_iterations)
+   # print(evolver._current_gen_count)
+   # print(evolver._function_evaluation_count)
 
-    individuals3, objective_values3 = evolver.end()    
+    #individuals3, objective_values3 = evolver.end()    
             
-    print("Fitnesses",evolver.population.fitness)
-    print("Objectives",evolver.population.objectives)
+    #print("Fitnesses",evolver.population.fitness)
+    #print("Objectives",evolver.population.objectives)
 
-    print(np.mean(objective_values3), np.std(objective_values3))
+    print(f"Keskiarvo: {np.mean(obj1)}, Keskihajonta: {np.std(obj1)}, Mediaani: {np.median(obj1)}")
+
     
-    # should select small set of solutions to show to DM. For now we show all.
-    plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
-    plt.scatter(x=objective_values1[:,0], y=objective_values1[:,1], label="PBEA Front iteration 1")
-    plt.scatter(x=objective_values2[:,0], y=objective_values2[:,1], label="PBEA Front iteration 2")
-    plt.scatter(x=objective_values3[:,0], y=objective_values3[:,1], label="PBEA Front at last iteration")
-    plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
-    plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
-    plt.scatter(x=responses[2][0], y=responses[2][1], label="Ref point 3")
-    plt.scatter(x=plot_obj1[ind][0], y=plot_obj1[ind][1], label="Best solution iteration 1")
-    plt.scatter(x=plot_obj2[ind2][0], y=plot_obj2[ind2][1], label="Best solution iteration 2")
-    plt.scatter(x=plot_obj3[ind3][0], y=plot_obj3[ind3][1], label="Best solution iteration 3")
-    plt.title(f"Fronts")
-    plt.xlabel("F1")
-    plt.ylabel("F2")
-    plt.legend()
-    plt.show()
+    ## should select small set of solutions to show to DM. For now we show all.
+    #plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
+    #plt.scatter(x=objective_values1[:,0], y=objective_values1[:,1], label="PBEA Front iteration 1")
+    #plt.scatter(x=objective_values2[:,0], y=objective_values2[:,1], label="PBEA Front iteration 2")
+    #plt.scatter(x=objective_values3[:,0], y=objective_values3[:,1], label="PBEA Front at last iteration")
+    #plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
+    #plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
+    #plt.scatter(x=responses[2][0], y=responses[2][1], label="Ref point 3")
+    #plt.scatter(x=plot_obj1[ind][0], y=plot_obj1[ind][1], label="Best solution iteration 1")
+    #plt.scatter(x=plot_obj2[ind2][0], y=plot_obj2[ind2][1], label="Best solution iteration 2")
+    #plt.scatter(x=plot_obj3[ind3][0], y=plot_obj3[ind3][1], label="Best solution iteration 3")
+    #plt.title(f"Fronts")
+    #plt.xlabel("F1")
+    #plt.ylabel("F2")
+    #plt.legend()
+    #plt.show()
 
 
 if __name__=="__main__":

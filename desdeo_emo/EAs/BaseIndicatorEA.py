@@ -12,17 +12,12 @@ from desdeo_emo.EAs import BaseEA
 from desdeo_emo.EAs.BaseEA import eaError
 from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.TournamentSelection import TournamentSelection
+
 from desdeo_tools.interaction import (
-    SimplePlotRequest,
-    ReferencePointPreference,
-    PreferredSolutionPreference,
-    NonPreferredSolutionPreference,
-    BoundPreference,
-    validate_ref_point_data_type,
-    validate_ref_point_dimensions,
-    validate_ref_point_with_ideal,
+   SimplePlotRequest,
+   ReferencePointPreference,
     validate_ref_point_with_ideal_and_nadir,
-)
+    )
 
 # only for testing
 import matplotlib.pyplot as plt
@@ -72,13 +67,23 @@ class BaseIndicatorEA(BaseEA):
     total_function_evaluations :int, optional
         Set an upper limit to the total number of function evaluations. When set to
         zero, this argument is ignored and other termination criteria are used.
+    use_surrogates: TODO:
+
+    indicator: TODO:
+
+    reference_point: TODO
+    
+    kappa: TODO.. not sure it should be even here
+
     """
 
     def __init__(
         self,
         problem: MOProblem,
+        population_size: int, # size required
+        indicator: Callable, # required 
+        kappa: float,
         selection_operator: Type[SelectionBase] = None,
-        population_size: int = None, # size required
         population_params: Dict = None,
         initial_population: Population = None,
         a_priori: bool = False,
@@ -87,8 +92,8 @@ class BaseIndicatorEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
-        indicator: Callable = None, 
         reference_point: np.ndarray = None, # only for PBEA
+
     ):
         super().__init__(
             a_priori=a_priori,
@@ -107,16 +112,15 @@ class BaseIndicatorEA(BaseEA):
         if initial_population is not None:
             self.population = initial_population
         elif initial_population is None:
-            if population_size is None:
-                population_size = 100 
             self.population = Population(
                 problem, population_size, population_params, use_surrogates
             )
             self._function_evaluation_count += population_size
         
-        
-    def start(self):
-        return self.requests() 
+     
+    # TODO: remove bc defined in BaseEA
+    #def start(self):
+    #    return self.requests() 
 
 
     def end(self):
@@ -137,22 +141,8 @@ class BaseIndicatorEA(BaseEA):
         # call _fitness_assigment 
         self._fitness_assignment()
 
-        while (self.population.pop_size < self.population.individuals.shape[0]):
-            # choose individual with smallest fitness value with environmentalSelection
-            selected = self._select()
-            worst_index = selected
+        self._select()
 
-            poplen = self.population.individuals.shape[0]
-            for i in range(poplen):
-                if worst_index != i:
-                    if self.reference_point is not None: 
-                        self.population.fitness[i] -= -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
-                    else:
-                        self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[worst_index]) / self.kappa)
-            
-            # remove the worst individual 
-            self.population.delete(selected)
-                 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
         chosen = TournamentSelection(self.population, 2).do()
 
@@ -166,29 +156,11 @@ class BaseIndicatorEA(BaseEA):
 
 
     # calls environmentalSelection
-    def _select(self) -> list:
-        return self.selection_operator.do(self.population)
+    def _select(self):
+        return self.selection_operator.do()
 
     #implements fitness computing. 
-    def _fitness_assignment(self):
-        pop_size = self.population.individuals.shape[0]
-
-        if self.reference_point is not None:
-            # compute the min asf value
-            asf = SimpleASF(np.ones_like(self.population.objectives))
-            asf_values = asf(self.population.objectives, reference_point=self.reference_point)
-            self.min_asf_value = np.min(asf_values)
-
-        for i in range(pop_size):
-            self.population.fitness[i] = 0 # 0 all the fitness values. 
-            for j in range(pop_size):
-                if j != i:
-                    if self.reference_point is not None:
-                        self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], 
-                                                                         self.population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
-                    else:
-                        self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j]) / self.kappa)
-
+    #def _fitness_assignment(self):
 
 
 
