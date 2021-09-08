@@ -123,26 +123,32 @@ class PBEA(BaseIndicatorEA):
         self.delta = delta
         self.indicator = indicator
         self.reference_point = reference_point
-        selection_operator = EnvironmentalSelection(self)
+        selection_operator = EnvironmentalSelection()
         self.selection_operator = selection_operator
 
 
 
     def _fitness_assignment(self):
-        pop_size = self.population.individuals.shape[0]
+
         # compute the min asf value
         asf = SimpleASF(np.ones_like(self.population.objectives))
         asf_values = asf(self.population.objectives, reference_point=self.reference_point)
         self.min_asf_value = np.min(asf_values)
 
-        for i in range(pop_size):
+        for i in range(self.population.individuals.shape[0]):
             self.population.fitness[i] = 0 # 0 all the fitness values. 
-            for j in range(pop_size):
+            for j in range(self.population.individuals.shape[0]):
                 if j != i:
                     self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j], self.min_asf_value, self.reference_point, self.delta) / self.kappa)
 
 
 
+    def _update_fitness(self, worst_index):
+        for i in range(self.population.individuals.shape[0]):
+            if worst_index != i:
+                self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
+                    self.population.objectives[worst_index], self.min_asf_value, self.reference_point, 
+                    self.delta) / self.kappa)
 
 
 
@@ -154,13 +160,13 @@ def inter_dtlz():
     # test variables
     pop_s = 100
     iters = 10
-    evals = 5000
+    evals = 3000
     kappa = 0.05
 
     problem = test_problem_builder(problem_name, n_of_variables=12, n_of_objectives=3)
     # step 0. Let's start with rough approx
     ib = IBEA(problem, population_size=pop_s, 
-              n_iterations=iters, n_gen_per_iter=100,total_function_evaluations=5000,
+              n_iterations=iters, n_gen_per_iter=100,total_function_evaluations=7500,
               indicator=epsilon_indicator)
     while ib.continue_evolution():
         ib.iterate()
@@ -171,7 +177,7 @@ def inter_dtlz():
     # need to get the population
     ini_pop = ib.population
     # step 1: reference point. TODO: actually ask from DM
-    delta = 0.1
+    delta = 0.01
     # step 2: local approximation
     evolver = PBEA(problem, interact=True, population_size=pop_s, initial_population=ini_pop, 
                    n_iterations=iters, n_gen_per_iter=100, total_function_evaluations=evals, 
@@ -244,24 +250,24 @@ def inter_dtlz():
     #individuals3, obj_val = evolver.end()    
             
     # should select small set of solutions to show to DM. For now we show all.
-    #fig = plt.figure()
-    #ax = fig.add_subplot(projection='3d')
-    #ax.view_init(45,45)
-    #ax.scatter(objective_values[:,0],objective_values[:,1],objective_values[:,2], label="IBEA Front")
-    #ax.scatter(objective_values1[:,0], objective_values1[:,1], objective_values1[:,2], label="PBEA Front iter 1")
-    #ax.scatter(responses[0][0], responses[0][1], responses[0][2], label="Ref point 1")
-    #ax.scatter(obj1[ind][0], obj1[ind][1], obj1[ind][2], label="Best solution iteration 1")
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.view_init(45,45)
+    ax.scatter(objective_values[:,0],objective_values[:,1],objective_values[:,2], label="IBEA Front")
+    ax.scatter(obj1[:,0], obj1[:,1], obj1[:,2], label="PBEA Front iter 1")
+    ax.scatter(responses[0][0], responses[0][1], responses[0][2], label="Ref point 1")
+    ax.scatter(obj1[ind][0], obj1[ind][1], obj1[ind][2], label="Best solution iteration 1")
     #ax.scatter(objective_values2[:,0], objective_values2[:,1], objective_values2[:,2], label="PBEA Front iter 2")
     #ax.scatter(responses[1][0], responses[1][1], responses[1][2], label="Ref point 2")
     #ax.scatter(obj2[ind2][0], obj2[ind2][1], obj2[ind2][2], label="Best solution iteration 2")
     #ax.scatter(obj3[:,0], obj3[:,1], obj3[:,2], label="PBEA Front iter 1")
     #ax.scatter(responses[2][0], responses[2][1], responses[2][2], label="Ref point 3")
     #ax.scatter(obj3[ind3][0], obj3[ind3][1], obj3[ind3][2], label="Best solution iteration 3")
-    #ax.set_xlabel('X Label')
-    #ax.set_ylabel('Y Label')
-    #ax.set_zlabel('Z Label')
-    #ax.legend()
-    #plt.show()
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    ax.legend()
+    plt.show()
 
 def inter_zdt():
     problem_name = "ZDT6" # seems work ok.
@@ -350,21 +356,21 @@ def inter_zdt():
 
     
     ## should select small set of solutions to show to DM. For now we show all.
-    #plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
-    #plt.scatter(x=objective_values1[:,0], y=objective_values1[:,1], label="PBEA Front iteration 1")
+    plt.scatter(x=objective_values[:,0], y=objective_values[:,1], label="IBEA Front")
+    plt.scatter(x=objective_values1[:,0], y=objective_values1[:,1], label="PBEA Front iteration 1")
     #plt.scatter(x=objective_values2[:,0], y=objective_values2[:,1], label="PBEA Front iteration 2")
     #plt.scatter(x=objective_values3[:,0], y=objective_values3[:,1], label="PBEA Front at last iteration")
-    #plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
+    plt.scatter(x=responses[0][0], y=responses[0][1],  label="Ref point 1")
     #plt.scatter(x=responses[1][0], y=responses[1][1], label="Ref point 2")
     #plt.scatter(x=responses[2][0], y=responses[2][1], label="Ref point 3")
-    #plt.scatter(x=plot_obj1[ind][0], y=plot_obj1[ind][1], label="Best solution iteration 1")
+    plt.scatter(x=plot_obj1[ind][0], y=plot_obj1[ind][1], label="Best solution iteration 1")
     #plt.scatter(x=plot_obj2[ind2][0], y=plot_obj2[ind2][1], label="Best solution iteration 2")
     #plt.scatter(x=plot_obj3[ind3][0], y=plot_obj3[ind3][1], label="Best solution iteration 3")
-    #plt.title(f"Fronts")
-    #plt.xlabel("F1")
-    #plt.ylabel("F2")
-    #plt.legend()
-    #plt.show()
+    plt.title(f"Fronts")
+    plt.xlabel("F1")
+    plt.ylabel("F2")
+    plt.legend()
+    plt.show()
 
 
 if __name__=="__main__":

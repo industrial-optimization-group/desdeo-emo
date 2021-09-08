@@ -92,19 +92,24 @@ class IBEA(BaseIndicatorEA):
         )
         self.indicator = indicator
         self.kappa = kappa
-        selection_operator = EnvironmentalSelection(self)
+        selection_operator = EnvironmentalSelection()
         self.selection_operator = selection_operator
 
     
     
     def _fitness_assignment(self):
-        pop_size = self.population.individuals.shape[0]
-        for i in range(pop_size):
+        for i in range(self.population.individuals.shape[0]):
             self.population.fitness[i] = 0 # 0 all the fitness values. 
-            for j in range(pop_size):
+            for j in range(self.population.individuals.shape[0]):
                 if j != i:
                    self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j]) / self.kappa)
 
+
+    def _update_fitness(self, worst_index):
+        for i in range(self.population.individuals.shape[0]):
+            if worst_index != i:
+                self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
+                    self.population.objectives[worst_index]) / self.kappa)
 
 
 

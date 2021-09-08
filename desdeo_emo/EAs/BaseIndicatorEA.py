@@ -136,12 +136,14 @@ class BaseIndicatorEA(BaseEA):
         )
 
 
-    # pbea cpp still has the max indicator value
     def _next_gen(self):
         # call _fitness_assigment 
         self._fitness_assignment()
 
-        self._select()
+        while (self.population.pop_size < self.population.individuals.shape[0]):
+            worst_fit = self._select()
+            self._update_fitness(worst_fit) 
+            self.population.delete(worst_fit)
 
         # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
         chosen = TournamentSelection(self.population, 2).do()
@@ -157,7 +159,7 @@ class BaseIndicatorEA(BaseEA):
 
     # calls environmentalSelection
     def _select(self):
-        return self.selection_operator.do()
+        return self.selection_operator.do(self.population)
 
     #implements fitness computing. 
     #def _fitness_assignment(self):
