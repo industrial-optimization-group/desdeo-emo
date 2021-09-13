@@ -11,7 +11,9 @@ class TournamentSelection(SelectionBase):
         self.tournament_size = tournament_size
 
 
-    def do(self):
+    def do(self, pop):
+        self.fitness = pop.fitness
+        self.pop_size= pop.pop_size
         parents = []
         for i in range(int(self.pop_size)): 
             parents.append(

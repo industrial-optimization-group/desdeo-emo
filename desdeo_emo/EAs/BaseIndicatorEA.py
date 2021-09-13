@@ -5,12 +5,11 @@ import pandas as pd
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 
-from desdeo_problem import DataProblem, MOProblem
+from desdeo_problem import MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 from desdeo_emo.EAs import BaseEA
 from desdeo_emo.EAs.BaseEA import eaError
-from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.selection.TournamentSelection import TournamentSelection
 
 from desdeo_tools.interaction import (
@@ -137,16 +136,14 @@ class BaseIndicatorEA(BaseEA):
 
 
     def _next_gen(self):
-        # call _fitness_assigment 
+        # calls fitness assignment
         self._fitness_assignment()
 
-        while (self.population.pop_size < self.population.individuals.shape[0]):
-            worst_fit = self._select()
-            self._update_fitness(worst_fit) 
-            self.population.delete(worst_fit)
+        # performs the enviromental selection
+        self._environmental_selection()
 
-        # perform binary tournament selection. in these steps 5 and 6 we give offspring to the population and make it bigger. 
-        chosen = TournamentSelection(self.population, 2).do()
+        # perform binary tournament selection. 
+        chosen = self._select()
 
         # variation, call the recombination operators
         offspring = self.population.mate(mating_individuals=chosen)
@@ -157,13 +154,9 @@ class BaseIndicatorEA(BaseEA):
         self._function_evaluation_count += offspring.shape[0]
 
 
-    # calls environmentalSelection
+    # calls TournamentSelection
     def _select(self):
         return self.selection_operator.do(self.population)
-
-    #implements fitness computing. 
-    #def _fitness_assignment(self):
-
 
 
     def manage_preferences(self, preference=None):

@@ -1,24 +1,16 @@
 from typing import Dict, Type, Union, Tuple, Callable
 import numpy as np
-import pandas as pd
 
 from desdeo_emo.population.Population import Population
-from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA 
 from desdeo_tools.utilities.quality_indicator import epsilon_indicator
-
+from desdeo_emo.selection.TournamentSelection import TournamentSelection
 # TODO: remember to sort import
 
 # imports for testing. TODO: remove later
 import matplotlib.pyplot as plt
 from desdeo_problem import DataProblem, MOProblem
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
-
-
-
-
-
 
 
 class IBEA(BaseIndicatorEA):
@@ -92,12 +84,16 @@ class IBEA(BaseIndicatorEA):
         )
         self.indicator = indicator
         self.kappa = kappa
-        selection_operator = EnvironmentalSelection()
+        selection_operator = TournamentSelection(self.population, 2)
         self.selection_operator = selection_operator
+
 
     
     
     def _fitness_assignment(self):
+        """
+            Performs the fitness assignment of the individuals.
+        """
         for i in range(self.population.individuals.shape[0]):
             self.population.fitness[i] = 0 # 0 all the fitness values. 
             for j in range(self.population.individuals.shape[0]):
@@ -105,12 +101,27 @@ class IBEA(BaseIndicatorEA):
                    self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j]) / self.kappa)
 
 
-    def _update_fitness(self, worst_index):
-        for i in range(self.population.individuals.shape[0]):
-            if worst_index != i:
-                self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
-                    self.population.objectives[worst_index]) / self.kappa)
+    def _environmental_selection(self):
+        """
+            Updates the population members fitness values compared to the worst individual.
+            
+            Parameters:
+            worst_index: int
+                the index of the worst individual in population
 
+        """
+        while (self.population.pop_size < self.population.individuals.shape[0]):
+            worst_index = np.argmin(self.population.fitness, axis=0)[0] # gets the index worst member of population
+            # updates the fitness values
+            for i in range(self.population.individuals.shape[0]):
+                if worst_index != i:
+                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
+                        self.population.objectives[worst_index]) / self.kappa)
+            # remove the worst member from population
+            self.population.delete(worst_index)
+
+
+        
 
 
 """
@@ -198,8 +209,8 @@ def testDTLZs():
 
 if __name__=="__main__":
 
-   testZDTs()
-   #testDTLZs()
+   #testZDTs()
+   testDTLZs()
 
    import cProfile
    #cProfile.run('testDTLZs()', "output.dat")

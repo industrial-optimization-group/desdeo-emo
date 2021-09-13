@@ -4,7 +4,7 @@ import pandas as pd
 
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_emo.selection.EnvironmentalSelection import EnvironmentalSelection
+from desdeo_emo.selection.TournamentSelection import TournamentSelection
 from desdeo_tools.scalarization import SimpleASF
 from desdeo_emo.EAs.BaseIndicatorEA import BaseIndicatorEA
 from desdeo_tools.utilities.quality_indicator import preference_indicator 
@@ -123,14 +123,15 @@ class PBEA(BaseIndicatorEA):
         self.delta = delta
         self.indicator = indicator
         self.reference_point = reference_point
-        selection_operator = EnvironmentalSelection()
+        selection_operator = TournamentSelection(self.population, 2)
         self.selection_operator = selection_operator
 
 
 
     def _fitness_assignment(self):
-
-        # compute the min asf value
+        """
+            Performs the fitness assignment of the individuals.
+        """
         asf = SimpleASF(np.ones_like(self.population.objectives))
         asf_values = asf(self.population.objectives, reference_point=self.reference_point)
         self.min_asf_value = np.min(asf_values)
@@ -143,13 +144,21 @@ class PBEA(BaseIndicatorEA):
 
 
 
-    def _update_fitness(self, worst_index):
-        for i in range(self.population.individuals.shape[0]):
-            if worst_index != i:
-                self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
-                    self.population.objectives[worst_index], self.min_asf_value, self.reference_point, 
-                    self.delta) / self.kappa)
-
+    def _environmental_selection(self):
+        """
+            Updates the population members fitness values compared to the worst individual.
+            
+        """
+        while (self.population.pop_size < self.population.individuals.shape[0]):
+            worst_index = np.argmin(self.population.fitness, axis=0)[0] # gets the index worst member of population
+            # updates the fitness values
+            for i in range(self.population.individuals.shape[0]):
+                if worst_index != i:
+                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
+                        self.population.objectives[worst_index], self.min_asf_value, self.reference_point, 
+                        self.delta) / self.kappa)
+            # remove the worst member from population
+            self.population.delete(worst_index)
 
 
 
@@ -204,43 +213,6 @@ def inter_dtlz():
     id1, obj1 = evolver.end() # turha, sama kuin ylempi..
     d, ind  = distance_to_reference_point(obj1, responses[0]) # show best solution
     #individuals1, objective_values1 = evolver.end()    
-    #obj1 = evolver.population.objectives
-    #id1, obj1 = evolver.end() # turha, sama kuin ylempi..
-    #print("first iter",evolver._current_gen_count)
-
-    #evolver.delta = 0.01
-    #pref, plot = evolver.requests()
-    #pref.response = pd.DataFrame([responses[1]], columns=pref.content['dimensions_data'].columns)
-    #pref, plot = evolver.iterate(pref)
-    # achievement function
-    # test like this
-    #objectives = evolver.population.objectives
-    #t, objectives = evolver.end()
-    #d2, ind2 = distance_to_reference_point(objectives,responses[1]) # show best solution
-    #individuals2, objective_values2 = evolver.end()
-    #obj2 = evolver.population.objectives
-    #id2, obj2 = evolver.end()
-    #print("2nd run",evolver._current_gen_count)
-
-    #print(evolver.population.objectives)
-
-    #TODO: possible solution
-    # normalize ASF ? Make sure its correct
-    # max_indicator !! ? if needed
-
-    #evolver.delta = 0.02 # change delta
-    #pref, plot = evolver.requests()
-    #pref.response = pd.DataFrame([responses[2]], columns=pref.content['dimensions_data'].columns)
-    #pref, plot = evolver.iterate(pref)
-    ## achievement function
-    #id3, obj3 = evolver.end()
-    #d3, ind3 = distance_to_reference_point(obj3, responses[2]) # show best solution
-
-    #print(evolver.delta)
-    #print(evolver.n_iterations)
-    #print(evolver._current_gen_count)
-    #print(evolver._function_evaluation_count)
-
 
     #print("Objectives",evolver.population.objectives)
     print(f"Keskiarvo: {np.mean(obj1)}, Keskihajonta: {np.std(obj1)}, Mediaani: {np.median(obj1)}")
