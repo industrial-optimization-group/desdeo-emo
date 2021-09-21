@@ -56,7 +56,7 @@ Evolutionary operators
 
     E.g., Simulated binary crossover, Linear crossover, blend crossover, uniform, one-point, etc. 
 
-.. figure:: /images/EA.png
+.. figure:: /images/EAs.png
    :figclass: imgcenter
 
 Multiobjective Evolutionary Algorithms
