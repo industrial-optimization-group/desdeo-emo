@@ -1,4 +1,4 @@
-from pyrvea.OtherTools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.utilities.plotlyanimate import animate_init_, animate_next_
 import numpy as np
 from itertools import product
 

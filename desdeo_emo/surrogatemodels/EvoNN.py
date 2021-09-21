@@ -10,7 +10,7 @@ from sklearn.metrics import mean_squared_error, mean_squared_log_error, r2_score
 from desdeo_emo.EAs.BaseEA import BaseEA
 from desdeo_emo.EAs.PPGA import PPGA
 
-from desdeo_emo.othertools.plotlyanimate import animate_init_, animate_next_
+from desdeo_emo.utilities.plotlyanimate import animate_init_, animate_next_
 from desdeo_emo.population.SurrogatePopulation import SurrogatePopulation
 from desdeo_emo.recombination.evonn_xover_mutation import EvoNNRecombination
 from desdeo_emo.surrogatemodels.Problem import surrogateProblem

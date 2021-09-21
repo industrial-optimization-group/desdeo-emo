@@ -1,5 +1,6 @@
 import numpy as np
 from random import shuffle
+#from numba import njit
 
 
 class SBX_xover:
@@ -66,3 +67,26 @@ class SBX_xover:
             offspring[i] = avg + beta * diff
             offspring[i + 1] = avg - beta * diff
         return offspring
+
+
+# TODO: Make sure the following works correctly, then replace the code above.
+"""@njit
+def create_offsprings(pop:np.ndarray, mate_size:int,ProC: float=1, DisC: float=30):
+    pop_size, num_var = pop.shape
+    beta = np.zeros(num_var)
+    offspring = np.zeros_like(pop)
+    for i in range(0, mate_size, 2):
+        beta[:] = 0
+        miu = np.random.rand(num_var)
+
+        beta[miu <= 0.5] = (2 * miu[miu <= 0.5]) ** (1 / (DisC + 1))
+        beta[miu > 0.5] = (2 - 2 * miu[miu > 0.5]) ** (-1 / (DisC + 1))
+
+        beta = beta * ((-1) ** np.random.randint(0, high=2, size=num_var))
+        beta[np.random.rand(num_var) > ProC] = 1  # It was in matlab code
+
+        avg = (pop[i] + pop[i + 1]) / 2
+        diff = (pop[i] - pop[i + 1]) / 2
+        offspring[i] = avg + beta * diff
+        offspring[i + 1] = avg - beta * diff
+    return offspring"""

@@ -7,7 +7,7 @@ from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.APD_Select_constraints import APD_Select
 from desdeo_emo.selection.oAPD import Optimistic_APD_Select
 from desdeo_emo.selection.robust_APD import robust_APD_Select
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 
 class RVEA(BaseDecompositionEA):

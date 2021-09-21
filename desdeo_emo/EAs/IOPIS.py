@@ -6,9 +6,9 @@ from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.IOPIS_APD import IOPIS_APD_Select
 from desdeo_emo.selection.IOPIS_NSGAIII import IOPIS_NSGAIII_select
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 from desdeo_tools.scalarization import StomASF, PointMethodASF, AugmentedGuessASF
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from desdeo_tools.interaction import (
     ReferencePointPreference,
     validate_ref_point_with_ideal_and_nadir,

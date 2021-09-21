@@ -7,7 +7,7 @@ from numpy.random import permutation
 from scipy.spatial import distance_matrix
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA
 from desdeo_emo.population.Population import Population
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 from desdeo_emo.selection import tournament_select
 from desdeo_emo.selection.MOEAD_select import MOEAD_select
@@ -15,7 +15,7 @@ from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
 
 from desdeo_tools.scalarization import MOEADSF
-from desdeo_tools.scalarization.MOEADSF import Tchebycheff
+from desdeo_tools.scalarization.MOEADSF import Tchebycheff, PBI
 
 
 class MOEA_D(BaseDecompositionEA):
@@ -31,7 +31,7 @@ class MOEA_D(BaseDecompositionEA):
     scalarization_function: MOEADSF
     	The scalarization function to compare the solutions. Some implementations 
         can be found in desdeo-tools/scalarization/MOEADSF. By default it uses the
-        Tchebycheff function.
+        PBI function.
     n_neighbors: int, optional
     	Number of reference vectors considered in the neighborhoods creation. The default 
     	number is 20.
@@ -72,7 +72,7 @@ class MOEA_D(BaseDecompositionEA):
     def __init__(  # parameters of the class
         self,
         problem: MOProblem,
-        scalarization_function: MOEADSF = Tchebycheff(),
+        scalarization_function: MOEADSF = PBI(),
         n_neighbors: int = 20,
         population_params: Dict = None,
         initial_population: Population = None,
@@ -99,20 +99,13 @@ class MOEA_D(BaseDecompositionEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
         )
-        self.population_size = self.population.pop_size
+        self.population_size = self.reference_vectors.number_of_vectors
         self.problem = problem
         self.scalarization_function = scalarization_function
         self.n_neighbors = n_neighbors
 
         self.use_repair = use_repair
         self.n_parents = n_parents
-        self.population.mutation = BP_mutation(
-            problem.get_variable_lower_bounds(),
-            problem.get_variable_upper_bounds(),
-            0.5,
-            20,
-        )
-        self.population.recombination = SBX_xover(1.0, 20)
 
         selection_operator = MOEAD_select(
             self.population, SF_type=self.scalarization_function
@@ -120,14 +113,14 @@ class MOEA_D(BaseDecompositionEA):
         self.selection_operator = selection_operator
         # Compute the distance between each pair of reference vectors
         distance_matrix_vectors = distance_matrix(
-            self.reference_vectors.values, self.reference_vectors.values
+            self.reference_vectors.values_planar, self.reference_vectors.values_planar
         )
         # Get the closest vectors to obtain the neighborhoods
         self.neighborhoods = np.argsort(
             distance_matrix_vectors, axis=1, kind="quicksort"
         )[:, :n_neighbors]
         self.population.update_ideal()
-        self._ideal_point = self.population.ideal_objective_vector
+        self._ideal_point = self.population.ideal_fitness_val
 
     def _next_gen(self):
         # For each individual from the population
@@ -139,13 +132,9 @@ class MOEA_D(BaseDecompositionEA):
                 : self.n_parents
             ]
 
-            offspring = self.population.recombination.do(
-                self.population.individuals, selected_parents
-            )
-            offspring = self.population.mutation.do(offspring)
             # Apply genetic operators over two random individuals
-            # offspring = self.population.mate(selected_parents)
-            offspring = np.array(offspring[0, :])
+            offspring = self.population.mate(selected_parents)
+            offspring = offspring[0, :]
 
             # Repair the solution if it is needed
             if self.use_repair:
@@ -153,7 +142,9 @@ class MOEA_D(BaseDecompositionEA):
 
             # Evaluate the offspring using the objective function
             results_off = self.problem.evaluate(offspring, self.use_surrogates)
-            offspring_fx = results_off.objectives
+
+            offspring_fx = results_off.fitness[0, :]
+
             self._function_evaluation_count += 1
 
             # Update the ideal point

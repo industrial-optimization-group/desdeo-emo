@@ -3,7 +3,7 @@ from typing import Dict
 from desdeo_emo.EAs.BaseEA import BaseDecompositionEA
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.NSGAIII_select import NSGAIII_select
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
 
 
 class NSGAIII(BaseDecompositionEA):

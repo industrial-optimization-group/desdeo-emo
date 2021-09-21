@@ -3,7 +3,7 @@ from warnings import warn
 from typing import List, Callable
 from desdeo_emo.selection.SelectionBase import SelectionBase
 from desdeo_emo.population.Population import Population
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 
 class APD_Select(SelectionBase):

@@ -18,7 +18,7 @@
 
 /* Add an active class to highlight the current page */
 .active {
-  background-color: #04AA6D;
+  background-color: #04aa6d;
   color: #e04e4e;
 }
 
@@ -51,7 +51,7 @@
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
@@ -66,7 +66,8 @@
 }
 
 /* Add a dark background on topnav links and the dropdown button on hover */
-.header-right a:hover, .dropdown:hover .dropbtn {
+.header-right a:hover,
+.dropdown:hover .dropbtn {
   /*background-color: #555;*/
   color: #e04e4e;
   border-bottom: 2px solid #e04e4e;
@@ -96,7 +97,9 @@
 
 /* The "responsive" class is added to the topnav with JavaScript when the user clicks on the icon. This class makes the topnav look good on small screens (display the links vertically instead of horizontally) */
 @media screen and (max-width: 600px) {
-  .topnav {position: relative;}
+  .topnav {
+    position: relative;
+  }
   .topnav a.icon {
     position: absolute;
     right: 0;
@@ -107,8 +110,12 @@
     display: block;
     text-align: right;
   }
-  .topnav .dropdown {float: none;}
-  .topnav .dropdown-content {position: relative;}
+  .topnav .dropdown {
+    float: none;
+  }
+  .topnav .dropdown-content {
+    position: relative;
+  }
   .topnav .dropdown .dropbtn {
     display: block;
     width: 100%;
@@ -150,13 +157,17 @@
 }
 /* --- end TOP NAVBAR --- */
 
-
-
-
 .rst-content .sidebar {
   margin-top: 90px !important;
 }
-.rst-content .toctree-wrapper>p.caption, h1, h2, h3, h4, h5, h6, legend {
+.rst-content .toctree-wrapper > p.caption,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+legend {
   font-family: inherit;
 }
 
@@ -166,23 +177,28 @@
   font-size: inherit;
   line-height: normal;
   background: none;
-  color: #2980B9;
+  color: #2980b9;
   border-top: none;
   padding: 6px;
   position: relative;
 }
-.rst-content .linenodiv pre, .rst-content div[class^=highlight] pre, .rst-content pre.literal-block {
+.rst-content .linenodiv pre,
+.rst-content div[class^="highlight"] pre,
+.rst-content pre.literal-block {
   font-size: inherit;
 }
 
-.rst-content code, .rst-content tt, code {
+.rst-content code,
+.rst-content tt,
+code {
   white-space: nowrap;
   max-width: 100%;
   background: #fff;
   border: 1px solid #e1e4e5;
   font-size: inherit;
   padding: 0 5px;
-  font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono,
+    Courier New, Courier, monospace;
   color: #e74c3c;
   overflow-x: auto;
 }
@@ -203,14 +219,16 @@ h3 {
 body {
   background-color: #efefef;
   color: #2b354f;
-  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   /*font-size: 1rem;*/
 }
 a {
   cursor: pointer;
 }
-.wy-side-nav-search>a,
-.wy-side-nav-search .wy-dropdown>a {
+.wy-side-nav-search > a,
+.wy-side-nav-search .wy-dropdown > a {
   display: none !important;
 }
 .wy-side-nav-search {
@@ -259,16 +277,15 @@ a {
   font-family: inherit;
 }
 
-.wy-side-nav-search input[type=text] {
+.wy-side-nav-search input[type="text"] {
   width: 100%;
   border-radius: 50px;
   padding: 6px 12px;
-  border-color: rgba(0, 0, 0, 0.514); 
-  border-radius: .25rem;
+  border-color: rgba(0, 0, 0, 0.514);
+  border-radius: 0.25rem;
   font-family: inherit;
   /*font-size: 1rem;*/
 }
-
 
 .wy-menu-vertical a {
   color: #222222;
@@ -280,7 +297,8 @@ a {
   /*font-size: inherit;*/
 }
 
-.wy-menu-vertical header, .wy-menu-vertical p.caption {
+.wy-menu-vertical header,
+.wy-menu-vertical p.caption {
   color: #55a5d9;
   display: block;
   font-weight: 700;
@@ -290,7 +308,7 @@ a {
 }
 .wy-nav-side {
   background: #efefef;
-  border-right: 1px solid rgba(0,0,0,.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
   position: inherit;
   /*font-size: 1rem;*/
 }
@@ -341,13 +359,12 @@ a {
     flex: none;
     -webkit-flex: none;
   }
-
 }
 .descr {
   flex: 2 0 33.3%;
   -webkit-flex: 2 0 33.3%;
   margin: 10px 15px;
-  border-radius: .3em;
+  border-radius: 0.3em;
   user-select: none;
   background-color: #ffffffad;
   height: 500px;
@@ -375,9 +392,9 @@ div.text_block {
   border-radius: 2em;
   box-sizing: border-box;
   text-decoration: none;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 300;
-  color: #FFFFFF;
+  color: #ffffff;
   background-color: #3080af;
   text-align: center;
   transition: all 0.2s;
@@ -388,12 +405,12 @@ div.text_block {
   background-color: #23526d;
 }
 
-.btndoc{
-	position: absolute;
-	bottom: 0px;
-	right: 0;
-    left: 0;
-    text-align: center;
+.btndoc {
+  position: absolute;
+  bottom: 0px;
+  right: 0;
+  left: 0;
+  text-align: center;
 }
 
 .descr dt {
@@ -405,13 +422,13 @@ div.text_block {
   font-size: 1em !important;
 }
 .descr img {
-  border-top-left-radius: .3em;
-  border-top-right-radius: .3em;
+  border-top-left-radius: 0.3em;
+  border-top-right-radius: 0.3em;
 }
 .descr dl {
-  margin-bottom: 10px
+  margin-bottom: 10px;
 }
-.descr dl dt>a {
+.descr dl dt > a {
   display: block;
   width: 100%;
   margin-bottom: 10px;
@@ -423,7 +440,7 @@ div.text_block {
   font-size: 1.3em;
 }
 .descr dl dt {
-  padding: 18px 15px 0px !important
+  padding: 18px 15px 0px !important;
 }
 .descr dl dd {
   padding: 0px 15px;
@@ -450,13 +467,13 @@ div.text_block {
   flex: 2 0 33.3%;
   -webkit-flex: 2 0 33.3%;
   margin: 10px 15px;
-  border-radius: .3em;
+  border-radius: 0.3em;
   user-select: none;
   background-color: #ffffff00;
 }
 .imgcenter img {
-  border-top-left-radius: .3em;
-  border-top-right-radius: .3em;
+  border-top-left-radius: 0.3em;
+  border-top-right-radius: 0.3em;
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -469,7 +486,8 @@ div.text_block {
 /* Styles for tables */
 
 /* override table width restrictions */
-.wy-table-responsive table td, .wy-table-responsive table th {
+.wy-table-responsive table td,
+.wy-table-responsive table th {
   /* !important prevents the common CSS stylesheets from
      overriding this as on RTD they are loaded after this stylesheet */
   white-space: normal !important;
@@ -488,19 +506,21 @@ img.inheritance {
   margin-bottom: 20px;
 }
 
-.graphviz{
+.graphviz {
   -webkit-box-align: center;
 }
 /*.wy-table td, .rst-content table.docutils td, .rst-content table.field-list td {
   background-color: #e1e4e5;
 }*/
 
-.wy-table-bordered-all td, .rst-content table.docutils td {
+.wy-table-bordered-all td,
+.rst-content table.docutils td {
   border-bottom: 1px solid #4e4b4b45;
   border-left: 1px solid #4e4b4b45;
 }
 
-.wy-table-bordered-all, .rst-content table.docutils {
+.wy-table-bordered-all,
+.rst-content table.docutils {
   border: 1px solid #4e4b4b45;
 }
 
@@ -508,14 +528,36 @@ html.writer-html5 .rst-content table.docutils th {
   border: 1px solid #4e4b4b45;
 }
 
-.wy-table thead th, .rst-content table.docutils thead th, .rst-content table.field-list thead th {
+.wy-table thead th,
+.rst-content table.docutils thead th,
+.rst-content table.field-list thead th {
   font-weight: bold;
   border: 1px solid #4e4b4b45;
 }
 
-.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td, .wy-table-backed, .wy-table-odd td, .wy-table-striped tr:nth-child(2n-1) td {
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td,
+.wy-table-backed,
+.wy-table-odd td,
+.wy-table-striped tr:nth-child(2n-1) td {
   background-color: #f8f8f8;
 }
 /*.rst-content .sidebar {
   margin-top: 90px !important;
 }*/
+
+/* Newlines (\a) and spaces (\20) before each parameter */
+.sig-param::before {
+  content: "\a\20\20\20\20\20\20\20\20\20\20\20\20\20\20\20\20";
+  white-space: pre;
+}
+
+/* Newline after the last parameter (so the closing bracket is on a new line) */
+dt em.sig-param:last-of-type::after {
+  content: "\a";
+  white-space: pre;
+}
+
+/* To have blue background of width of the block (instead of width of content) */
+dl.class > dt:first-of-type {
+  display: block !important;
+}

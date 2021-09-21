@@ -4,7 +4,7 @@ import numpy as np
 from desdeo_tools.utilities import fast_non_dominated_sort
 from typing import List
 from desdeo_emo.population.Population import Population
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 
 class IOPIS_NSGAIII_select(NSGAIII_select):

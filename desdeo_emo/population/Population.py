@@ -6,7 +6,9 @@ import numpy as np
 from desdeo_emo.population.CreateIndividuals import create_new_individuals
 from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
-from desdeo_problem.Problem import MOProblem
+from desdeo_problem import MOProblem
+
+from desdeo_tools.utilities import non_dominated
 
 
 class BasePopulation(ABC):
@@ -19,16 +21,21 @@ class BasePopulation(ABC):
         self.fitness: np.ndarray = None
         if not problem.n_of_constraints == 0:
             self.constraint = None
-        self.ideal_objective_vector = problem.ideal
         self.nadir_objective_vector = problem.nadir
-        self.ideal_fitness_val = None
         self.nadir_fitness_val = None
         if problem.ideal is not None:
-            self.ideal_fitness_val = problem.ideal * problem._max_multiplier
             self.nadir_fitness_val = problem.nadir * problem._max_multiplier
         self.xover = None
         self.mutation = None
         self.recombination = None
+
+    @property
+    def ideal_objective_vector(self) -> np.ndarray:
+        return self.problem.ideal
+
+    @property
+    def ideal_fitness_val(self) -> np.ndarray:
+        return self.problem.ideal_fitness
 
     @abstractmethod
     def add(self, offsprings: Union[List, np.ndarray]) -> List:
@@ -160,12 +167,10 @@ class Population(BasePopulation):
             self.objectives = np.vstack((self.objectives, objectives))
             self.fitness = np.vstack((self.fitness, fitness))
             if self.problem.n_of_constraints != 0:
-                self.constraint = np.vstack(
-                    (self.constraint, constraints)
-                )
+                self.constraint = np.vstack((self.constraint, constraints))
             if uncertainity is None:
                 self.uncertainity = None
-            else:    
+            else:
                 self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
@@ -236,7 +241,8 @@ class Population(BasePopulation):
         return offspring
 
     def update_ideal(self):
-        if self.ideal_fitness_val is None:
+        pass
+        """if self.ideal_fitness_val is None:
             self.ideal_fitness_val = np.amin(self.fitness, axis=0)
         else:
             self.ideal_fitness_val = np.amin(
@@ -244,8 +250,9 @@ class Population(BasePopulation):
             )
         self.ideal_objective_vector = (
             self.ideal_fitness_val * self.problem._max_multiplier
-        )
-    def replace(self, indices: List, individual:np.ndarray, evaluation:tuple):
+        )"""
+
+    def replace(self, indices: List, individual: np.ndarray, evaluation: tuple):
         """Replace the population members given by the list of indices by the given individual and its evaluation. 
            Keep the rest of the population unchanged.
 
@@ -284,3 +291,12 @@ class Population(BasePopulation):
         individual[upper_bounds_check] = upper_bounds[upper_bounds_check]
         individual[lower_bounds_check] = lower_bounds[lower_bounds_check]
         return individual
+
+    def reevaluate_fitness(self):
+        self.fitness = self.problem.reevaluate_fitness(self.objectives)
+
+    def non_dominated_fitness(self):
+        return non_dominated(self.fitness)
+
+    def non_dominated_objectives(self):
+        return non_dominated(self.objectives * self.problem._max_multiplier)
