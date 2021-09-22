@@ -92,7 +92,8 @@ class IBEA(BaseIndicatorEA):
             self.population.fitness[i] = 0 # 0 all the fitness values. 
             for j in range(self.population.individuals.shape[0]):
                 if j != i:
-                   self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], self.population.objectives[j]) / self.kappa)
+                   self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], 
+                        self.population.objectives[j]) / self.kappa)
 
 
     def _environmental_selection(self):
