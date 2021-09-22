@@ -1,32 +1,16 @@
-from typing import Dict, Type, Union, Tuple, Callable
+from typing import Dict, Type, Tuple, Callable
 import numpy as np
 import pandas as pd
-
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-
 from desdeo_problem import MOProblem
-from desdeo_problem.testproblems.TestProblems import test_problem_builder
-
 from desdeo_emo.EAs import BaseEA
 from desdeo_emo.EAs.BaseEA import eaError
-from desdeo_emo.selection.TournamentSelection import TournamentSelection
-
 from desdeo_tools.interaction import (
    SimplePlotRequest,
    ReferencePointPreference,
     validate_ref_point_with_ideal_and_nadir,
     )
-
-# only for testing
-import matplotlib.pyplot as plt
-
-from desdeo_tools.scalarization import SimpleASF
-from desdeo_tools.utilities.quality_indicator import epsilon_indicator, epsilon_indicator_ndims 
-# test with warnings enabled aswell
-#np.seterr(all='warn')
-#import warnings
-#warnings.filterwarnings('error')
 
 
 class BaseIndicatorEA(BaseEA):
@@ -66,22 +50,15 @@ class BaseIndicatorEA(BaseEA):
     total_function_evaluations :int, optional
         Set an upper limit to the total number of function evaluations. When set to
         zero, this argument is ignored and other termination criteria are used.
-    use_surrogates: TODO:
-
-    indicator: TODO:
-
-    reference_point: TODO
-    
-    kappa: TODO.. not sure it should be even here
-
+    use_surrogates: bool, optional
+    	A bool variable defining whether surrogate problems are to be used or
+        not. By default False    
     """
 
     def __init__(
         self,
         problem: MOProblem,
         population_size: int, # size required
-        indicator: Callable, # required 
-        kappa: float,
         selection_operator: Type[SelectionBase] = None,
         population_params: Dict = None,
         initial_population: Population = None,
@@ -91,8 +68,6 @@ class BaseIndicatorEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
-        reference_point: np.ndarray = None, # only for PBEA
-
     ):
         super().__init__(
             a_priori=a_priori,
@@ -104,10 +79,6 @@ class BaseIndicatorEA(BaseEA):
             use_surrogates=use_surrogates,
         )
 
-        self.indicator = indicator
-        self.min_asf_value = None 
-        self.reference_point = reference_point
-
         if initial_population is not None:
             self.population = initial_population
         elif initial_population is None:
@@ -117,10 +88,6 @@ class BaseIndicatorEA(BaseEA):
             self._function_evaluation_count += population_size
         
      
-    # TODO: remove bc defined in BaseEA
-    #def start(self):
-    #    return self.requests() 
-
 
     def end(self):
         """Conducts non-dominated sorting at the end of the evolution process
@@ -136,37 +103,42 @@ class BaseIndicatorEA(BaseEA):
 
 
     def _next_gen(self):
+        """
+            Run one generation of indicator based EA. Intended to be used by next_iteration.
+        """
         # calls fitness assignment
         self._fitness_assignment()
-
         # performs the enviromental selection
         self._environmental_selection()
-
         # perform binary tournament selection. 
         chosen = self._select()
-
         # variation, call the recombination operators
         offspring = self.population.mate(mating_individuals=chosen)
         self.population.add(offspring)
-
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
         self._function_evaluation_count += offspring.shape[0]
 
 
-    # calls TournamentSelection
-    def _select(self):
+    def _select(self) -> list:
+        """
+            Performs the selection, returns indices of selected individuals. 
+            
+            Returns
+            -------
+            list
+                List of indices of individuals to be selected.
+        """
         return self.selection_operator.do(self.population)
 
 
     def manage_preferences(self, preference=None):
         """Run the interruption phase of EA.
 
-        Use this phase to make changes to RVEA.params or other objects.
+            Conducts the interaction with the user.
         """
         # start only with reference point reference as in article
-        if (self.interact is False): 
-            return
+        if (self.interact is False): return
 
         if preference is None:
             msg = "Giving preferences is mandatory"
@@ -191,17 +163,11 @@ class BaseIndicatorEA(BaseEA):
 
         if preference is not None:
             self.reference_point = preference.response.values * self.population.problem._max_multiplier
-            # TODO: bug with calling this 2nd time here hence doubling the n gen per iters every time managing pref
-            #self.n_iterations += self.n_iterations # this is second time this is called so thats why they are doubling
-            self.n_iterations += self.n_iterations # now only adding the original iterations per dms preference run
+            self.n_iterations += self.n_iterations
             self.total_function_evaluations += self.total_function_evaluations
-            #print("Reference point", self.reference_point)
-            #print(self.n_iterations)
-
 
 
     def request_preferences(self) -> ReferencePointPreference:
-        # check that if ibea no preferences
         if (self.interact is False): return None
 
         dimensions_data = pd.DataFrame(
@@ -211,7 +177,11 @@ class BaseIndicatorEA(BaseEA):
         dimensions_data.loc["minimize"] = self.population.problem._max_multiplier
         dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
         dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
-        message = ("Provide preference point. TODO add more info")
+        message = ("Please provide preferences as a reference point. Reference point cannot be better than ideal point:\n\n"
+            f"{dimensions_data.loc['ideal']}\n"
+            f"The reference point will be used to focus the search towards "
+            f"the preferred region.\n"
+            )
 
         def validator(dimensions_data: pd.DataFrame, reference_point: pd.DataFrame):
             validate_ref_point_dimensions(dimensions_data, reference_point)
@@ -246,6 +216,7 @@ class BaseIndicatorEA(BaseEA):
         return SimplePlotRequest(
             data=data, dimensions_data=dimensions_data, message="Objective Values"
         )
+
 
     def requests(self) -> Tuple:
         return (self.request_preferences(), self.request_plot())
