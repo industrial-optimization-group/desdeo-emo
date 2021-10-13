@@ -84,30 +84,26 @@ class IBEA(BaseIndicatorEA):
 
     
     
-    def _fitness_assignment(self):
+    def _fitness_assignment(self, fitnesses):
         """
             Performs the fitness assignment of the individuals.
         """
         for i in range(self.population.individuals.shape[0]):
-            self.population.fitness[i] = 0 # 0 all the fitness values. 
             for j in range(self.population.individuals.shape[0]):
                 if j != i:
-                   self.population.fitness[i] += -np.exp(-self.indicator(self.population.objectives[i], 
-                        self.population.objectives[j]) / self.kappa)
+                   fitnesses[i] += -np.exp(-self.indicator(self.population.fitness[i], 
+                        self.population.fitness[j]) / self.kappa)
+        return fitnesses
 
 
-    def _environmental_selection(self):
+    def _environmental_selection(self, fitnesses, worst_index):
         """
             Selects the worst member of population, then updates the population members fitness values compared to the worst individual.
             Worst individual is removed from the population.
         """
-        while (self.population.pop_size < self.population.individuals.shape[0]):
-            worst_index = np.argmin(self.population.fitness, axis=0)[0] # gets the index worst member of population
-            # updates the fitness values
-            for i in range(self.population.individuals.shape[0]):
-                if worst_index != i:
-                    self.population.fitness[i] += np.exp(-self.indicator(self.population.objectives[i], 
-                        self.population.objectives[worst_index]) / self.kappa)
-            # remove the worst member from population
-            self.population.delete(worst_index)
+        # updates the fitness values
+        for i in range(self.population.individuals.shape[0]):
+            if worst_index != i:
+                fitnesses[i] += np.exp(-self.indicator(self.population.fitness[i], self.population.fitness[worst_index]) / self.kappa)
+        return fitnesses
 

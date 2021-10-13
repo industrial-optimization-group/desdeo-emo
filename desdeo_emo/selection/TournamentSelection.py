@@ -17,12 +17,13 @@ class TournamentSelection(SelectionBase):
     """
     def __init__(self, pop, tournament_size):
         # initialize
-        self.fitness = pop.fitness
-        self.pop_size = pop.pop_size
+        #self.fitness = pop.fitness
+        #self.pop_size = pop.pop_size
         self.tournament_size = tournament_size
 
 
-    def do(self, pop) -> List[int]:
+    # TODO: add the opt fitness, which is the custom set of fitness values e.g self.local_fitnesss
+    def do(self, pop, fitness) -> List[int]:
         """ Performs tournament selections and returns the parents.
         Parameters
         ----------
@@ -34,8 +35,8 @@ class TournamentSelection(SelectionBase):
         List[int]
             List of indices of the selected individuals
         """
-        self.fitness = pop.fitness
-        self.pop_size= pop.pop_size
+        self.fitness = fitness
+        self.pop_size = self.fitness.shape[0]
         parents = []
         for i in range(int(self.pop_size)): 
             parents.append(
@@ -62,6 +63,7 @@ class TournamentSelection(SelectionBase):
         int
             The index of the best individual.
         """
+        # make next 4 lines prettier and check if PBEA article uses Deterministic tournament selection
         fitness = self.fitness[:,0]
         aspirants = np.random.choice(len(fitness)-1, self.tournament_size, replace=False)
         chosen = []

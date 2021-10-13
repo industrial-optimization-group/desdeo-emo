@@ -68,6 +68,8 @@ class BaseIndicatorEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
+        # local_fitness np:array for both IBEA and PBEA
+        fitnesses = None,
     ):
         super().__init__(
             a_priori=a_priori,
@@ -87,7 +89,6 @@ class BaseIndicatorEA(BaseEA):
             )
             self._function_evaluation_count += population_size
         
-     
 
     def end(self):
         """Conducts non-dominated sorting at the end of the evolution process
@@ -107,9 +108,16 @@ class BaseIndicatorEA(BaseEA):
             Run one generation of indicator based EA. Intended to be used by next_iteration.
         """
         # calls fitness assignment
-        self._fitness_assignment()
+        self.fitnesses = np.zeros_like(self.population.fitness)
+        self.fitnesses = self._fitness_assignment(self.fitnesses)
         # performs the enviromental selection
-        self._environmental_selection()
+        while (self.population.pop_size < self.population.individuals.shape[0]):
+            worst_index = np.argmin(self.fitnesses, axis=0)[0] # gets the index worst member of population
+            self.fitnesses = self._environmental_selection(self.fitnesses, worst_index)
+            # remove the worst member from population and from fitnesses
+            self.population.delete(worst_index)
+            self.fitnesses = np.delete(self.fitnesses, worst_index, 0)
+
         # perform binary tournament selection. 
         chosen = self._select()
         # variation, call the recombination operators
@@ -129,7 +137,7 @@ class BaseIndicatorEA(BaseEA):
             list
                 List of indices of individuals to be selected.
         """
-        return self.selection_operator.do(self.population)
+        return self.selection_operator.do(self.population, self.fitnesses)
 
 
     def manage_preferences(self, preference=None):
@@ -162,7 +170,7 @@ class BaseIndicatorEA(BaseEA):
                 raise eaError(msg)
 
         if preference is not None:
-            self.reference_point = preference.response.values * self.population.problem._max_multiplier
+            self.reference_point = preference.response.values * self.population.problem._max_multiplier # TODO: there was thing about doing this but i think i do already.
             self.n_iterations += self.n_iterations
             self.total_function_evaluations += self.total_function_evaluations
 
