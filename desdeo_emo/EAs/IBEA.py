@@ -83,7 +83,6 @@ class IBEA(BaseIndicatorEA):
         self.selection_operator = selection_operator
 
     
-    
     def _fitness_assignment(self, fitnesses):
         """
             Performs the fitness assignment of the individuals.
