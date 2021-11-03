@@ -1,6 +1,6 @@
 from desdeo_emo.population.Population import Population
 from desdeo_emo.EAs.BaseEA import BaseEA, eaError
-from desdeo_emo.selection.tournament_select import tour_select
+from desdeo_emo.selection.TournamentSelection import TournamentSelection
 import numpy as np
 
 
@@ -35,6 +35,24 @@ class TournamentEA(BaseEA):
         self.population = initial_population
         self.target_pop_size = population_size
         self.tournament_size = tournament_size
+        selection_operator = TournamentSelection(self.population, self.tournament_size)
+        self.selection_operator = selection_operator
+
+
+    def start(self):
+        pass
+
+    def end(self):
+        """Conducts non-dominated sorting at the end of the evolution process
+        Returns:
+            tuple: The first element is a 2-D array of the decision vectors of the non-dominated solutions.
+                The second element is a 2-D array of the corresponding objective values.
+        """
+        non_dom = self.population.non_dominated_objectives()
+        return (
+            self.population.individuals[non_dom, :],
+            self.population.objectives[non_dom, :],
+        )
 
     def _next_gen(self):
         """Run one generation of decomposition based EA.
@@ -57,20 +75,4 @@ class TournamentEA(BaseEA):
         self._function_evaluation_count += offspring.shape[0]
 
     def select(self) -> list:
-        """Select parents for recombination using tournament selection.
-        Chooses two parents, which are needed for crossover.
-
-        Returns
-        -------
-        parents : list
-            List of indices of individuals to be selected.
-        """
-        parents = []
-        for i in range(int(self.target_pop_size / 2)):
-            parents.append(
-                [
-                    tour_select(self.population.fitness[:, 0], self.tournament_size),
-                    tour_select(self.population.fitness[:, 0], self.tournament_size),
-                ]
-            )
-        return parents
+       return self.selection_operator.do(self.population)
