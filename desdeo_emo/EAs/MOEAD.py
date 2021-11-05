@@ -9,7 +9,7 @@ from desdeo_emo.EAs.BaseEA import BaseDecompositionEA
 from desdeo_emo.population.Population import Population
 from desdeo_problem import MOProblem
 
-from desdeo_emo.selection import tournament_select
+from desdeo_emo.selection.TournamentSelection import TournamentSelection
 from desdeo_emo.selection.MOEAD_select import MOEAD_select
 from desdeo_emo.recombination.BoundedPolynomialMutation import BP_mutation
 from desdeo_emo.recombination.SimulatedBinaryCrossover import SBX_xover
