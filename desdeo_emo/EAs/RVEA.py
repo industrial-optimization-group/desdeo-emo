@@ -96,21 +96,20 @@ class RVEA(BaseDecompositionEA):
     """
 
     def __init__(
-            self,
-            problem: MOProblem,
-            population_size: int = None,
-            population_params: Dict = None,
-            initial_population: Population = None,
-            alpha: float = 2,
-            lattice_resolution: int = None,
-            selection_type: str = None,
-            a_priori: bool = False,
-            interact: bool = False,
-            use_surrogates: bool = False,
-            n_iterations: int = 10,
-            n_gen_per_iter: int = 100,
-            total_function_evaluations: int = 0,
-            time_penalty_component: Union[str, float] = None,
+        self,
+        problem: MOProblem,
+        population_size: int = None,
+        population_params: Dict = None,
+        initial_population: Population = None,
+        alpha: float = 2,
+        lattice_resolution: int = None,
+        selection_type: str = None,
+        interact: bool = False,
+        use_surrogates: bool = False,
+        n_iterations: int = 10,
+        n_gen_per_iter: int = 100,
+        total_function_evaluations: int = 0,
+        time_penalty_component: Union[str, float] = None,
     ):
         super().__init__(
             problem=problem,
@@ -118,7 +117,6 @@ class RVEA(BaseDecompositionEA):
             population_params=population_params,
             initial_population=initial_population,
             lattice_resolution=lattice_resolution,
-            a_priori=a_priori,
             interact=interact,
             use_surrogates=use_surrogates,
             n_iterations=n_iterations,
@@ -195,11 +193,11 @@ class RVEA(BaseDecompositionEA):
         return self._function_evaluation_count / self.total_function_evaluations
 
 
-class oRVEA(RVEA):
-    """
+"""class oRVEA(RVEA):
+
     Feature incorporated in the RVEA class using the "selection_type" argument.
     To be depreciated.
-    """
+
 
     def __init__(
             self,
@@ -237,10 +235,10 @@ class oRVEA(RVEA):
 
 
 class robust_RVEA(RVEA):
-    """
+
     Feature incorporated in the RVEA class using the "selection_type" argument.
     To be depreciated.
-    """
+
 
     def __init__(
             self,
@@ -275,3 +273,4 @@ class robust_RVEA(RVEA):
             self.population, self.time_penalty_function, alpha
         )
         self.selection_operator = selection_operator
+"""

@@ -118,6 +118,7 @@ class ReferenceVectors:
     def __init__(
         self,
         lattice_resolution: int = None,
+        number_of_vectors: int = None,
         number_of_objectives: int = None,
         creation_type: str = "Uniform",
         vector_type: str = "Spherical",
@@ -147,7 +148,24 @@ class ReferenceVectors:
 
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
-        self.number_of_vectors = 0
+        self.number_of_vectors = number_of_vectors
+        if lattice_resolution is None:
+            if number_of_vectors is None:
+                raise ValueError(
+                    "Either lattice_resolution or number_of_vectors must be specified."
+                )
+            temp_lattice_resolution = 0
+            while True:
+                temp_lattice_resolution += 1
+                temp_number_of_vectors = comb(
+                    temp_lattice_resolution + self.number_of_objectives - 1,
+                    self.number_of_objectives - 1,
+                    exact=True,
+                )
+                if temp_number_of_vectors > number_of_vectors:
+                    break
+            self.lattice_resolution = temp_lattice_resolution - 1
+
         self.creation_type = creation_type
         self.vector_type = vector_type
         self.values = []
@@ -225,14 +243,8 @@ class ReferenceVectors:
     def normalize(self):
         """Normalize the reference vectors to a unit hypersphere."""
         self.number_of_vectors = self.values.shape[0]
-        norm_2 = np.linalg.norm(self.values, axis=1)
-        norm_1 = np.sum(self.values_planar, axis=1)
-        norm_2 = np.repeat(norm_2, self.number_of_objectives).reshape(
-            self.number_of_vectors, self.number_of_objectives
-        )
-        norm_1 = np.repeat(norm_1, self.number_of_objectives).reshape(
-            self.number_of_vectors, self.number_of_objectives
-        )
+        norm_2 = np.linalg.norm(self.values, axis=1).reshape(-1, 1)
+        norm_1 = np.sum(self.values_planar, axis=1).reshape(-1, 1)
         norm_2[norm_2 == 0] = np.finfo(float).eps
         self.values = np.divide(self.values, norm_2)
         self.values_planar = np.divide(self.values_planar, norm_1)
@@ -256,13 +268,13 @@ class ReferenceVectors:
         """
         max_val = np.amax(fitness, axis=0)
         min_val = np.amin(fitness, axis=0)
-        self.values = np.multiply(
-            self.initial_values,
-            np.tile(np.subtract(max_val, min_val), (self.number_of_vectors, 1)),
-        )
+        self.values = self.initial_values * (max_val - min_val)
+
         self.normalize()
 
-    def interactive_adapt_1(self, z: np.ndarray, n_solutions: int, translation_param: float = 0.2) -> None:
+    def interactive_adapt_1(
+        self, z: np.ndarray, n_solutions: int, translation_param: float = 0.2
+    ) -> None:
         """
         Adapt reference vectors using the information about prefererred solution(s) selected by the Decision maker.
 
@@ -285,15 +297,26 @@ class ReferenceVectors:
             if z.shape[0] == 1:
                 # single preferred solution
                 # calculate new reference vectors
-                self.values = translation_param * self.initial_values + ((1 - translation_param) * z)
-                self.values_planar = translation_param * self.initial_values_planar + ((1 - translation_param) * z)
+                self.values = translation_param * self.initial_values + (
+                    (1 - translation_param) * z
+                )
+                self.values_planar = translation_param * self.initial_values_planar + (
+                    (1 - translation_param) * z
+                )
 
             else:
                 # multiple preferred solutions
                 # calculate new reference vectors for each preferred solution
-                values = [translation_param * self.initial_values + ((1 - translation_param) * z_i) for z_i in z]
-                values_planar = [translation_param * self.initial_values_planar + ((1 - translation_param) * z_i)
-                                 for z_i in z]
+                values = [
+                    translation_param * self.initial_values
+                    + ((1 - translation_param) * z_i)
+                    for z_i in z
+                ]
+                values_planar = [
+                    translation_param * self.initial_values_planar
+                    + ((1 - translation_param) * z_i)
+                    for z_i in z
+                ]
 
                 # combine arrays of reference vectors into a single array and update reference vectors
                 self.values = np.concatenate(values)
@@ -301,7 +324,9 @@ class ReferenceVectors:
 
         self.normalize()
 
-    def interactive_adapt_2(self, z: np.ndarray, n_solutions: int, predefined_distance: float = 0.2) -> None:
+    def interactive_adapt_2(
+        self, z: np.ndarray, n_solutions: int, predefined_distance: float = 0.2
+    ) -> None:
         """
         Adapt reference vectors by using the information about non-preferred solution(s) selected by the Decision maker.
         After the Decision maker has specified non-preferred solution(s), Euclidian distance between normalized solution
@@ -346,8 +371,17 @@ class ReferenceVectors:
             v_c = np.divide(z, norm)
 
             # distances from non-preferred solution(s) to each reference vector
-            distances = np.array([list(map(lambda solution: np.linalg.norm(solution - value, ord=2), v_c))
-                                  for value in self.values_planar])
+            distances = np.array(
+                [
+                    list(
+                        map(
+                            lambda solution: np.linalg.norm(solution - value, ord=2),
+                            v_c,
+                        )
+                    )
+                    for value in self.values_planar
+                ]
+            )
 
             # find out reference vectors that are not closer than threshold value to any non-preferred solution
             mask = [all(d >= predefined_distance) for d in distances]
