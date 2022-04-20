@@ -1,7 +1,7 @@
 # desdeo-emo
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master)
 
-The evolutionary algorithms package within the `desdeo` framework.
+The evolutionary algorithms package within the [DESDEO framework](https://github.com/industrial-optimization-group/DESDEO).
 
 Code for the SoftwareX paper can be found in [this notebook](docs/notebooks/Using_EvoNN_for_optimization.ipynb).
 
@@ -32,3 +32,7 @@ Read the documentation [here](https://desdeo-emo.readthedocs.io/en/latest/)
 * Download and extract the code or `git clone`
 * Create a new virtual environment for the project
 * Run `poetry install` inside the virtual environment shell.
+
+## Citation
+
+If you decide to use DESDEO is any of your works or research, we would appreciate you citing the appropiate paper published in [IEEE Access](https://doi.org/10.1109/ACCESS.2021.3123825) (open access).

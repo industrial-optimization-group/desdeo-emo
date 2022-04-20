@@ -1,20 +1,19 @@
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
-from desdeo_emo.EAs.BaseEA import eaError
-from desdeo_emo.EAs.BaseEA import BaseDecompositionEA, BaseEA
+import numpy as np
+import pandas as pd
+from desdeo_emo.EAs.BaseEA import BaseDecompositionEA, BaseEA, eaError
 from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.IOPIS_APD import IOPIS_APD_Select
 from desdeo_emo.selection.IOPIS_NSGAIII import IOPIS_NSGAIII_select
-from desdeo_problem import MOProblem
-from desdeo_tools.scalarization import StomASF, PointMethodASF, AugmentedGuessASF
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
+from desdeo_problem import MOProblem
 from desdeo_tools.interaction import (
     ReferencePointPreference,
     validate_ref_point_with_ideal_and_nadir,
 )
-import numpy as np
-import pandas as pd
+from desdeo_tools.scalarization import AugmentedGuessASF, StomASF
 
 
 class BaseIOPISDecompositionEA(BaseDecompositionEA, BaseEA):
@@ -34,8 +33,8 @@ class BaseIOPISDecompositionEA(BaseDecompositionEA, BaseEA):
         interact: bool = True
         if problem.ideal is None or problem.nadir is None:
             msg = (
-                f"The problem instance should contain the information about ideal and "
-                f"nadir point."
+                "The problem instance should contain the information about ideal and "
+                "nadir point."
             )
             raise eaError(msg)
 
@@ -58,7 +57,7 @@ class BaseIOPISDecompositionEA(BaseDecompositionEA, BaseEA):
             AugmentedGuessASF(
                 nadir=problem.nadir * problem._max_multiplier,
                 ideal=problem.ideal * problem._max_multiplier,
-                indx_to_exclude=[],
+                index_to_exclude=[],
             ),
         ]
         if lattice_resolution is None:
@@ -71,8 +70,8 @@ class BaseIOPISDecompositionEA(BaseDecompositionEA, BaseEA):
             lattice_resolution=lattice_resolution,
             number_of_objectives=len(scalarization_methods),
         )
-        population_size = reference_vectors.number_of_vectors
-        population = Population(problem, population_size, population_params)
+        # population_size = reference_vectors.number_of_vectors
+        # population = Population(problem, population_size, population_params)
 
         self.reference_vectors = reference_vectors
         self.scalarization_methods = scalarization_methods
