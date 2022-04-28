@@ -105,6 +105,8 @@ Currently implemented methods
 
    README <README>
    background
+   algorithms
+   operators
    api
    examples
 
