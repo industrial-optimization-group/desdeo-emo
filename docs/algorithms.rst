@@ -8,3 +8,4 @@ Algorithms
    algorithms/nsga3
    algorithms/rvea
    algorithms/moead
+   algorithms/ikrvea

@@ -107,6 +107,7 @@ Currently implemented methods
    background
    algorithms
    operators
+   utilities
    api
    examples
 
