@@ -110,6 +110,7 @@ class RVEA(BaseDecompositionEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         time_penalty_component: Union[str, float] = None,
+        keep_archive: bool = False
     ):
         super().__init__(
             problem=problem,
@@ -122,6 +123,7 @@ class RVEA(BaseDecompositionEA):
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
+            keep_archive=keep_archive,
         )
         self.time_penalty_component = time_penalty_component
         time_penalty_component_options = ["original", "function_count", "interactive"]

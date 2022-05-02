@@ -23,7 +23,6 @@ class NSGAIII_select(InteractiveDecompositionSelectionBase):
     def __init__(
         self, pop: Population, n_survive: int = None, selection_type: str = None
     ):
-        print(pop.pop_size)
         super().__init__(pop.pop_size, pop.problem.n_of_fitnesses, selection_type)
         self.worst_fitness: np.ndarray = -np.full((1, pop.fitness.shape[1]), np.inf)
         self.extreme_points: np.ndarray = None

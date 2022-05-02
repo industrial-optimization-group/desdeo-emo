@@ -4,7 +4,8 @@ import pandas as pd
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 
-from desdeo_problem import MOProblem, DataProblem, classificationPISProblem
+from desdeo_problem import MOProblem, DataProblem
+from desdeo_emo.problem import IOPISProblem
 from desdeo_tools.interaction import SimplePlotRequest
 from desdeo_tools.interaction.request import BaseRequest
 from scipy.special import comb
@@ -28,6 +29,7 @@ class BaseEA:
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
+        keep_archive: bool = False,
     ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
         self.a_priori: bool = a_priori
@@ -49,6 +51,8 @@ class BaseEA:
         self.interaction_type_set_bool: bool = False
         self.allowable_interaction_types: Union[None, Dict] = None
         self.population: Union[None, Population] = None
+        self.keep_archive = keep_archive
+        self.archive: dict = {}
 
     """@property
     def interaction_location(
@@ -71,8 +75,7 @@ class BaseEA:
         self._allowable_interaction_types = value
 
     def start(self):
-        """Mimics the structure of the mcdm methods. Returns the request objects from self.retuests().
-        """
+        """Mimics the structure of the mcdm methods. Returns the request objects from self.retuests()."""
         if self.population is None:
             raise eaError("Population not initialized.")
         if self.selection_operator is None:
@@ -84,9 +87,34 @@ class BaseEA:
         return self.requests()
 
     def end(self):
-        """To be run at the end of the evolution process.
-        """
-        pass
+        """To be run at the end of the evolution process."""
+        if self.keep_archive:
+            objective_names = self.population.problem.objective_names
+            if isinstance(objective_names[0], list):
+                objective_names = [
+                    item for sublist in objective_names for item in sublist
+                ]
+            fitness_names = self.population.problem.fitness_names
+            if isinstance(fitness_names[0], list):
+                objective_names = [
+                    item for sublist in fitness_names for item in sublist
+                ]
+            self.archive[self._current_gen_count] = {
+                "iteration": self._iteration_counter,
+                "decision variables": pd.DataFrame(
+                    self.population.individuals,
+                    columns=self.population.problem.variable_names,
+                ),
+                "objectives": pd.DataFrame(
+                    self.population.objectives,
+                    columns=objective_names,
+                ),
+                "fitness": pd.DataFrame(
+                    self.population.fitness,
+                    columns=fitness_names,
+                ),
+            }
+            return self.archive
 
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
@@ -108,13 +136,36 @@ class BaseEA:
         return self.requests()
 
     def pre_iteration(self):
-        """Run this code before every iteration.
-        """
-        return
+        """Run this code before every iteration."""
+        if self.keep_archive:
+            objective_names = self.population.problem.objective_names
+            if isinstance(objective_names[0], list):
+                objective_names = [
+                    item for sublist in objective_names for item in sublist
+                ]
+            fitness_names = self.population.problem.fitness_names
+            if isinstance(fitness_names[0], list):
+                objective_names = [
+                    item for sublist in fitness_names for item in sublist
+                ]
+            self.archive[self._current_gen_count] = {
+                "iteration": self._iteration_counter,
+                "decision variables": pd.DataFrame(
+                    self.population.individuals,
+                    columns=self.population.problem.variable_names,
+                ),
+                "objectives": pd.DataFrame(
+                    self.population.objectives,
+                    columns=objective_names,
+                ),
+                "fitness": pd.DataFrame(
+                    self.population.fitness,
+                    columns=fitness_names,
+                ),
+            }
 
     def post_iteration(self):
-        """Run this code after every iteration.
-        """
+        """Run this code after every iteration."""
         return
 
     def continue_iteration(self):
@@ -156,7 +207,7 @@ class BaseEA:
         if self._interaction_location == "Problem":
             try:
                 self.interaction_type_set_bool = True
-                return self.population.problem.set_interaction_type(interaction_type)
+                return
             except NotImplementedError as e:
                 self.interaction_type_set_bool = False
                 raise eaError(
@@ -206,7 +257,7 @@ class BaseEA:
             raise eaError("Override this method in child class.")
         if self._interaction_location == "Problem":
             try:
-                self.population.problem.update_preferences(preference)
+                self.population.problem.manage_preferences(self.population, preference)
                 self.population.reevaluate_fitness()
                 return
             except NotImplementedError as e:
@@ -273,6 +324,7 @@ class BaseDecompositionEA(BaseEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
+        keep_archive: bool = False,
     ):
         super().__init__(
             interact=interact,
@@ -280,10 +332,14 @@ class BaseDecompositionEA(BaseEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
             use_surrogates=use_surrogates,
+            keep_archive=keep_archive,
         )
         if interact:
             if isinstance(problem, (MOProblem, DataProblem)):
                 self._interaction_location = "Selection"
+            if isinstance(problem, (IOPISProblem)):
+                self._interaction_location = "Problem"
+                self.set_interaction_type(None)
         if initial_population is not None:
             if problem is not None:
                 raise eaError("Provide only one of initial_population or problem.")
@@ -330,6 +386,7 @@ class BaseDecompositionEA(BaseEA):
             self._function_evaluation_count += offspring.shape[0]
 
     def pre_iteration(self):
+        super().pre_iteration()
         if not self.interact:
             self.selection_operator.adapt_RVs(self.population.fitness)
         if self._interaction_location != "Selection":
@@ -366,7 +423,7 @@ class BaseDecompositionEA(BaseEA):
         if self.interact is False:
             return
         if self._interaction_location == "Problem":
-            return self.population.problem.request_preferences()
+            return self.population.problem.request_preferences(self.population)
         if self._interaction_location == "Selection":
             return self.selection_operator.request_preferences(self.population)
 
@@ -380,9 +437,10 @@ class BaseDecompositionEA(BaseEA):
             tuple: The first element is a 2-D array of the decision vectors of the non-dominated solutions.
                 The second element is a 2-D array of the corresponding objective values.
         """
+        base_return = super().end()
         non_dom = self.population.non_dominated_objectives()
         return (
             self.population.individuals[non_dom, :],
             self.population.objectives[non_dom, :],
+            base_return,
         )
-
