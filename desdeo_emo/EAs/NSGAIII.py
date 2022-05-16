@@ -65,12 +65,12 @@ class NSGAIII(BaseDecompositionEA):
         initial_population: Population = None,
         lattice_resolution: int = None,
         selection_type: str = None,
-        a_priori: bool = False,
         interact: bool = False,
         use_surrogates: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
+        keep_archive: bool = False,
     ):
         super().__init__(
             problem=problem,
@@ -78,12 +78,12 @@ class NSGAIII(BaseDecompositionEA):
             population_params=population_params,
             initial_population=initial_population,
             lattice_resolution=lattice_resolution,
-            a_priori=a_priori,
             interact=interact,
             use_surrogates=use_surrogates,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
+            keep_archive=keep_archive,
         )
         self.selection_type = selection_type
         selection_operator = NSGAIII_select(

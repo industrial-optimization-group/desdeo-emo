@@ -1,13 +1,13 @@
 import numpy as np
-#from pygmo import fast_non_dominated_sorting as nds
+
+# from pygmo import fast_non_dominated_sorting as nds
 from desdeo_tools.utilities import fast_non_dominated_sort
 from typing import List
-from desdeo_emo.selection.SelectionBase import SelectionBase
+from desdeo_emo.selection.SelectionBase import InteractiveDecompositionSelectionBase
 from desdeo_emo.population.Population import Population
-from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 
-class NSGAIII_select(SelectionBase):
+class NSGAIII_select(InteractiveDecompositionSelectionBase):
     """The NSGA-III selection operator. Code is heavily based on the version of nsga3 in
         the pymoo package by msu-coinlab.
 
@@ -23,6 +23,7 @@ class NSGAIII_select(SelectionBase):
     def __init__(
         self, pop: Population, n_survive: int = None, selection_type: str = None
     ):
+        super().__init__(pop.pop_size, pop.problem.n_of_fitnesses, selection_type)
         self.worst_fitness: np.ndarray = -np.full((1, pop.fitness.shape[1]), np.inf)
         self.extreme_points: np.ndarray = None
         if n_survive is None:
@@ -32,25 +33,23 @@ class NSGAIII_select(SelectionBase):
         self.selection_type = selection_type
         self.ideal: np.ndarray = pop.ideal_fitness_val
 
-    def do(self, pop: Population, vectors: ReferenceVectors) -> List[int]:
+    def do(self, pop: Population) -> List[int]:
         """Select individuals for mating for NSGA-III.
 
         Parameters
         ----------
         pop : Population
             The current population.
-        vectors : ReferenceVectors
-            Class instance containing reference vectors.
 
         Returns
         -------
         List[int]
             List of indices of the selected individuals
         """
-        ref_dirs = vectors.values_planar
+        ref_dirs = self.vectors.values_planar
         fitness = self._calculate_fitness(pop)
         # Calculating fronts and ranks
-        #fronts, dl, dc, rank = nds(fitness)
+        # fronts, dl, dc, rank = nds(fitness)
         fronts = fast_non_dominated_sort(fitness)
         fronts = [np.where(fronts[i])[0] for i in range(len(fronts))]
         non_dominated = fronts[0]
