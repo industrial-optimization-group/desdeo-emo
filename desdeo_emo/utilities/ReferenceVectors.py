@@ -435,6 +435,47 @@ class ReferenceVectors:
         self.normalize()
         return reached
 
+
+    def adapt_nums(self, ref_point, flag, roi_size, ideal):
+        epsilon_value = 0.0001
+        ref_point = ref_point - ideal
+        norm = np.sqrt(np.sum(np.square(ref_point)))
+        pivot_point = ref_point / norm
+        #pivot_point = ref_point/sum(ref_point)
+        new_RVs = np.copy(self.values)
+        
+        if(flag): #keep the boundary
+            alpha = self.number_of_objectives/self.lattice_resolution
+            beta = 1.0 - roi_size
+        else:
+            alpha = self.number_of_objectives/self.lattice_resolution
+            beta = 1.0 - (1 - self.number_of_objectives/self.lattice_resolution) * roi_size
+
+        eta = (np.log(alpha)/np.log(beta)) - 1
+      
+        for i in range(0, self.number_of_vectors):
+            if(np.sum(np.abs(pivot_point - self.initial_values_planar[i])) > epsilon_value):
+
+                norm_pivot_rv = np.linalg.norm(pivot_point - self.initial_values_planar[i])
+                temp_delta = np.zeros(self.number_of_objectives)
+                for j in range(0,self.number_of_objectives):
+                    value = pivot_point[j] * (norm_pivot_rv/(pivot_point[j] - self.initial_values_planar[i][j]))
+                    if (value>0):
+                        temp_delta[j] = pivot_point[j] * (norm_pivot_rv/(pivot_point[j] - self.initial_values_planar[i][j]))
+
+                delta = np.min(temp_delta[np.nonzero(temp_delta)])
+                temp = delta - np.linalg.norm(pivot_point - self.initial_values_planar[i])
+                if ((temp < epsilon_value) and (flag==0)):
+                    rho = roi_size * np.linalg.norm(pivot_point - self.initial_values_planar[i])
+                else:
+                    rho = delta - delta * (temp/delta)**(1/(eta + 1)) 
+                adaptation_value = (self.initial_values_planar[i] - pivot_point) / np.linalg.norm(pivot_point - self.initial_values_planar[i])
+                new_RVs[i] = pivot_point + rho * adaptation_value
+        self.values = np.copy(new_RVs)
+        self.values_planar = np.copy(new_RVs)
+
+
+
     def add_edge_vectors(self):
         """Add edge vectors to the list of reference vectors.
 
@@ -446,4 +487,23 @@ class ReferenceVectors:
         self.values = np.vstack([self.values, edge_vectors])
         self.values_planar = np.vstack([self.values_planar, edge_vectors])
         self.number_of_vectors = self.values.shape[0]
+        self.normalize()
+
+    def a_priori_adapt(self, ref_point, translation_param=0.2):
+        """Adapt reference vectors linearly towards a reference point. Then normalize.
+
+        Parameters
+        ----------
+        ref_point :
+
+        translation_param :
+            (Default value = 0.2)
+
+        """
+        self.values = self.initial_values * translation_param + (
+            (1 - translation_param) * ref_point
+        )
+        self.values_planar = self.initial_values_planar * translation_param + (
+            (1 - translation_param) * ref_point
+        )
         self.normalize()

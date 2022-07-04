@@ -64,6 +64,16 @@ class BaseEA:
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
 
+    def pre_iteration(self):
+        """Run this code before every iteration.
+        """
+        return
+
+    def post_iteration(self):
+        """Run this code after every iteration.
+        """
+        return
+
     def iterate(self, preference=None) -> Tuple:
         """Run one iteration of EA.
 
@@ -71,12 +81,16 @@ class BaseEA:
         generations. This method leaves EA.params unchanged, except the current
         iteration count and gen count.
         """
+        self.pre_iteration()
         self.manage_preferences(preference)
+        
         self._gen_count_in_curr_iteration = 0
         while self.continue_iteration():
             self._next_gen()
         self._iteration_counter += 1
+        self.post_iteration()
         return self.requests()
+
 
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
@@ -380,7 +394,7 @@ class BaseDecompositionEA(BaseEA):
         def validator(dimensions_data: pd.DataFrame, reference_point: pd.DataFrame):
             validate_ref_point_dimensions(dimensions_data, reference_point)
             validate_ref_point_data_type(reference_point)
-            validate_ref_point_with_ideal(dimensions_data, reference_point)
+            #validate_ref_point_with_ideal(dimensions_data, reference_point)
             return
 
         interaction_priority = "recommended"
@@ -431,4 +445,3 @@ class BaseDecompositionEA(BaseEA):
             self.population.individuals[non_dom, :],
             self.population.objectives[non_dom, :],
         )
-
