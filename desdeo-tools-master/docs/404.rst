@@ -1,0 +1,12 @@
+==============
+Page Not Found
+==============
+
+We cannot find the page. Please try:
+
+- Starting the navigation from `the homepage <https://desdeo-tools.readthedocs.io/en/latest/index.html>`__
+- Filing an issue in `Github <https://github.com/industrial-optimization-group/desdeo-tools/issues>`__
+
+
+
+
