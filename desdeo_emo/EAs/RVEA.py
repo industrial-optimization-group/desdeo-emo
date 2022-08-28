@@ -110,7 +110,8 @@ class RVEA(BaseDecompositionEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         time_penalty_component: Union[str, float] = None,
-        keep_archive: bool = False
+        keep_archive: bool = False,
+        save_non_dominated: bool = False,
     ):
         super().__init__(
             problem=problem,
@@ -124,6 +125,7 @@ class RVEA(BaseDecompositionEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
             keep_archive=keep_archive,
+            save_non_dominated=save_non_dominated,
         )
         self.time_penalty_component = time_penalty_component
         time_penalty_component_options = ["original", "function_count", "interactive"]
@@ -175,23 +177,19 @@ class RVEA(BaseDecompositionEA):
         self.selection_operator = selection_operator
 
     def _time_penalty_constant(self):
-        """Returns the constant time penalty value.
-        """
+        """Returns the constant time penalty value."""
         return self.time_penalty_component
 
     def _time_penalty_original(self):
-        """Calculates the appropriate time penalty value, by the original formula.
-        """
+        """Calculates the appropriate time penalty value, by the original formula."""
         return self._current_gen_count / self.total_gen_count
 
     def _time_penalty_interactive(self):
-        """Calculates the appropriate time penalty value.
-        """
+        """Calculates the appropriate time penalty value."""
         return self._gen_count_in_curr_iteration / self.n_gen_per_iter
 
     def _time_penalty_function_count(self):
-        """Calculates the appropriate time penalty value.
-        """
+        """Calculates the appropriate time penalty value."""
         return self._function_evaluation_count / self.total_function_evaluations
 
 

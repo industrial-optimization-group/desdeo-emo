@@ -71,6 +71,7 @@ class NSGAIII(BaseDecompositionEA):
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         keep_archive: bool = False,
+        save_non_dominated: bool = False,
     ):
         super().__init__(
             problem=problem,
@@ -84,6 +85,7 @@ class NSGAIII(BaseDecompositionEA):
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
             keep_archive=keep_archive,
+            save_non_dominated=save_non_dominated,
         )
         self.selection_type = selection_type
         selection_operator = NSGAIII_select(

@@ -1,14 +1,17 @@
 from typing import Dict, Literal, Tuple, Type, Union
 
 import pandas as pd
+import numpy as np
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
 
-from desdeo_problem import MOProblem, DataProblem
+from desdeo_problem import MOProblem, DataProblem, EvaluationResults
 from desdeo_emo.problem import IOPISProblem
 from desdeo_tools.interaction import SimplePlotRequest
 from desdeo_tools.interaction.request import BaseRequest
 from scipy.special import comb
+from desdeo_tools.utilities import non_dominated
+from desdeo_emo.utilities.non_dominated import check_domination
 
 
 class eaError(Exception):
@@ -30,6 +33,7 @@ class BaseEA:
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
         keep_archive: bool = False,
+        save_non_dominated: bool = False,
     ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
         self.a_priori: bool = a_priori
@@ -53,6 +57,7 @@ class BaseEA:
         self.population: Union[None, Population] = None
         self.keep_archive = keep_archive
         self.archive: dict = {}
+        self.save_non_dominated = save_non_dominated
 
     """@property
     def interaction_location(
@@ -84,6 +89,17 @@ class BaseEA:
             raise eaError(
                 "Interaction type not set. Use the set_interaction_type() method."
             )
+        if self.save_non_dominated:
+            self.non_dominated = {}
+            non_dom_indices = non_dominated(self.population.fitness)
+            self.non_dominated["individuals"] = self.population.individuals[
+                non_dom_indices
+            ]
+            self.non_dominated["objectives"] = self.population.objectives[
+                non_dom_indices
+            ]
+            self.non_dominated["fitness"] = self.population.fitness[non_dom_indices]
+            # TODO: add uncertainity, constraints, and generation numbers
         return self.requests()
 
     def end(self):
@@ -268,6 +284,33 @@ class BaseEA:
     def requests(self) -> Tuple:
         pass
 
+    def non_dominated_archive(
+        self, individuals: np.ndarray, results: EvaluationResults
+    ) -> None:
+        assert self.save_non_dominated
+        new_fitness = results.fitness
+        new_objectives = results.objectives
+        if new_fitness.ndim == 1:
+            new_fitness = np.atleast_2d(new_fitness)
+            new_objectives = np.atleast_2d(results.objectives)
+        if individuals.ndim == 1:
+            individuals = np.atleast_2d(individuals)
+        new_indices, old_indices = check_domination(
+            new_fitness, self.non_dominated["fitness"]
+        )
+        self.non_dominated["individuals"] = np.vstack(
+            (self.non_dominated["individuals"][old_indices], individuals[new_indices])
+        )
+        self.non_dominated["objectives"] = np.vstack(
+            (
+                self.non_dominated["objectives"][old_indices],
+                new_objectives[new_indices],
+            )
+        )
+        self.non_dominated["fitness"] = np.vstack(
+            (self.non_dominated["fitness"][old_indices], new_fitness[new_indices])
+        )
+
 
 class BaseDecompositionEA(BaseEA):
     """The Base class for decomposition based EAs.
@@ -322,9 +365,10 @@ class BaseDecompositionEA(BaseEA):
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
-        total_function_evaluations: int = 0,
         use_surrogates: bool = False,
+        total_function_evaluations: int = 0,
         keep_archive: bool = False,
+        save_non_dominated: bool = False,
     ):
         super().__init__(
             interact=interact,
@@ -333,6 +377,7 @@ class BaseDecompositionEA(BaseEA):
             total_function_evaluations=total_function_evaluations,
             use_surrogates=use_surrogates,
             keep_archive=keep_archive,
+            save_non_dominated=save_non_dominated,
         )
         if interact:
             if isinstance(problem, (MOProblem, DataProblem)):
@@ -377,7 +422,11 @@ class BaseDecompositionEA(BaseEA):
         next_iteration.
         """
         offspring = self.population.mate()  # (params=self.params)
-        self.population.add(offspring, self.use_surrogates)
+        if self.save_non_dominated:
+            results = self.population.add(offspring, self.use_surrogates)
+            self.non_dominated_archive(offspring, results)
+        else:
+            self.population.add(offspring, self.use_surrogates)
         selected = self._select()
         self.population.keep(selected)
         self._current_gen_count += 1
