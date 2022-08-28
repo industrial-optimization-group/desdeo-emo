@@ -147,3 +147,6 @@ dmypy.json
 
 experiments/
 DESDEO Tutorial/
+
+# profiles
+*.prof

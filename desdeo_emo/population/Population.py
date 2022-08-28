@@ -123,16 +123,14 @@ class Population(BasePopulation):
         self.xover = SBX_xover()
         self.mutation = BP_mutation(self.lower_limits, self.upper_limits)
 
-    def add(
-        self, offsprings: Union[List, np.ndarray], use_surrogates: bool = False
-    ) -> List:
+    def add(self, offsprings: Union[List, np.ndarray], use_surrogates: bool = False):
         """Evaluate and add offspring to the population.
 
         Parameters
         ----------
         offsprings : Union[List, np.ndarray]
             List or array of individuals to be evaluated and added to the population.
-        
+
         use_surrogates: bool
             If true, use surrogate models rather than true function evaluations.
 
@@ -141,8 +139,8 @@ class Population(BasePopulation):
 
         Returns
         -------
-        List
-            Indices of the evaluated individuals
+        Results
+            Results of evaluation.
         """
         results = self.problem.evaluate(offsprings, use_surrogates)
         objectives = results.objectives
@@ -174,7 +172,7 @@ class Population(BasePopulation):
                 self.uncertainity = np.vstack((self.uncertainity, uncertainity))
         last_offspring_index = self.individuals.shape[0]
         self.update_ideal()
-        return list(range(first_offspring_index, last_offspring_index))
+        return results
 
     def keep(self, indices: List):
         """Save the population members given by the list of indices for the next
@@ -253,7 +251,7 @@ class Population(BasePopulation):
         )"""
 
     def replace(self, indices: List, individual: np.ndarray, evaluation: tuple):
-        """Replace the population members given by the list of indices by the given individual and its evaluation. 
+        """Replace the population members given by the list of indices by the given individual and its evaluation.
            Keep the rest of the population unchanged.
 
         Parameters
@@ -277,7 +275,7 @@ class Population(BasePopulation):
         """Repair the variables of an individual which are not in the boundary defined by the problem
         Parameters
         ----------
-        individual : 
+        individual :
             Decision variables of the individual.
 
         Return
