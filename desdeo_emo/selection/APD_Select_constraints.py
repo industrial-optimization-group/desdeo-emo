@@ -1,12 +1,12 @@
-import numpy as np
+from typing import Callable, List
 from warnings import warn
-from typing import List, Callable
-from desdeo_emo.selection.SelectionBase import SelectionBase
+
+import numpy as np
 from desdeo_emo.population.Population import Population
-from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
+from desdeo_emo.selection.SelectionBase import InteractiveDecompositionSelectionBase
 
 
-class APD_Select(SelectionBase):
+class APD_Select(InteractiveDecompositionSelectionBase):
     """
     The selection operator for the RVEA algorithm. Read the following paper for more
     details.
@@ -31,25 +31,22 @@ class APD_Select(SelectionBase):
         alpha: float = 2,
         selection_type: str = None,
     ):
+        super().__init__(pop.pop_size, pop.problem.n_of_fitnesses, selection_type)
         self.time_penalty_function = time_penalty_function
         if alpha is None:
             alpha = 2
         self.alpha = alpha
-        self.n_of_objectives = pop.problem.n_of_objectives
-        if selection_type is None:
-            selection_type = "mean"
-        self.selection_type = selection_type
+        self.n_of_fitnesses = pop.problem.n_of_fitnesses
+
         self.ideal: np.ndarray = pop.ideal_fitness_val
 
-    def do(self, pop: Population, vectors: ReferenceVectors) -> List[int]:
+    def do(self, pop: Population) -> List[int]:
         """Select individuals for mating on basis of Angle penalized distance.
 
         Parameters
         ----------
         pop : Population
             The current population.
-        vectors : ReferenceVectors
-            Class instance containing reference vectors.
 
         Returns
         -------
@@ -57,7 +54,7 @@ class APD_Select(SelectionBase):
             List of indices of the selected individuals
         """
         partial_penalty_factor = self._partial_penalty_factor()
-        refV = vectors.neighbouring_angles_current
+        ref_vectors = self.vectors.neighbouring_angles_current
         # Normalization - There may be problems here
         fitness = self._calculate_fitness(pop)
         fmin = np.amin(fitness, axis=0)
@@ -77,7 +74,7 @@ class APD_Select(SelectionBase):
         normalized_fitness = np.divide(
             translated_fitness, fitness_norm
         )  # Checked, works.
-        cosine = np.dot(normalized_fitness, np.transpose(vectors.values))
+        cosine = np.dot(normalized_fitness, np.transpose(self.vectors.values))
         if cosine[np.where(cosine > 1)].size:
             warn("RVEA.py line 60 cosine larger than 1 decreased to 1")
             cosine[np.where(cosine > 1)] = 1
@@ -92,8 +89,8 @@ class APD_Select(SelectionBase):
         # Selection
         # Convert zeros to eps to avoid divide by zero.
         # Has to be checked!
-        refV[refV == 0] = np.finfo(float).eps
-        for i in range(0, len(vectors.values)):
+        ref_vectors[ref_vectors == 0] = np.finfo(float).eps
+        for i in range(0, len(self.vectors.values)):
             sub_population_index = np.atleast_1d(
                 np.squeeze(np.where(assigned_vectors == i))
             )
@@ -127,7 +124,7 @@ class APD_Select(SelectionBase):
             elif len(sub_population_index) > 1:
                 # APD Calculation
                 angles = theta[sub_population_index, i]
-                angles = np.divide(angles, refV[i])  # This is correct.
+                angles = np.divide(angles, ref_vectors[i])  # This is correct.
                 # You have done this calculation before. Check with fitness_norm
                 # Remove this horrible line
                 sub_pop_fitness_magnitude = np.sqrt(
@@ -162,13 +159,5 @@ class APD_Select(SelectionBase):
             penalty = 0
         if penalty > 1:
             penalty = 1
-        penalty = (penalty ** self.alpha) * self.n_of_objectives
+        penalty = (penalty ** self.alpha) * self.n_of_fitnesses
         return penalty
-
-    def _calculate_fitness(self, pop) -> np.ndarray:
-        if self.selection_type == "mean":
-            return pop.fitness
-        if self.selection_type == "optimistic":
-            return pop.fitness - pop.uncertainity
-        if self.selection_type == "robust":
-            return pop.fitness + pop.uncertainity

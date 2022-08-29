@@ -1,22 +1,14 @@
-from typing import Dict, Type, Union, Tuple
+from typing import Dict, Literal, Tuple, Type, Union
 
-import numpy as np
 import pandas as pd
-
-from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from desdeo_emo.population.Population import Population
 from desdeo_emo.selection.SelectionBase import SelectionBase
-from desdeo_problem import MOProblem, classificationPISProblem
-from desdeo_tools.interaction import (
-    SimplePlotRequest,
-    ReferencePointPreference,
-    PreferredSolutionPreference,
-    NonPreferredSolutionPreference,
-    BoundPreference,
-    validate_ref_point_data_type,
-    validate_ref_point_dimensions,
-    validate_ref_point_with_ideal,
-)
+
+from desdeo_problem import MOProblem, DataProblem
+from desdeo_emo.problem import IOPISProblem
+from desdeo_tools.interaction import SimplePlotRequest
+from desdeo_tools.interaction.request import BaseRequest
+from scipy.special import comb
 
 
 class eaError(Exception):
@@ -30,11 +22,14 @@ class BaseEA:
         self,
         a_priori: bool = False,
         interact: bool = False,
-        selection_operator: Type[SelectionBase] = None,
+        selection_operator: Type[
+            SelectionBase
+        ] = None,  # TODO: No algorithm uses this option. Remove?
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
         use_surrogates: bool = False,
+        keep_archive: bool = False,
     ):
         """Initialize EA here. Set up parameters, create EA specific objects."""
         self.a_priori: bool = a_priori
@@ -50,16 +45,76 @@ class BaseEA:
         self._gen_count_in_curr_iteration: int = 0
         self._current_gen_count: int = 0
         self._function_evaluation_count: int = 0
+        self._interaction_location: Union[
+            None, Literal["Population", "Selection", "EA", "Problem"]
+        ] = None
+        self.interaction_type_set_bool: bool = False
+        self.allowable_interaction_types: Union[None, Dict] = None
+        self.population: Union[None, Population] = None
+        self.keep_archive = keep_archive
+        self.archive: dict = {}
+
+    """@property
+    def interaction_location(
+        self
+    ) -> Union[None, Literal["Population", "Selection", "EA", "Problem"]]:
+        ""Return the location of interaction handling
+        ""
+        return self._interaction_location"""
+
+    @property
+    def allowable_interaction_types(self) -> dict:
+        if self._allowable_interaction_types is not None:
+            return self._allowable_interaction_types
+        else:
+            self.allowable_interaction_types = self.set_interaction_type(None)
+            return self._allowable_interaction_types
+
+    @allowable_interaction_types.setter
+    def allowable_interaction_types(self, value: dict):
+        self._allowable_interaction_types = value
 
     def start(self):
-        """Mimics the structure of the mcdm methods. Returns the request objects from self.retuests().
-        """
+        """Mimics the structure of the mcdm methods. Returns the request objects from self.retuests()."""
+        if self.population is None:
+            raise eaError("Population not initialized.")
+        if self.selection_operator is None:
+            raise eaError("Selection operator not initialized.")
+        if self.interact and not self.interaction_type_set_bool:
+            raise eaError(
+                "Interaction type not set. Use the set_interaction_type() method."
+            )
         return self.requests()
 
     def end(self):
-        """To be run at the end of the evolution process.
-        """
-        pass
+        """To be run at the end of the evolution process."""
+        if self.keep_archive:
+            objective_names = self.population.problem.objective_names
+            if isinstance(objective_names[0], list):
+                objective_names = [
+                    item for sublist in objective_names for item in sublist
+                ]
+            fitness_names = self.population.problem.fitness_names
+            if isinstance(fitness_names[0], list):
+                objective_names = [
+                    item for sublist in fitness_names for item in sublist
+                ]
+            self.archive[self._current_gen_count] = {
+                "iteration": self._iteration_counter,
+                "decision variables": pd.DataFrame(
+                    self.population.individuals,
+                    columns=self.population.problem.variable_names,
+                ),
+                "objectives": pd.DataFrame(
+                    self.population.objectives,
+                    columns=objective_names,
+                ),
+                "fitness": pd.DataFrame(
+                    self.population.fitness,
+                    columns=fitness_names,
+                ),
+            }
+            return self.archive
 
     def _next_gen(self):
         """Run one generation of an EA. Change nothing about the parameters."""
@@ -72,11 +127,46 @@ class BaseEA:
         iteration count and gen count.
         """
         self.manage_preferences(preference)
+        self.pre_iteration()
         self._gen_count_in_curr_iteration = 0
         while self.continue_iteration():
             self._next_gen()
         self._iteration_counter += 1
+        self.post_iteration()
         return self.requests()
+
+    def pre_iteration(self):
+        """Run this code before every iteration."""
+        if self.keep_archive:
+            objective_names = self.population.problem.objective_names
+            if isinstance(objective_names[0], list):
+                objective_names = [
+                    item for sublist in objective_names for item in sublist
+                ]
+            fitness_names = self.population.problem.fitness_names
+            if isinstance(fitness_names[0], list):
+                objective_names = [
+                    item for sublist in fitness_names for item in sublist
+                ]
+            self.archive[self._current_gen_count] = {
+                "iteration": self._iteration_counter,
+                "decision variables": pd.DataFrame(
+                    self.population.individuals,
+                    columns=self.population.problem.variable_names,
+                ),
+                "objectives": pd.DataFrame(
+                    self.population.objectives,
+                    columns=objective_names,
+                ),
+                "fitness": pd.DataFrame(
+                    self.population.fitness,
+                    columns=fitness_names,
+                ),
+            }
+
+    def post_iteration(self):
+        """Run this code after every iteration."""
+        return
 
     def continue_iteration(self):
         """Checks whether the current iteration should be continued or not."""
@@ -102,13 +192,78 @@ class BaseEA:
             return True
         return False
 
-    def manage_preferences(self, preference=None):
-        """Run the interruption phase of EA.
+    def set_interaction_type(
+        self, interaction_type: Union[None, str]
+    ) -> Union[None, str]:
+        if self._interaction_location == "Selection":
+            try:
+                self.interaction_type_set_bool = True
+                return self.selection_operator.set_interaction_type(interaction_type)
+            except NotImplementedError as e:
+                self.interaction_type_set_bool = False
+                raise eaError(
+                    "Interaction not implemented in the selection operator."
+                ) from e
+        if self._interaction_location == "Problem":
+            try:
+                self.interaction_type_set_bool = True
+                return
+            except NotImplementedError as e:
+                self.interaction_type_set_bool = False
+                raise eaError(
+                    "Interaction not implemented in the problem class."
+                ) from e
+        if self._interaction_location == "EA":
+            self.interaction_type_set_bool = False
+            raise NotImplementedError("No interaction type implemented yet.")
+        if self._interaction_location == "Population":
+            try:
+                self.interaction_type_set_bool = True
+                return self.selection_operator.set_interaction_type(interaction_type)
+            except NotImplementedError as e:
+                self.interaction_type_set_bool = False
+                raise eaError(
+                    "Interaction not implemented in the population class."
+                ) from e
 
-        Use this phase to make changes to RVEA.params or other objects.
-        Updates Reference Vectors (adaptation), conducts interaction with the user.
+    def manage_preferences(self, preference=None):
+        """Forward the preference to the correct preference handling method.
+
+        Args:
+            preference (_type_, optional): _description_. Defaults to None.
+
+        Raises:
+            eaError: Preference handling not implemented.
         """
-        pass
+        if self._interaction_location is None:
+            return
+        if self._interaction_location == "Population":
+            try:
+                self.population.manage_preferences(preference)
+                return
+            except NotImplementedError as e:
+                raise eaError(
+                    "Interaction handling not implemented in population."
+                ) from e
+        if self._interaction_location == "Selection":
+            try:
+                self.selection_operator.manage_preferences(self.population, preference)
+                return
+            except NotImplementedError as e:
+                raise eaError(
+                    "Interaction handling not implemented in selection."
+                ) from e
+        if self._interaction_location == "EA":
+            raise eaError("Override this method in child class.")
+        if self._interaction_location == "Problem":
+            try:
+                self.population.problem.manage_preferences(self.population, preference)
+                self.population.reevaluate_fitness()
+                return
+            except NotImplementedError as e:
+                raise eaError(
+                    "Interaction handling not implemented in problem class."
+                ) from e
 
     def requests(self) -> Tuple:
         pass
@@ -159,50 +314,62 @@ class BaseDecompositionEA(BaseEA):
 
     def __init__(
         self,
-        problem: MOProblem,
-        selection_operator: Type[SelectionBase] = None,
+        problem: MOProblem = None,
+        initial_population: Population = None,
         population_size: int = None,
         population_params: Dict = None,
-        initial_population: Population = None,
-        a_priori: bool = False,
+        lattice_resolution: int = None,
         interact: bool = False,
         n_iterations: int = 10,
         n_gen_per_iter: int = 100,
         total_function_evaluations: int = 0,
-        lattice_resolution: int = None,
         use_surrogates: bool = False,
+        keep_archive: bool = False,
     ):
         super().__init__(
-            a_priori=a_priori,
             interact=interact,
             n_iterations=n_iterations,
             n_gen_per_iter=n_gen_per_iter,
             total_function_evaluations=total_function_evaluations,
-            selection_operator=selection_operator,
             use_surrogates=use_surrogates,
+            keep_archive=keep_archive,
         )
-        if isinstance(problem, classificationPISProblem):
-            num_obj = problem.num_dim_fitness
-        else:
-            num_obj = problem.n_of_objectives
-        if lattice_resolution is None:
-            lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
-            if num_obj < 11:
-                lattice_resolution = lattice_res_options[num_obj - 2]
-            else:
-                lattice_resolution = 3
-        self.reference_vectors = ReferenceVectors(lattice_resolution, num_obj)
+        if interact:
+            if isinstance(problem, (MOProblem, DataProblem)):
+                self._interaction_location = "Selection"
+            if isinstance(problem, (IOPISProblem)):
+                self._interaction_location = "Problem"
+                self.set_interaction_type(None)
         if initial_population is not None:
+            if problem is not None:
+                raise eaError("Provide only one of initial_population or problem.")
             #  Population should be compatible.
             self.population = initial_population  # TODO put checks here.
-        elif initial_population is None:
+            num_fitnesses = self.population.problem.n_of_fitnesses
+            if population_size is None and lattice_resolution is None:
+                population_size = self.population.pop_size
+        else:
+            if problem is None:
+                raise eaError("Provide one of initial_population or problem.")
+            num_fitnesses = problem.n_of_fitnesses
             if population_size is None:
-                population_size = self.reference_vectors.number_of_vectors
+                if lattice_resolution is None:
+                    lattice_res_options = [49, 13, 7, 5, 4, 3, 3, 3, 3]
+                    if num_fitnesses < 11:
+                        lattice_resolution = lattice_res_options[num_fitnesses - 2]
+                    else:
+                        lattice_resolution = 3
+                population_size = comb(
+                    lattice_resolution + num_fitnesses - 1,
+                    num_fitnesses - 1,
+                    exact=True,
+                )
+
             self.population = Population(
                 problem, population_size, population_params, use_surrogates
             )
             self._function_evaluation_count += population_size
-        self._ref_vectors_are_focused: bool = False
+        # self.reference_vectors = ReferenceVectors(lattice_resolution, num_fitnesses)
         # print("Using BaseDecompositionEA init")
 
     def _next_gen(self):
@@ -215,79 +382,15 @@ class BaseDecompositionEA(BaseEA):
         self.population.keep(selected)
         self._current_gen_count += 1
         self._gen_count_in_curr_iteration += 1
-        self._function_evaluation_count += offspring.shape[0]
+        if not self.use_surrogates:
+            self._function_evaluation_count += offspring.shape[0]
 
-    def manage_preferences(self, preference=None):
-        """Run the interruption phase of EA.
-
-        Use this phase to make changes to RVEA.params or other objects.
-        Updates Reference Vectors (adaptation), conducts interaction with the user.
-        """
-        if isinstance(preference, Dict) and isinstance(
-            self.population.problem, classificationPISProblem
-        ):
-            self.population.problem.update_preference(preference)
-            self.population.reevaluate_fitness()
-            self.reference_vectors.adapt(self.population.fitness)
-            return
-
-        if not isinstance(
-            preference,
-            (
-                ReferencePointPreference,
-                PreferredSolutionPreference,
-                NonPreferredSolutionPreference,
-                BoundPreference,
-                Dict,
-                type(None),
-            ),
-        ):
-            msg = (
-                f"Wrong object sent as preference. Expected type = "
-                f"{type(ReferencePointPreference)}\n"
-                f"{type(PreferredSolutionPreference)}\n"
-                f"{type(NonPreferredSolutionPreference)}\n"
-                f"{type(BoundPreference)}, Dict, or None\n"
-                f"Recieved type = {type(preference)}"
-            )
-            raise eaError(msg)
-
-        if preference is not None:
-            if preference.request_id != self._interaction_request_id:
-                msg = (
-                    f"Wrong preference object sent. Expected id = "
-                    f"{self._interaction_request_id}.\n"
-                    f"Recieved id = {preference.request_id}"
-                )
-                raise eaError(msg)
-        if preference is None and not self._ref_vectors_are_focused:
-            self.reference_vectors.adapt(self.population.fitness)
-        if isinstance(preference, ReferencePointPreference):
-            ideal = self.population.ideal_fitness_val
-            refpoint = (
-                preference.response.values * self.population.problem._max_multiplier
-            )
-            refpoint = refpoint - ideal
-            norm = np.sqrt(np.sum(np.square(refpoint)))
-            refpoint = refpoint / norm
-            self.reference_vectors.iteractive_adapt_3(refpoint)
-            self.reference_vectors.add_edge_vectors()
-        elif isinstance(preference, PreferredSolutionPreference):
-            self.reference_vectors.interactive_adapt_1(
-                z=self.population.objectives[preference.response],
-                n_solutions=np.shape(self.population.objectives)[0],
-            )
-            self.reference_vectors.add_edge_vectors()
-        elif isinstance(preference, NonPreferredSolutionPreference):
-            self.reference_vectors.interactive_adapt_2(
-                z=self.population.objectives[preference.response],
-                n_solutions=np.shape(self.population.objectives)[0],
-            )
-            self.reference_vectors.add_edge_vectors()
-        elif isinstance(preference, BoundPreference):
-            self.reference_vectors.interactive_adapt_4(preference.response)
-            self.reference_vectors.add_edge_vectors()
-        self.reference_vectors.neighbouring_angles()
+    def pre_iteration(self):
+        super().pre_iteration()
+        if not self.interact:
+            self.selection_operator.adapt_RVs(self.population.fitness)
+        if self._interaction_location != "Selection":
+            self.selection_operator.adapt_RVs(self.population.fitness)
 
     def _select(self) -> list:
         """Describe a selection mechanism. Return indices of selected
@@ -298,7 +401,7 @@ class BaseDecompositionEA(BaseEA):
         list
             List of indices of individuals to be selected.
         """
-        return self.selection_operator.do(self.population, self.reference_vectors)
+        return self.selection_operator.do(self.population)
 
     def request_plot(self) -> SimplePlotRequest:
         dimensions_data = pd.DataFrame(
@@ -315,106 +418,14 @@ class BaseDecompositionEA(BaseEA):
             data=data, dimensions_data=dimensions_data, message="Objective Values"
         )
 
-    def request_preferences(
-        self
-    ) -> Union[
-        None,
-        Tuple[
-            PreferredSolutionPreference,
-            NonPreferredSolutionPreference,
-            ReferencePointPreference,
-            BoundPreference,
-        ],
-    ]:
+    def request_preferences(self) -> Type[BaseRequest]:
 
-        if self.a_priori is False and self.interact is False:
+        if self.interact is False:
             return
-        if (
-            self.a_priori is True
-            and self.interact is False
-            and self._iteration_counter > 0
-        ):
-            return
-        if isinstance(self.population.problem, classificationPISProblem):
-            return {"classifications": None, "current solution": None, "levels": None}
-        dimensions_data = pd.DataFrame(
-            index=["minimize", "ideal", "nadir"],
-            columns=self.population.problem.get_objective_names(),
-        )
-        dimensions_data.loc["minimize"] = self.population.problem._max_multiplier
-        dimensions_data.loc["ideal"] = self.population.ideal_objective_vector
-        dimensions_data.loc["nadir"] = self.population.nadir_objective_vector
-        message = (
-            "Please provide preferences. There is four ways to do this. You can either:\n\n"
-            "\t1: Select preferred solution(s)\n"
-            "\t2: Select non-preferred solution(s)\n"
-            "\t3: Specify a reference point worse than or equal to the ideal point\n"
-            "\t4: Specify desired ranges for objectives.\n\n"
-            "In case you choose \n\n"
-            "1, please specify index/indices of preferred solutions in a numpy array (indexing starts from 0).\n"
-            "For example: \n"
-            "\tnumpy.array([1]), for choosing the solutions with index 1.\n"
-            "\tnumpy.array([2, 4, 5, 16]), for choosing the solutions with indices 2, 4, 5, and 16.\n\n"
-            "2, please specify index/indices of non-preferred solutions in a numpy array (indexing starts from 0).\n"
-            "For example: \n"
-            "\tnumpy.array([3]), for choosing the solutions with index 3.\n"
-            "\tnumpy.array([1, 2]), for choosing the solutions with indices 1 and 2.\n\n"
-            "3, please provide a reference point worse than or equal to the ideal point:\n\n"
-            f"{dimensions_data.loc['ideal']}\n"
-            f"The reference point will be used to focus the reference vectors towards "
-            f"the preferred region.\n"
-            f"If a reference point is not provided, the previous state of the reference"
-            f" vectors is used.\n"
-            f"If the reference point is the same as the ideal point, "
-            f"the reference vectors are spread uniformly in the objective space.\n\n"
-            "4, please specify desired lower and upper bound for each objective, starting from \n"
-            "the first objective and ending with the last one. Please specify the bounds as a numpy array containing \n"
-            "lists, so that the first item of list is the lower bound and the second the upper bound, for each \n"
-            "objective. \n"
-            "\tFor example: numpy.array([[1, 2], [2, 5], [0, 3.5]]), for problem with three "
-            "objectives.\n"
-            f"Ideal vector: \n{dimensions_data.loc['ideal']}\n"
-            f"Nadir vector: \n{dimensions_data.loc['nadir']}."
-        )
-
-        def validator(dimensions_data: pd.DataFrame, reference_point: pd.DataFrame):
-            validate_ref_point_dimensions(dimensions_data, reference_point)
-            validate_ref_point_data_type(reference_point)
-            validate_ref_point_with_ideal(dimensions_data, reference_point)
-            return
-
-        interaction_priority = "recommended"
-        self._interaction_request_id = np.random.randint(0, 1e9)
-
-        # return multiple preference-requests, user decides with request will (s)he respond to by using an index.
-        return (
-            PreferredSolutionPreference(
-                n_solutions=self.population.objectives.shape[0],
-                message=message,
-                interaction_priority=interaction_priority,
-                request_id=self._interaction_request_id,
-            ),
-            NonPreferredSolutionPreference(
-                n_solutions=self.population.objectives.shape[0],
-                message=None,
-                interaction_priority=interaction_priority,
-                request_id=self._interaction_request_id,
-            ),
-            ReferencePointPreference(
-                dimensions_data=dimensions_data,
-                message=None,
-                interaction_priority=interaction_priority,
-                preference_validator=validator,
-                request_id=self._interaction_request_id,
-            ),
-            BoundPreference(
-                dimensions_data=dimensions_data,
-                n_objectives=self.population.problem.n_of_objectives,
-                message=None,
-                interaction_priority=interaction_priority,
-                request_id=self._interaction_request_id,
-            ),
-        )
+        if self._interaction_location == "Problem":
+            return self.population.problem.request_preferences(self.population)
+        if self._interaction_location == "Selection":
+            return self.selection_operator.request_preferences(self.population)
 
     def requests(self) -> Tuple:
         return (self.request_preferences(), self.request_plot())
@@ -426,9 +437,10 @@ class BaseDecompositionEA(BaseEA):
             tuple: The first element is a 2-D array of the decision vectors of the non-dominated solutions.
                 The second element is a 2-D array of the corresponding objective values.
         """
+        base_return = super().end()
         non_dom = self.population.non_dominated_objectives()
         return (
             self.population.individuals[non_dom, :],
             self.population.objectives[non_dom, :],
+            base_return,
         )
-
