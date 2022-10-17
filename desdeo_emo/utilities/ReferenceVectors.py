@@ -3,6 +3,7 @@ from itertools import combinations, product
 import numpy as np
 from pyDOE import lhs
 from scipy.special import comb
+from desdeo_emo.utilities.normalization import ZeroToOneNormalization
 
 
 def normalize(vectors):
@@ -111,6 +112,86 @@ def rotate_toward(initial_vector, final_vector, other_vectors, degrees: float = 
     rotated_vector = x[0] * initial_vector + x[1] * final_vector
     return (rotate(initial_vector, rotated_vector, other_vectors), False)
 
+# intersection function
+
+def line_plane_intersection(l0, l1, p0, p_no, epsilon=1e-6):
+    """
+    l0, l1: define the line
+    p0, p_no: define the plane:
+        p0 is a point on the plane (plane coordinate).
+        p_no is a normal vector defining the plane direction;
+             (does not need to be normalized).
+    reference: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+    return a Vector or None (when the intersection can't be found).
+    """
+
+    l = l1 - l0
+    dot = np.dot(l, p_no)
+
+    if abs(dot) > epsilon:
+        # the factor of the point between p0 -> p1 (0 - 1)
+        # if 'fac' is between (0 - 1) the point intersects with the segment.
+        # otherwise:
+        #  < 0.0: behind p0.
+        #  > 1.0: infront of p1.
+        w = p0 - l0
+        d = np.dot(w, p_no) / dot
+        l = l * d
+        return l0 + l
+    else:
+        # The segment is parallel to plane then return the perpendicular projection
+        ref_proj = l1 - (np.dot(l1 - p0, p_no) * p_no)
+        return ref_proj
+
+
+def get_ref_dirs_from_points(ref_point, ref_dirs, mu=0.1):
+    """
+    This function takes user specified reference points, and creates smaller sets of equidistant
+    Das-Dennis points around the projection of user points on the Das-Dennis hyperplane
+    :param ref_point: List of user specified reference points
+    :param n_obj: Number of objectives to consider
+    :param mu: Shrinkage factor (0-1), Smaller = tigher convergence, Larger= larger convergence
+    :return: Set of reference points
+    """
+
+    n_obj = ref_point.shape[1]
+
+    #print(ref_dirs)
+
+    val = []
+    n_vector = np.ones(n_obj) / np.sqrt(n_obj)  # Normal vector of Das Dennis plane
+    point_on_plane = np.eye(n_obj)[0]  # Point on Das-Dennis
+
+    for point in ref_point:
+
+        ref_dir_for_aspiration_point = np.copy(ref_dirs)  # Copy of computed reference directions
+        ref_dir_for_aspiration_point = mu * ref_dir_for_aspiration_point
+
+        cent = np.mean(ref_dir_for_aspiration_point, axis=0)  # Find centroid of shrunken reference points
+
+        # Project shrunken Das-Dennis points back onto original Das-Dennis hyperplane
+        intercept = line_plane_intersection(np.zeros(n_obj), point, point_on_plane, n_vector)
+        
+        #print(intercept)
+        #print(cent)
+
+
+        shift = intercept - cent  # shift vector
+
+        ref_dir_for_aspiration_point += shift
+
+        # If reference directions are located outside of first octant, redefine points onto the border
+        if not (ref_dir_for_aspiration_point > 0).min():
+            ref_dir_for_aspiration_point[ref_dir_for_aspiration_point < 0] = 0
+            ref_dir_for_aspiration_point = ref_dir_for_aspiration_point / np.sum(ref_dir_for_aspiration_point, axis=1)[
+                                                                          :, None]
+        val.extend(ref_dir_for_aspiration_point)
+
+    val.extend(np.eye(n_obj))  # Add extreme points
+    return np.array(val)
+
+def denormalize(x, xl, xu):
+    return ZeroToOneNormalization(xl, xu).backward(x)
 
 class ReferenceVectors:
     """Class object for reference vectors."""
@@ -123,6 +204,9 @@ class ReferenceVectors:
         creation_type: str = "Uniform",
         vector_type: str = "Spherical",
         ref_point: list = None,
+        sparse_parameter: float = 0.1, 
+        ideal_vector: np.array = None,
+        nadir_vector: np.array = None,
     ):
         """Create a Reference vectors object.
 
@@ -145,10 +229,15 @@ class ReferenceVectors:
         ref_point : list, optional
             User preference information for a priori methods.
         """
+        #print("jawefw")
 
         self.number_of_objectives = number_of_objectives
         self.lattice_resolution = lattice_resolution
         self.number_of_vectors = number_of_vectors
+        self.ideal_vector = ideal_vector
+        self.nadir_vector = nadir_vector
+        self.sparse_parameter = sparse_parameter
+
         if lattice_resolution is None:
             if number_of_vectors is None:
                 raise ValueError(
@@ -175,6 +264,8 @@ class ReferenceVectors:
         self.initial_values = np.copy(self.values)
         self.initial_values_planar = np.copy(self.values_planar)
         self.neighbouring_angles()
+        
+
         # self.iteractive_adapt_1() Can use this for a priori preferences!
 
     def _create(self, creation_type: str = "Uniform"):
@@ -239,6 +330,47 @@ class ReferenceVectors:
             self.values_planar = np.copy(self.values)
             self.normalize()
             self.add_edge_vectors()
+        elif creation_type == "RP_based":
+            num_ref_points = self.ref_point.shape[0]
+            number_of_vectors = comb(
+                self.lattice_resolution + self.number_of_objectives - 1,
+                self.number_of_objectives - 1,
+                exact=True,
+            )
+
+            #Create base uniform reference vectors 
+            temp1 = range(1, self.number_of_objectives + self.lattice_resolution)
+            temp1 = np.array(list(combinations(temp1, self.number_of_objectives - 1)))
+            temp2 = np.array(
+                [range(self.number_of_objectives - 1)] * number_of_vectors
+            )
+            temp = temp1 - temp2 - 1
+            weight = np.zeros(
+                (number_of_vectors, self.number_of_objectives), dtype=int
+            )
+            weight[:, 0] = temp[:, 0]
+            for i in range(1, self.number_of_objectives - 1):
+                weight[:, i] = temp[:, i] - temp[:, i - 1]
+            weight[:, -1] = self.lattice_resolution - temp[:, -1]
+
+            base_values = weight / self.lattice_resolution
+
+            #normalize the base vectors
+            #norm_2 = np.linalg.norm(base_values, axis=1).reshape(-1, 1)
+            #norm_2[norm_2 == 0] = np.finfo(float).eps
+            #base_values = np.divide(base_values, norm_2)
+
+            #Reference points need to be normalized
+            unit_ref_points = (self.ref_point - self.ideal_vector) / (self.nadir_vector - self.ideal_vector)
+            complete_set = get_ref_dirs_from_points(unit_ref_points, base_values, mu=self.sparse_parameter)
+
+            self.values = denormalize(complete_set, self.ideal_vector, self.nadir_vector)
+            self.values_planar = np.copy(self.values)
+            self.number_of_vectors = number_of_vectors * num_ref_points + self.number_of_objectives
+
+            #self.normalize()
+            return
+
 
     def normalize(self):
         """Normalize the reference vectors to a unit hypersphere."""
