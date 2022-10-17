@@ -7,6 +7,7 @@ from desdeo_emo.selection.SelectionBase import InteractiveDecompositionSelection
 from desdeo_emo.population.Population import Population
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
+
 class RNSGAIII_select(InteractiveDecompositionSelectionBase):
     """The NSGA-III selection operator. Code is heavily based on the version of nsga3 in
         the pymoo package by msu-coinlab.
@@ -21,7 +22,12 @@ class RNSGAIII_select(InteractiveDecompositionSelectionBase):
     """
 
     def __init__(
-        self, pop: Population, pop_size_rp:int, ref_points:np.array, n_survive: int = None, selection_type: str = None
+        self,
+        pop: Population,
+        pop_size_rp: int,
+        ref_points: np.array,
+        n_survive: int = None,
+        selection_type: str = None,
     ):
         super().__init__(pop_size_rp, pop.problem.n_of_fitnesses, selection_type)
         self.worst_fitness: np.ndarray = -np.full((1, pop.fitness.shape[1]), np.inf)
@@ -33,7 +39,7 @@ class RNSGAIII_select(InteractiveDecompositionSelectionBase):
         self.selection_type = selection_type
         self.ideal: np.ndarray = pop.ideal_fitness_val
         self.ref_points = ref_points
-        self.pop_size_rp = pop_size_rp 
+        self.pop_size_rp = pop_size_rp
 
     def do(self, pop: Population) -> List[int]:
         """Select individuals for mating for NSGA-III.
@@ -49,7 +55,7 @@ class RNSGAIII_select(InteractiveDecompositionSelectionBase):
             List of indices of the selected individuals
         """
         ref_dirs = self.vectors.values_planar
-        
+
         fitness = self._calculate_fitness(pop)
         # Calculating fronts and ranks
         # fronts, dl, dc, rank = nds(fitness)
@@ -74,7 +80,14 @@ class RNSGAIII_select(InteractiveDecompositionSelectionBase):
             worst_of_front,
         )
 
-        ref_dirs = ReferenceVectors(number_of_vectors=self.pop_size_rp, creation_type="RP_based", ref_point=self.ref_points, number_of_objectives=pop.problem.n_of_objectives, ideal_vector=self.ideal, nadir_vector=nadir_point)
+        ref_dirs = ReferenceVectors(
+            number_of_vectors=self.pop_size_rp,
+            creation_type="RP_based",
+            ref_point=self.ref_points,
+            number_of_objectives=pop.problem.n_of_objectives,
+            ideal_vector=self.ideal,
+            nadir_vector=nadir_point,
+        )
         ref_dirs = ref_dirs.values_planar
         # Finding individuals in first 'n' fronts
         selection = np.asarray([], dtype=int)
