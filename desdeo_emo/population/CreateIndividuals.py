@@ -40,7 +40,7 @@ def create_new_individuals(design, problem, pop_size=None):
 
     if design == "RandomDesign":
         lower_limits = np.asarray(problem.get_variable_lower_bounds())
-        upper_limits = np.asarray(problem.get_variable_upper_bounds)
+        upper_limits = np.asarray(problem.get_variable_upper_bounds())
         individuals = np.random.random((pop_size, problem.n_of_variables))
         # Scaling
         individuals = individuals * (upper_limits - lower_limits) + lower_limits
