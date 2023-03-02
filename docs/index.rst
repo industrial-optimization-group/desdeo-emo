@@ -27,7 +27,7 @@ To test the code, open the `binder link <https://mybinder.org/v2/gh/industrial-o
 Requirements
 ============
 
-* Python 3.7 or newer.
+* Python 3.9 or 3.10.
 * `Poetry dependency manager <https://python-poetry.org/>`__ : Only for developers.
 
 See `pyproject.toml` for Python package requirements.

@@ -54,7 +54,7 @@ autoapi_dirs = ["../desdeo_emo/"]
 
 source_parsers = {".md": CommonMarkParser}
 
-source_suffix = [".rst", ".md", ".ipynb"]  # .ipynb
+source_suffix = [".rst", ".md"]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
