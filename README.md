@@ -21,7 +21,7 @@ To test the code, open the [binder link](https://mybinder.org/v2/gh/industrial-o
 Read the documentation [here](https://desdeo-emo.readthedocs.io/en/latest/)
 
 ### Requirements
-* Python 3.8 or newer.
+* Python 3.9 or 3.10.
 * [Poetry dependency manager](https://github.com/sdispater/poetry): Only for developers
 
 ### Installation process for normal users
