@@ -35,3 +35,5 @@ def test_create_individuals():
     # Test case 2: LHSDesign
     individuals = create_new_individuals("LHSDesign", problem, pop_size=10)
     assert individuals.shape == (10, 3)
+
+    #Need to add more tests here.

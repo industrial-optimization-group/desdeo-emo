@@ -64,7 +64,6 @@ def test_population_add():
     assert results.objectives.shape == (pop_size, problem.n_of_objectives)
     assert results.fitness.shape == (pop_size, problem.n_of_objectives)
 
-
 def test_population_keep():
     # Create a mock MOProblem
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
@@ -92,8 +91,6 @@ def test_population_keep():
     assert population.objectives.shape[0] == len(indices_to_keep)
     assert population.fitness.shape[0] == len(indices_to_keep)
 
-
-
 def test_population_delete():
     # Create a mock MOProblem
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
@@ -120,7 +117,6 @@ def test_population_delete():
     assert len(population.individuals) == pop_size - len(indices_to_delete)
     assert population.objectives.shape[0] == pop_size - len(indices_to_delete)
     assert population.fitness.shape[0] == pop_size - len(indices_to_delete)
-
 
 def test_population_mate():
     # Create a mock MOProblem
