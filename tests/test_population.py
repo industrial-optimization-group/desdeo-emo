@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from desdeo_emo.population.Population import Population
 from desdeo_problem.problem import MOProblem
@@ -31,14 +32,6 @@ def test_population_creation():
 
 def test_population_add():
     # Create a mock MOProblem
-    def f_1(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -4.07 - 2.27*x[:, 0]
-
-    def f_2(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -2.60 - 0.03*x[:, 0] - 0.02*x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
-
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
     objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
     objectives = [objective_1, objective_2]
@@ -74,14 +67,6 @@ def test_population_add():
 
 def test_population_keep():
     # Create a mock MOProblem
-    def f_1(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -4.07 - 2.27*x[:, 0]
-
-    def f_2(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -2.60 - 0.03*x[:, 0] - 0.02*x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
-
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
     objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
     objectives = [objective_1, objective_2]
@@ -111,14 +96,6 @@ def test_population_keep():
 
 def test_population_delete():
     # Create a mock MOProblem
-    def f_1(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -4.07 - 2.27*x[:, 0]
-
-    def f_2(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -2.60 - 0.03*x[:, 0] - 0.02*x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
-
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
     objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
     objectives = [objective_1, objective_2]
@@ -147,14 +124,6 @@ def test_population_delete():
 
 def test_population_mate():
     # Create a mock MOProblem
-    def f_1(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -4.07 - 2.27*x[:, 0]
-
-    def f_2(x: np.ndarray) -> np.ndarray:
-        x = np.atleast_2d(x)
-        return -2.60 - 0.03*x[:, 0] - 0.02*x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
-
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
     objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
     objectives = [objective_1, objective_2]
@@ -178,5 +147,5 @@ def test_population_mate():
     # Assert that the offspring has the correct shape
     assert offspring.shape == population.individuals.shape
 
-    
+
 
