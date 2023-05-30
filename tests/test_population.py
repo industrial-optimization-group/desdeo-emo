@@ -178,3 +178,5 @@ def test_population_mate():
     # Assert that the offspring has the correct shape
     assert offspring.shape == population.individuals.shape
 
+    
+
