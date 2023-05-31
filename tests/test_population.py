@@ -4,16 +4,17 @@ from desdeo_emo.population.Population import Population
 from desdeo_problem.problem import MOProblem
 from desdeo_problem.problem import Variable, ScalarObjective
 
-# Define the objective functions
-def f_1(x: np.ndarray) -> np.ndarray:
-    x = np.atleast_2d(x)
-    return -4.07 - 2.27 * x[:, 0]
+@pytest.fixture
+def problem():
+    # Define the objective functions
+    def f_1(x):
+        x = np.atleast_2d(x)
+        return -4.07 - 2.27 * x[:, 0]
 
-def f_2(x: np.ndarray) -> np.ndarray:
-    x = np.atleast_2d(x)
-    return -2.60 - 0.03 * x[:, 0] - 0.02 * x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
+    def f_2(x):
+        x = np.atleast_2d(x)
+        return -2.60 - 0.03 * x[:, 0] - 0.02 * x[:, 1] - 0.01 / (1.39 - x[:, 0]**2) - 0.30 / (1.39 + x[:, 1]**2)
 
-def test_population_creation():
     # Define the objectives and variables
     objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
     objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
@@ -22,27 +23,19 @@ def test_population_creation():
         Variable(name="x_1", initial_value=0.5, lower_bound=0.3, upper_bound=1.0),
         Variable(name="x_2", initial_value=0.5, lower_bound=0.3, upper_bound=1.0)
     ]
+
     # Create a mock MOProblem
     problem = MOProblem(variables=variables, objectives=objectives)
+    return problem
+
+def test_population_creation(problem):
     # Create a Population instance
     pop_size = 10
     population = Population(problem, pop_size)
     # Assert that the population size is correct
     assert len(population.individuals) == pop_size
 
-def test_population_add():
-    # Create a mock MOProblem
-    objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
-    objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
-    objectives = [objective_1, objective_2]
-
-    variables = [
-        Variable(name="x_1", initial_value=0.5, lower_bound=0.3, upper_bound=1.0),
-        Variable(name="x_2", initial_value=0.5, lower_bound=0.3, upper_bound=1.0)
-    ]
-
-    problem = MOProblem(variables=variables, objectives=objectives)
-
+def test_population_add(problem):
     # Create a Population instance
     pop_size = 10
     population = Population(problem, pop_size)
@@ -64,18 +57,7 @@ def test_population_add():
     assert results.objectives.shape == (pop_size, problem.n_of_objectives)
     assert results.fitness.shape == (pop_size, problem.n_of_objectives)
 
-def test_population_keep():
-    # Create a mock MOProblem
-    objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
-    objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
-    objectives = [objective_1, objective_2]
-
-    variables = [
-        Variable(name="x_1", initial_value=0.5, lower_bound=0.3, upper_bound=1.0),
-        Variable(name="x_2", initial_value=0.5, lower_bound=0.3, upper_bound=1.0)
-    ]
-    problem = MOProblem(variables=variables, objectives=objectives)
-
+def test_population_keep(problem):
     # Create a Population instance
     pop_size = 10
     population = Population(problem, pop_size)
@@ -91,18 +73,7 @@ def test_population_keep():
     assert population.objectives.shape[0] == len(indices_to_keep)
     assert population.fitness.shape[0] == len(indices_to_keep)
 
-def test_population_delete():
-    # Create a mock MOProblem
-    objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
-    objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
-    objectives = [objective_1, objective_2]
-
-    variables = [
-        Variable(name="x_1", initial_value=0.5, lower_bound=0.3, upper_bound=1.0),
-        Variable(name="x_2", initial_value=0.5, lower_bound=0.3, upper_bound=1.0)
-    ]
-    problem = MOProblem(variables=variables, objectives=objectives)
-
+def test_population_delete(problem):
     # Create a Population instance
     pop_size = 10
     population = Population(problem, pop_size)
@@ -118,18 +89,7 @@ def test_population_delete():
     assert population.objectives.shape[0] == pop_size - len(indices_to_delete)
     assert population.fitness.shape[0] == pop_size - len(indices_to_delete)
 
-def test_population_mate():
-    # Create a mock MOProblem
-    objective_1 = ScalarObjective(name="f_1", evaluator=f_1)
-    objective_2 = ScalarObjective(name="f_2", evaluator=f_2)
-    objectives = [objective_1, objective_2]
-
-    variables = [
-        Variable(name="x_1", initial_value=0.5, lower_bound=0.3, upper_bound=1.0),
-        Variable(name="x_2", initial_value=0.5, lower_bound=0.3, upper_bound=1.0)
-    ]
-    problem = MOProblem(variables=variables, objectives=objectives)
-
+def test_population_mate(problem):
     # Create a Population instance
     pop_size = 10
     population = Population(problem, pop_size)
