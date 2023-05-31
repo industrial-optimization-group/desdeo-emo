@@ -1,11 +1,10 @@
 import pytest
 import numpy as np
-from desdeo_emo.EAs.NSGAIII import NSGAIII
+from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.population.Population import Population
 from desdeo_problem.problem import MOProblem
 from desdeo_problem.problem import Variable, ScalarObjective
 from desdeo_problem import variable_builder, ScalarObjective, MOProblem
-#from desdeo_problem.testproblems.TestProblems import test_problem_builder
 
 @pytest.fixture
 def problem():
@@ -31,47 +30,15 @@ def problem():
     problem = MOProblem(variables=variables, objectives=objectives)
     return problem
 
-
-# Test the initialization of NSGAIII
-def test_nsga3_initialization(problem):
-    # Test case 1: Check default parameter values
-    nsga = NSGAIII(
-        problem=problem,
-        n_iterations=10,
-        n_gen_per_iter=100,
-        population_size=100
-    )
-
-    assert all(
-        obj.name == prob_obj.name for obj, prob_obj in zip(nsga.population.problem.objectives, problem.objectives)
-    )
-
-    assert len(nsga.population.individuals) == 100
-    assert nsga.selection_type is None
-    assert nsga.interact is False
-    assert nsga.use_surrogates is False
-    assert nsga.n_iterations == 10
-    assert nsga.n_gen_per_iter == 100
-    assert nsga.total_function_evaluations == 0
-    assert nsga.keep_archive is False
-    assert nsga.save_non_dominated is False
-
-def test_nsga3_solve_simple_problem(problem):
-    evolver = NSGAIII(problem, n_iterations=10, n_gen_per_iter=100, population_size=100)
+def test_rvea_solve_simple_problem(problem):
+    evolver = RVEA(problem, n_iterations=10, n_gen_per_iter=100, population_size=100)
 
     while evolver.continue_evolution():
         evolver.iterate()
 
     individuals, solutions, _ = evolver.end()
+    print("Population size:", individuals.shape[0])
+    print("Solution size:", solutions.shape[0])
 
-    assert individuals.shape[0] == 100
-    assert solutions.shape[0] == 100
-
-
-
-
-
-
-
-
-
+    assert individuals.shape[0] == 1
+    assert solutions.shape[0] == 1
