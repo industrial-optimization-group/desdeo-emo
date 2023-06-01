@@ -6,6 +6,7 @@ from desdeo_problem.problem import MOProblem
 from desdeo_problem.problem import Variable, ScalarObjective
 from desdeo_problem import variable_builder, ScalarObjective, MOProblem
 
+
 @pytest.fixture
 def problem():
     # Define the objective functions
