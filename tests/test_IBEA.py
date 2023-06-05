@@ -1,8 +1,9 @@
 import pytest
 import numpy as np
 #linter should remove this: 
-from desdeo_emo.population.Population import Population
+import pandas as pd
 
+from desdeo_emo.population.Population import Population
 from desdeo_emo.EAs.IBEA import IBEA
 from desdeo_problem.problem import Variable, ScalarObjective
 from desdeo_problem import variable_builder, ScalarObjective, MOProblem
