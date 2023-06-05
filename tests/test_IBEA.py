@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
 #linter should remove this: 
-from desdeo_problem.testproblems.TestProblems import test_problem_builder
 from desdeo_emo.population.Population import Population
 
 from desdeo_emo.EAs.IBEA import IBEA
