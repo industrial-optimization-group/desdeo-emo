@@ -35,4 +35,4 @@ jobs:
           flake8: true
           flake8_args: "--max-line-length 120 --extend-ignore=E203"
           isort: true
-          isort_args: "--apply"
+          #isort_args: "--apply"
