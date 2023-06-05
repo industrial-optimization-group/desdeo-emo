@@ -76,3 +76,4 @@ def test_nsga3_solve_simple_problem(problem):
 
 
 
+
