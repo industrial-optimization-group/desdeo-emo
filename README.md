@@ -1,5 +1,7 @@
 # desdeo-emo
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master)
+[![AppVeyor tests](https://ci.appveyor.com/api/projects/status/github/Sepuliini/desdeo-emo?svg=true)](https://ci.appveyor.com/project/Sepuliini/desdeo-emo)
+
 
 
 The evolutionary algorithms package within the [DESDEO framework](https://github.com/industrial-optimization-group/DESDEO).
