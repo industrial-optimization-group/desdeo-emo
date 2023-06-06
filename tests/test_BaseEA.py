@@ -36,31 +36,4 @@ def test_base_ea_initialization():
     assert ea.archive == {}
     assert ea.save_non_dominated == False
 
-# Define a mock MOProblem
-def f1(x):
-    return x[0]
-
-def f2(x):
-    return -x[0]
-
-variable = Variable("x", initial_value=0.5, lower_bound=0, upper_bound=1)
-objective1 = ScalarObjective(name="f1", evaluator=f1)
-objective2 = ScalarObjective(name="f2", evaluator=f2)
-problem = MOProblem(variables=[variable], objectives=[objective1, objective2])
-
-# Test the __init__ method
-#def test_baseea_init():
-#    population_size = 10
-#    ea = BaseEA(problem, population_size)
-#    #assert ea.population is not None
-#    assert len(ea.population.individuals) == population_size
-#    assert ea.population.problem == problem
-
-# Test the end method
-#def test_baseea_end():
-#    population_size = 10
-#    ea = BaseEA(problem, population_size)
-#    decision_vectors, objective_values = ea.end()
-#    assert len(decision_vectors) == population_size
-#    assert len(objective_values) == population_size
 
