@@ -55,7 +55,7 @@ def test_imports():
 
 # these fail right now.
 def fail_import():
-    from desdeo_emo.EAs.PBEA import PBEA
+    #from desdeo_emo.EAs.PBEA import PBEA
     from desdeo_emo.EAs.slowRVEA import slowRVEA
 
 
