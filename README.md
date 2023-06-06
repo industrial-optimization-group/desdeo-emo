@@ -1,9 +1,6 @@
 # desdeo-emo
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master)
-
-Need to fix this badge
-[![AppVeyor tests](https://ci.appveyor.com/api/projects/status/github/Sepuliini/desdeo-emo?svg=true)](https://ci.appveyor.com/project/Sepuliini/desdeo-emo)
-
+[![Tests](https://github.com/Sepuliini/desdeo-emo/actions/workflows/automate-DESDEO-emo.yml/badge.svg)](https://github.com/Sepuliini/desdeo-emo/actions/workflows/automate-DESDEO-emo.yml)
 
 The evolutionary algorithms package within the [DESDEO framework](https://github.com/industrial-optimization-group/DESDEO).
 
