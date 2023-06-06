@@ -2,6 +2,9 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/industrial-optimization-group/desdeo-emo/master)
 [![Tests](https://github.com/Sepuliini/desdeo-emo/actions/workflows/automate-DESDEO-emo.yml/badge.svg)](https://github.com/Sepuliini/desdeo-emo/actions/workflows/automate-DESDEO-emo.yml)
 
+[![PyPI version](https://badge.fury.io/py/desdeo-emo.svg)](https://badge.fury.io/py/desdeo-emo)
+[![Documentation Status](https://readthedocs.org/projects/desdeo-emo/badge/?version=latest)](https://desdeo-emo.readthedocs.io/en/latest/?badge=latest)
+
 
 The evolutionary algorithms package within the [DESDEO framework](https://github.com/industrial-optimization-group/DESDEO).
 
