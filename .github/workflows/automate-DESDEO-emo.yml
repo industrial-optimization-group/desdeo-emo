@@ -92,20 +92,3 @@ jobs:
               echo "Retrying failed tests... (Attempt $i)"
             done
           fi
-
-
-      
-  automerge:
-    name: Auto merge after successful checks
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == false && github.event.pull_request.state == 'open' && github.event.pull_request.base.ref == 'master'
-    steps:
-      - name: Auto merge
-        uses: pascalgn/automerge-action@135f0bdb927d9807b5446f7ca9ecc2c51de03c4a
-       # if: ${{ github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Might need to change this later.
-          LOG: "TRACE"  # or "DEBUG"
-          MERGE_LABELS: "" #Need to change this later
-          MERGE_METHOD: rebase
