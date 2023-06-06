@@ -6,9 +6,6 @@ The evolutionary algorithms package within the [DESDEO framework](https://github
 
 Code for the SoftwareX paper can be found in [this notebook](docs/notebooks/Using_EvoNN_for_optimization.ipynb).
 
-
-testing....
-
 Currently supported:
 * Multi-objective optimization with visualization and interaction support.
 * Preference is accepted as a reference point.
