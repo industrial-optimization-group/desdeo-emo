@@ -32,14 +32,19 @@ def problem():
     return problem
 
 def test_rvea_solve_simple_problem(problem):
-    evolver = RVEA(problem, n_iterations=10, n_gen_per_iter=100, population_size=100)
+    #evolver = RVEA(problem, n_iterations=10, n_gen_per_iter=100, population_size=100)
 
-    while evolver.continue_evolution():
-        evolver.iterate()
+    population_sizes = [10, 25, 50]  # Vary the population size
+    n_iterations = 5
+    n_gen_per_iter = 50
 
-    individuals, solutions, _ = evolver.end()
-    print("Population size:", individuals.shape[0])
-    print("Solution size:", solutions.shape[0])
+    for pop_size in population_sizes:
+        evolver = RVEA(problem, n_iterations=n_iterations, n_gen_per_iter=n_gen_per_iter, population_size=pop_size)
+
+        while evolver.continue_evolution():
+            evolver.iterate()
+
+        individuals, solutions, _ = evolver.end()
 
     assert individuals.shape[0] == 1
     assert solutions.shape[0] == 1
