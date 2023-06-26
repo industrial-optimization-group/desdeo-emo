@@ -83,5 +83,5 @@ jobs:
         id: run-tests
         run: |
           source .venv/bin/activate
+          pip install pytest-rerunfailures
           pytest tests/ --reruns 10
-          #coverage report
