@@ -42,19 +42,23 @@ def test_IBEA_initialization(problem):
 
     # Additional checks for default values
     assert ibea.kappa == 0.05
+    print("Initializing works!")
 
 def test_IBEA(problem):
-    # Create an instance of IBEA
-    #ib = IBEA(problem, population_size=100, n_iterations=10, n_gen_per_iter=100,total_function_evaluations=5000)
-    ib = IBEA(problem, n_iterations=10, n_gen_per_iter=100, population_size=100, total_function_evaluations=5000)
+    population_sizes = [10, 25, 50]  # Vary the population size
+    n_iterations = 10
+    n_gen_per_iter = 100
 
-    while ib.continue_evolution():
-        ib.iterate()
-    individuals, solutions = ib.end()
-    #print("individuals ", individuals.shape[0])
-    #print("objective_values: ", solutions[0])
+    for pop_size in population_sizes:
+        evolver = IBEA(problem, n_iterations=n_iterations, n_gen_per_iter=n_gen_per_iter, population_size=pop_size, total_function_evaluations=5000)
 
-    assert individuals.shape[0] > 0
-    assert len(solutions) > 0
+        while evolver.continue_evolution():
+            evolver.iterate()
+
+        individuals, solutions = evolver.end()
+
+        assert individuals.shape[0] > 0
+        assert solutions.shape[0] > 0
+
 
    
