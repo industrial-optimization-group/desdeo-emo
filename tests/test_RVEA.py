@@ -46,5 +46,5 @@ def test_rvea_solve_simple_problem(problem):
 
         individuals, solutions, _ = evolver.end()
 
-    assert individuals.shape[0] == 1
-    assert solutions.shape[0] == 1
+        assert individuals.shape[0] == 1
+        assert solutions.shape[0] == 1

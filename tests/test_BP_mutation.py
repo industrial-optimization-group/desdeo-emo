@@ -20,6 +20,7 @@ def test_initialization(bp_mutation):
     assert pytest.approx(bp_mutation.ProM) == 0.3333333333333333
     # Check if the DisM property is equal to 20
     assert bp_mutation.DisM == 20
+    print("Initializing works!")
 
 # Test the do() method of BP_mutation
 def test_do(bp_mutation):

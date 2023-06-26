@@ -36,4 +36,5 @@ def test_base_ea_initialization():
     assert ea.archive == {}
     assert ea.save_non_dominated == False
 
+    print("Initializing works!")
 

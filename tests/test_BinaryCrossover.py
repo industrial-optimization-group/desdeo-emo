@@ -16,6 +16,7 @@ def test_sbx_xover_init():
     assert sbx_xover.ProC == 1
     # Check if the DisC property is set to 30
     assert sbx_xover.DisC == 30
+    print("Initializing works!")
 
 # Test the do() method of SBX_xover without mating_pop_ids
 def test_sbx_xover_do(sbx_xover_instance):

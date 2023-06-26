@@ -35,6 +35,7 @@ def test_population_creation(problem):
     # Assert that the population size is correct
     assert len(population.individuals) == pop_size
 
+
 def test_population_add(problem):
     # Create a Population instance
     pop_size = 10

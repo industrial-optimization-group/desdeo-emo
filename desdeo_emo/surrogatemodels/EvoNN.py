@@ -65,48 +65,54 @@ class EvoNN(BaseRegressor):
         self.performance: Dict = {"RMSE": None, "R^2": None, "AICc": None}
         self.model_population = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
-        if isinstance(X, (pd.DataFrame, pd.Series)):
-            X = X.values
-        if isinstance(y, (pd.DataFrame, pd.Series)):
-            y = y.values.reshape(-1, 1)
-        if X.shape[0] != y.shape[0]:
-            msg = (
-                f"Ensure that the number of samples in X and y are the same"
-                f"Number of samples in X = {X.shape[0]}"
-                f"Number of samples in y = {y.shape[0]}"
-            )
-            raise ModelError(msg)
-        self.X = X
-        self.y = y
+def fit(self, X: np.ndarray, y: np.ndarray):
+    if isinstance(X, (pd.DataFrame, pd.Series)):
+        X = X.values
+    if isinstance(y, (pd.DataFrame, pd.Series)):
+        y = y.values.reshape(-1, 1)
+    if X.shape[0] != y.shape[0]:
+        msg = (
+            f"Ensure that the number of samples in X and y are the same"
+            f"Number of samples in X = {X.shape[0]}"
+            f"Number of samples in y = {y.shape[0]}"
+        )
+        raise ModelError(msg)
+    self.X = X
+    self.y = y
 
-        # Create problem
-        problem = surrogateProblem(performance_evaluator=self._model_performance)
-        problem.n_of_objectives = 2
-        # Create Population
-        initial_pop = self._create_individuals()
-        population = SurrogatePopulation(
-            problem, self.pop_size, initial_pop, None, None, None
+    # Create problem
+    problem = surrogateProblem(performance_evaluator=self._model_performance)
+    problem.n_of_objectives = 2
+    # Create Population
+    initial_pop = self._create_individuals()
+    population = SurrogatePopulation(
+        problem, self.pop_size, initial_pop, None, None, None
+    )
+    # Do evolution
+    evolver = self.training_algorithm(problem, initial_population=population)
+    recombinator = EvoNNRecombination(
+        evolver=evolver, mutation_type=self.mutation_type
+    )
+
+    #if create_plot == True:
+    #    figure = animate_init_(evolver.population.objectives, filename="EvoNN.html")
+
+    evolver.population.recombination = recombinator
+
+    while evolver.continue_evolution():
+        evolver.iterate()
+     #   if create_plot == True:
+        figure = animate_next_(
+            evolver.population.objectives,
+            figure,
+            filename="EvoNN.html",
+            generation=evolver._iteration_counter,
         )
-        # Do evolution
-        evolver = self.training_algorithm(problem, initial_population=population)
-        recombinator = EvoNNRecombination(
-            evolver=evolver, mutation_type=self.mutation_type
-        )
-        evolver.population.recombination = recombinator
-        figure = animate_init_(evolver.population.objectives, filename="EvoNN.html")
-        while evolver.continue_evolution():
-            evolver.iterate()
-            figure = animate_next_(
-                evolver.population.objectives,
-                figure,
-                filename="EvoNN.html",
-                generation=evolver._iteration_counter,
-            )
-        self.model_population = evolver.population
-        # Selection
-        self.select()
-        self.model_trained = True
+    self.model_population = evolver.population
+    # Selection
+    self.select()
+    self.model_trained = True
+
 
     def _model_performance(
         self,
