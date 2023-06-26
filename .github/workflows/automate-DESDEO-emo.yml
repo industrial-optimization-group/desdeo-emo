@@ -3,7 +3,7 @@ name: automate-DESDEO-emo
 on:
   pull_request:
     branches:
-      - master
+      - test_branch
       
 jobs:
   build:
