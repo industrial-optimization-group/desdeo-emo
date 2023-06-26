@@ -18,6 +18,7 @@ def create_data():
     data = pd.DataFrame(np.hstack((X, y)), columns=["x1", "x2", "x3", "y"])
     return X, y, data
 
+
 # These do not work proprely yet
 """
 def test_EvoNN(create_data):
