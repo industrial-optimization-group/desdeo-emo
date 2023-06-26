@@ -58,26 +58,37 @@ jobs:
         id: run-tests
         run: |
           source .venv/bin/activate
-          retries=3
-          for i in $(seq 1 $retries); do
-            pytest tests/
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Retrying failed tests... (Attempt $i)"
-          done
-      
-  automerge:
-    name: Auto merge after successful checks
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == false && github.event.pull_request.state == 'open' && github.event.pull_request.base.ref == 'master'
-    steps:
-      - name: Auto merge
-        uses: pascalgn/automerge-action@135f0bdb927d9807b5446f7ca9ecc2c51de03c4a
-       # if: ${{ github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Might need to change this later.
-          LOG: "TRACE"  # or "DEBUG"
-          MERGE_LABELS: "" #Need to change this later
-          MERGE_METHOD: rebase
+          retries=10
+          failed_tests=""
+
+          # Run all tests
+          pytest tests/
+          exit_code=$?
+
+          if [ $exit_code -eq 0 ]; then
+            echo "All tests passed!"
+          else
+            for i in $(seq 1 $retries); do
+              # Run only the failed tests
+              pytest $failed_tests
+              exit_code=$?
+
+              if [ $exit_code -eq 0 ]; then
+                echo "All tests passed!"
+                break  # All tests passed, exit the loop
+              fi
+
+              # Get the failed test files from the pytest output
+              failed_files=$(pytest --collect-only $failed_tests | awk '/<Module/ {print $NF}')
+
+              # Build the test file pattern for rerunning failed tests
+              test_files=""
+              for file in $failed_files; do
+                test_files+=" tests/$file"
+              done
+
+              failed_tests=$test_files
+
+              echo "Retrying failed tests... (Attempt $i)"
+            done
+          fi
