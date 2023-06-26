@@ -94,14 +94,10 @@ def fit(self, X: np.ndarray, y: np.ndarray):
         evolver=evolver, mutation_type=self.mutation_type
     )
 
-    #if create_plot == True:
-    #    figure = animate_init_(evolver.population.objectives, filename="EvoNN.html")
-
     evolver.population.recombination = recombinator
 
     while evolver.continue_evolution():
         evolver.iterate()
-     #   if create_plot == True:
         figure = animate_next_(
             evolver.population.objectives,
             figure,
