@@ -82,4 +82,6 @@ jobs:
       - name: Run tests
         id: run-tests
         run: |
+          source .venv/bin/activate
           pytest tests/ --reruns 10
+          #coverage report
