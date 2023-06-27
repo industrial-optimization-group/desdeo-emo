@@ -76,8 +76,8 @@ jobs:
         run: poetry install --no-interaction
       #----------------------------------------------
       #    add matrix specifics and run test suite
+      #    run tests 10 times if failures
       #----------------------------------------------
-
       - name: Run tests
         id: run-tests
         run: |
