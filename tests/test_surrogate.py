@@ -35,7 +35,7 @@ def test_EvoDN2(create_data):
     model3.predict(X)
 """
 
-"""
+""""
 def test_bioGP(create_data):
     X, y, data = create_data
     model2 = BioGP(pop_size=50)
