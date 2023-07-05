@@ -46,3 +46,4 @@ def test_rvea_solve_simple_problem(problem):
 
         assert individuals.shape[0] == 1
         assert solutions.shape[0] == 1
+
