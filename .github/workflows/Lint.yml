@@ -36,4 +36,9 @@ jobs:
           flake8_args: "--max-line-length 120 --extend-ignore=E203"
           isort: true
           isort_args: "--apply --remove-imports"
-          #isort_args: "--apply"
+      
+      - name: Ruff
+        uses: actions/checkout@v3
+
+      - name: Run Ruff
+        uses: chartboost/ruff-action@v1
