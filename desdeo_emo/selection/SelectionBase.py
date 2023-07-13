@@ -215,7 +215,7 @@ class InteractiveDecompositionSelectionBase(SelectionBase):
         )
         self._interaction_request_id = np.random.randint(0, 1e9)
 
-        BoundPreference(
+        return BoundPreference(
             dimensions_data=dimensions_data,
             n_objectives=pop.problem.n_of_objectives,
             message=message,
