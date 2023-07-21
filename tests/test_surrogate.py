@@ -24,7 +24,15 @@ def test_EvoNN(create_data):
     X, y, data = create_data
     model = EvoNN(pop_size=100)
     model.fit(data[["x1", "x2", "x3"]], data['y'])
-    y_pred = model.predict(X)
+    model.predict(X)
+
+@pytest.mark.skip(reason="BioGP does not work currently")
+def test_bioGP(create_data):
+    X, y, data = create_data
+    model2 = BioGP(pop_size=50)
+    model2.fit(data[["x1", "x2", "x3"]], data['y'])
+    X_pred = pd.DataFrame(X, columns=["x1", "x2", "x3"])
+    model2.predict(X_pred)
 
 
 @pytest.mark.skip(reason="EvoDN2 does not work currently")
@@ -35,14 +43,6 @@ def test_EvoDN2(create_data):
     model3.predict(X)
 
 
-@pytest.mark.skip(reason="BioGP does not work currently")
-def test_bioGP(create_data):
-    X, y, data = create_data
-    model2 = BioGP(pop_size=50)
-
-    model2.fit(data[["x1", "x2", "x3"]], data['y'])
-    X_pred = pd.DataFrame(X, columns=["x1", "x2", "x3"])
-    y_pred, _ = model2.predict(X_pred)
 
 
 
