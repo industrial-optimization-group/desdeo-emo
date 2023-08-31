@@ -1,6 +1,9 @@
 name: DESDEO-emo 
 
-on: push
+on:
+  push:
+    branches:
+      - '*'
 
 jobs:
   build:
@@ -21,12 +24,11 @@ jobs:
           restore-keys: ${{ runner.os }}-pip
 
   test:
-    #needs: linting
     strategy:
       fail-fast: true
       matrix:
         os: [ "ubuntu-latest" ]
-        python-version: [ "3.8", "3.9" ]
+        python-version: [ "3.9", "3.10" ] # Add Python 3.10
     runs-on: ${{ matrix.os }}
     steps:
       #----------------------------------------------
@@ -69,10 +71,15 @@ jobs:
         run: poetry install --no-interaction
       #----------------------------------------------
       #    add matrix specifics and run test suite
+      #    run tests 10 times if failures
       #----------------------------------------------
-
       - name: Run tests
+        id: run-tests
         run: |
-          source .venv/bin/activate
-          pytest tests/
-          #coverage report
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            .venv\Scripts\Activate
+          else
+            source .venv/bin/activate
+          fi
+          pip install pytest-rerunfailures
+          pytest tests/ --reruns 10

@@ -1,0 +1,47 @@
+name: Lint
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install Python dependencies
+        run: pip install black flake8 isort
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
+        with:
+          black: true
+          black_args: "--line-length 120"
+          flake8: true
+          flake8_args: "--max-line-length 120 --extend-ignore=E203"
+          isort: true
+          isort_args: "--apply --remove-imports"
+      
+      - name: Ruff
+        uses: actions/checkout@v3
+
+      - name: Run Ruff
+        uses: chartboost/ruff-action@v1
+        with:
+          args: --config tests/pyproject.toml
+

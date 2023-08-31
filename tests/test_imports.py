@@ -8,7 +8,7 @@ import pytest
 def test_imports():
     from desdeo_emo.EAs.NSGAIII import NSGAIII
     from desdeo_emo.EAs.IBEA import IBEA
-    # from desdeo_emo.EAs.PBEA import PBEA # desdeo-tools version
+    from desdeo_emo.EAs.PBEA import PBEA # desdeo-tools version #this works now
     from desdeo_emo.EAs.IKRVEA import IK_RVEA
     from desdeo_emo.EAs.RVEA import RVEA
     # from desdeo_emo.EAs.slowRVEA import slowRVEA # legacy code
@@ -55,7 +55,7 @@ def test_imports():
 
 # these fail right now.
 def fail_import():
-    from desdeo_emo.EAs.PBEA import PBEA
+    #from desdeo_emo.EAs.PBEA import PBEA
     from desdeo_emo.EAs.slowRVEA import slowRVEA
 
 
