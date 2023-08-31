@@ -1,13 +1,9 @@
 name: DESDEO-emo 
 
-#on: push
 on:
   push:
     branches:
       - '*'
-#  pull_request:
-#    branches:
-#      - master
 
 jobs:
   build:
@@ -28,12 +24,11 @@ jobs:
           restore-keys: ${{ runner.os }}-pip
 
   test:
-    #needs: linting
     strategy:
       fail-fast: true
       matrix:
-        os: [ "ubuntu-latest" ]
-        python-version: [ "3.9" ]
+        os: [ "ubuntu-latest", "windows-latest", "macos-latest" ] # Add Windows and Mac
+        python-version: [ "3.9", "3.10" ] # Add Python 3.10
     runs-on: ${{ matrix.os }}
     steps:
       #----------------------------------------------
